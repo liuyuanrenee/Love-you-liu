@@ -1,0 +1,2634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>护肤品库存管理</title>
+<style>
+/* =========================================================
+   基础变量：浅色 / 深色跟随系统
+   ========================================================= */
+:root{
+  --bg:#f4f6f8;
+  --surface:#ffffff;
+  --card:#ffffff;
+  --surface-2:#f0f2f6;
+  --border:#e1e6ee;
+  --text:#151a21;
+  --muted:#68727f;
+  --accent:#6c4cf1;
+  --accent-2:#9a7dff;
+  --accent-soft:#eee9ff;
+  --topbar:rgba(255,255,255,.84);
+  --ok:#0b8f5a;
+  --ok-bg:#e3f5ec;
+  --near:#a86400;
+  --near-bg:#fff1d6;
+  --danger:#d43b3b;
+  --danger-bg:#fdeaea;
+  --done:#6f7a88;
+  --done-bg:#eef1f4;
+  --shadow:0 10px 30px rgba(20,30,50,.08);
+  --radius:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1216;
+    --surface:#171b21;
+    --card:#1b2027;
+    --surface-2:#222832;
+    --border:#2c333d;
+    --text:#eef1f5;
+    --muted:#98a2b0;
+    --accent:#a08bff;
+    --accent-2:#8d76ff;
+    --accent-soft:#2a2440;
+    --topbar:rgba(15,18,22,.86);
+    --ok:#4fd39c;
+    --ok-bg:#12301f;
+    --near:#f2b95e;
+    --near-bg:#33270f;
+    --danger:#ff7b7b;
+    --danger-bg:#3a1d1d;
+    --done:#98a2b0;
+    --done-bg:#232a34;
+    --shadow:0 12px 34px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3{margin:0;font-weight:650}
+p{margin:0}
+
+/* =========================================================
+   布局与顶部导航
+   ========================================================= */
+#app{min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;background:var(--topbar);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.topbar-inner{max-width:1080px;margin:0 auto;padding:10px 16px 12px;display:flex;flex-direction:column;gap:10px}
+.brandline{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.logo svg{width:20px;height:20px}
+.brandline h1{font-size:17px;letter-spacing:.2px}
+.brandline p{font-size:11px;color:var(--muted)}
+.tabs{display:flex;gap:4px;padding:4px;background:var(--surface-2);border-radius:999px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 0 auto;border:0;background:transparent;padding:8px 16px;border-radius:999px;font-size:13.5px;color:var(--muted);white-space:nowrap;transition:.15s}
+.tabs button.on{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.wrap{max-width:1080px;margin:0 auto;padding:14px 16px 96px}
+
+/* =========================================================
+   通用组件
+   ========================================================= */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.panel h2{font-size:17px}
+.hint{font-size:12px;color:var(--muted);line-height:1.6}
+.muted{color:var(--muted)}
+.row{display:flex;align-items:center;gap:8px}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:8px 13px;border-radius:10px;font-size:13px;transition:.15s}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+.btn.ghost{background:transparent}
+.btn.mini{padding:5px 9px;font-size:12px;border-radius:8px}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn.danger:hover{background:var(--danger-bg)}
+.icon-btn{border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;padding:6px 8px;border-radius:8px}
+.icon-btn:hover{background:var(--surface-2);color:var(--text)}
+.badge{display:inline-block;font-size:11px;line-height:1.5;padding:2px 8px;border-radius:999px;font-weight:650;white-space:nowrap}
+.badge.safe{background:var(--ok-bg);color:var(--ok)}
+.badge.near{background:var(--near-bg);color:var(--near)}
+.badge.expired{background:var(--danger-bg);color:var(--danger)}
+.badge.finished{background:var(--done-bg);color:var(--done)}
+.tag{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:6px;background:var(--surface-2);color:var(--muted);flex:none}
+.chip{display:inline-block;font-size:11px;padding:1px 7px;border-radius:7px;background:var(--accent-soft);color:var(--accent);margin:0 4px 4px 0}
+.empty{padding:28px 10px;text-align:center;color:var(--muted);font-size:13px}
+
+/* =========================================================
+   临期提醒卡片
+   ========================================================= */
+.reminder{margin:14px auto 0;max-width:1080px;padding:0 16px}
+.reminder-card{border:1px solid var(--border);border-left:4px solid var(--near);background:linear-gradient(180deg,var(--near-bg),var(--surface));border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.reminder-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.reminder-head strong{font-size:14.5px}
+.reminder-head span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.reminder-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;max-height:230px;overflow:auto}
+.rrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+.rrow .rmain{flex:1 1 150px;min-width:0}
+.rrow b{font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow small{font-size:11.5px;color:var(--muted)}
+.rrow .ractions{display:flex;gap:6px;flex-wrap:wrap}
+.reminder-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px}
+.reminder-foot span{font-size:11.5px;color:var(--muted)}
+
+/* =========================================================
+   概览
+   ========================================================= */
+.stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:560px){.stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:900px){.stat-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:12px}
+.stat .stat-label{font-size:11.5px;color:var(--muted);display:block}
+.stat strong{display:block;font-size:25px;line-height:1.25;letter-spacing:-.5px}
+.stat .stat-sub{display:block;font-size:11px;color:var(--muted);margin-top:1px}
+.stat.warn strong{color:var(--near)}
+.stat.bad strong{color:var(--danger)}
+.section{margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.section-head h3{font-size:15px}
+.two-col{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:760px){.two-col{grid-template-columns:1fr 1fr}}
+.board-block{border:1px solid var(--border);border-radius:12px;padding:12px}
+.board-block h4{font-size:13.5px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
+.board-block h4 span{font-size:11.5px;color:var(--muted);font-weight:400}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.bar-label{font-size:12px;color:var(--muted);width:88px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+.bar-num{font-size:12px;width:28px;text-align:right;flex:none;font-variant-numeric:tabular-nums}
+.brand-row{padding:9px 0;border-bottom:1px dashed var(--border)}
+.brand-row:last-child{border-bottom:0}
+.brand-line{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.brand-line b{font-size:13.5px}
+.brand-line .bq{font-size:12px;color:var(--muted)}
+.brand-cats{margin-top:6px}
+.ov-list{display:flex;flex-direction:column;gap:7px}
+.ov-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1px solid var(--border);background:var(--card);border-radius:9px;padding:8px 10px}
+.ov-row:hover{background:var(--surface-2)}
+.ov-row .oname{flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ov-row .odate{font-size:11.5px;color:var(--muted);flex:none}
+
+/* =========================================================
+   板块列表 / 筛选
+   ========================================================= */
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.panel-head p{font-size:12px;color:var(--muted);margin-top:2px}
+.toolbar{display:flex;flex-direction:column;gap:9px;margin:14px 0 4px}
+.search input{width:100%;padding:10px 12px;border-radius:11px}
+.selects{display:flex;flex-wrap:wrap;gap:7px}
+.selects select{width:auto;min-width:104px;flex:1 1 104px;padding:8px 10px;border-radius:9px;font-size:12.5px}
+.view-toggle{display:flex;gap:6px;align-items:center}
+.view-toggle button{border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;padding:6px 12px;border-radius:999px}
+.view-toggle button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.group{border-bottom:1px solid var(--border)}
+.group:last-child{border-bottom:0}
+.group-head{display:flex;align-items:center;gap:9px;width:100%;padding:13px 4px;border:0;background:transparent;text-align:left}
+.group-head:hover{background:var(--surface-2)}
+.group-name{font-size:14px;font-weight:650;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.group-count{font-size:11.5px;color:var(--muted);flex:none}
+.chev{width:7px;height:7px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(-45deg);transition:transform .18s;flex:none;margin-left:2px}
+.chev.open{transform:rotate(45deg)}
+.cards{display:grid;grid-template-columns:1fr;gap:9px;padding:2px 0 14px}
+@media(min-width:680px){.cards{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}}
+.item{display:flex;gap:10px;justify-content:space-between;border:1px solid var(--border);border-radius:13px;padding:11px 12px;background:var(--card);position:relative;overflow:hidden}
+.item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
+.item.tone-near::before{background:var(--near)}
+.item.tone-expired::before{background:var(--danger)}
+.item-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.item-title{font-size:13.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-title .ibrand{color:var(--accent)}
+.item-meta{font-size:11.5px;color:var(--muted)}
+.item-date{font-size:11.5px;color:var(--text);opacity:.85}
+.item-sub{font-size:11.5px;color:var(--muted)}
+.item-note{font-size:11.5px;color:var(--muted);background:var(--surface-2);border-radius:8px;padding:4px 8px;margin-top:2px}
+.item-side{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex:none}
+.item-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.spec-chip{font-size:10.5px;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:0 6px}
+
+/* =========================================================
+   数据管理 / 品类管理
+   ========================================================= */
+.block{margin-top:18px}
+.block h3{font-size:15px;margin-bottom:4px}
+.btn-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.cat-group{border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:10px}
+.cat-group h4{font-size:13.5px;margin:0 0 8px}
+.cat-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px dashed var(--border);flex-wrap:wrap}
+.cat-row:last-of-type{border-bottom:0}
+.cat-row .cname{font-size:13px;flex:1 1 120px;min-width:0}
+.cat-row .cmonth{font-size:11px;color:var(--muted);flex:none}
+.cat-btns{display:flex;gap:4px}
+.cat-btns button{border:1px solid var(--border);background:var(--surface);border-radius:7px;font-size:11.5px;padding:3px 7px;color:var(--muted)}
+.cat-btns button:hover{background:var(--surface-2);color:var(--text)}
+.cat-add{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.cat-add input{flex:1 1 120px}
+.cat-add input[type=number]{flex:0 0 76px}
+.cat-add button{flex:none}
+
+/* =========================================================
+   表单控件
+   ========================================================= */
+input,select,textarea{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:10px;padding:9px 11px;font-size:14px;outline:none;transition:.15s;
+  color-scheme:light dark;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+input.invalid,select.invalid{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-bg)}
+textarea{resize:vertical;min-height:56px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;gap:6px;background:var(--surface-2);padding:4px;border-radius:12px}
+.seg label{flex:1;text-align:center;font-size:13px;padding:7px 2px;border-radius:9px;color:var(--muted);cursor:pointer;user-select:none;transition:.15s}
+.seg label.on{background:var(--surface);color:var(--text);font-weight:650;box-shadow:0 1px 5px rgba(0,0,0,.1)}
+.seg input{display:none}
+.check{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;padding-top:4px}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+.preview{font-size:12px;color:var(--muted);background:var(--surface-2);border-radius:9px;padding:8px 10px}
+.preview b{color:var(--text);font-weight:600}
+.form-err{display:none;background:var(--danger-bg);color:var(--danger);border-radius:9px;padding:8px 10px;font-size:12.5px}
+.form-err.show{display:block}
+.form-err ul{margin:4px 0 0;padding-left:18px}
+
+/* =========================================================
+   弹层 / 侧滑表单 / 对话框
+   ========================================================= */
+.backdrop{position:fixed;inset:0;background:rgba(8,12,20,.48);z-index:30;animation:fade .18s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet-wrap{position:fixed;inset:0;z-index:31;display:flex;align-items:flex-end;justify-content:center;pointer-events:none}
+.sheet{pointer-events:auto;width:100%;background:var(--surface);border-radius:18px 18px 0 0;max-height:92vh;display:flex;flex-direction:column;box-shadow:var(--shadow);animation:slideUp .22s ease}
+@keyframes slideUp{from{transform:translateY(26px);opacity:.5}to{transform:none;opacity:1}}
+@media(min-width:720px){
+  .sheet-wrap{align-items:center;padding:24px}
+  .sheet{width:620px;max-height:86vh;border-radius:18px}
+  .sheet.small{width:420px}
+}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);flex:none}
+.sheet-head h2{font-size:16px}
+.sheet-body{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.sheet-foot{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border);display:flex;gap:10px;flex:none}
+.sheet-foot .btn{flex:1;padding:11px}
+.dialog{position:fixed;z-index:31;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 48px);max-width:400px;background:var(--surface);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+.dialog h3{font-size:16px;margin-bottom:6px}
+.dialog p{font-size:13px;color:var(--muted);line-height:1.6}
+.dialog .drow{display:flex;gap:9px;margin-top:16px}
+.dialog .drow .btn{flex:1}
+.board-skin .makeup-only{display:none!important}
+
+/* =========================================================
+   浮动添加按钮 / Toast
+   ========================================================= */
+.fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:15;border:0;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:14px;font-weight:650;padding:13px 20px;box-shadow:0 10px 26px rgba(90,60,220,.35)}
+.fab:active{transform:scale(.97)}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,14px);background:rgba(20,24,32,.92);color:#fff;font-size:12.5px;padding:9px 15px;border-radius:999px;z-index:50;opacity:0;pointer-events:none;transition:.22s;max-width:86vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* =========================================================
+   拍照入库 / 图片存档
+   ========================================================= */
+.head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.item-photo{flex:none;width:58px;height:58px;padding:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.item-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-sheet{max-width:560px}
+.photo-choices{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:560px){.photo-choices{grid-template-columns:1fr 1fr}}
+.photo-choice{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1px solid var(--border);background:var(--surface-2);border-radius:13px;padding:14px}
+.photo-choice:hover{border-color:var(--accent);background:var(--accent-soft)}
+.photo-choice .pico{font-size:19px;line-height:1.2;color:var(--accent)}
+.photo-choice b{font-size:14px}
+.photo-choice small{font-size:11.5px;color:var(--muted)}
+.photo-preview{width:100%;max-height:220px;object-fit:contain;background:var(--surface-2);border-radius:12px;display:block}
+.pbar{height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .25s}
+.ocr-status{font-size:12.5px;color:var(--muted);min-height:18px}
+.ocr-warn{background:var(--danger-bg);border-left:3px solid var(--danger);border-radius:9px;padding:10px 12px;font-size:13px;line-height:1.6}
+.ocr-warn b{color:var(--danger);display:block;margin-bottom:3px}
+.ocr-note{font-size:11.5px;color:var(--muted);line-height:1.6;background:var(--surface-2);border-radius:9px;padding:8px 10px}
+.ocr-panel{border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:10px 12px;background:var(--surface-2)}
+.ocr-panel .ocr-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:650}
+.ocr-panel .cand{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.7}
+.ocr-panel .cand b{color:var(--text);font-weight:600}
+.ocr-panel details{margin-top:8px;font-size:11.5px;color:var(--muted)}
+.ocr-panel pre{white-space:pre-wrap;word-break:break-word;max-height:150px;overflow:auto;margin:6px 0 0;font-size:11.5px;background:var(--surface);border-radius:8px;padding:8px}
+.form-photo{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:8px;background:var(--surface-2)}
+.form-photo img{width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none;background:var(--surface)}
+.form-photo .fp-main{flex:1;min-width:0}
+.form-photo .fp-main b{display:block;font-size:12.5px}
+.form-photo .fp-main small{font-size:11px;color:var(--muted)}
+.drop-overlay{position:fixed;inset:0;z-index:45;display:none;place-items:center;background:rgba(108,76,241,.14);pointer-events:none}
+.drop-overlay.show{display:grid}
+.drop-overlay div{border:2px dashed var(--accent);background:var(--surface);border-radius:16px;padding:26px 34px;font-size:15px;font-weight:650;box-shadow:var(--shadow)}
+.viewer{position:fixed;inset:0;z-index:31;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;gap:12px}
+.viewer .vimg{max-width:min(92vw,720px);max-height:70vh;object-fit:contain;border-radius:12px;background:#000}
+.viewer .vbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 10px;font-size:12px;color:var(--muted);max-width:94vw}
+.ai-state{font-size:11.5px;color:var(--muted);align-self:center}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modalHost"></div>
+<script>
+(function(){
+  'use strict';
+
+  /* =========================================================
+     1. 常量与工具函数
+     ========================================================= */
+  var KEY = 'skincareInventoryV1';
+  var DAY = 86400000;
+  var TYPE_LIST = ['正装', '中样', '小样'];
+  var UNITS = ['ml', 'g', '支', '片'];
+
+  // 默认品类及开封后建议使用期限（月）
+  var DEFAULT_CATS = {
+    skin: [
+      { name: '洁面', months: 12 },
+      { name: '卸妆', months: 12 },
+      { name: '化妆水/爽肤水', months: 12 },
+      { name: '乳液', months: 12 },
+      { name: '面霜', months: 12 },
+      { name: '精华', months: 6 },
+      { name: '眼霜', months: 6 },
+      { name: '面膜', months: 12 },
+      { name: '防晒', months: 6 },
+      { name: '身体护理', months: 12 },
+      { name: '其他', months: 12 }
+    ],
+    makeup: [
+      { name: '底妆', months: 12 },
+      { name: '唇妆', months: 18 },
+      { name: '眼妆', months: 6 },
+      { name: '腮红修容', months: 24 },
+      { name: '美妆工具', months: 24 },
+      { name: '其他', months: 12 }
+    ]
+  };
+  var BOARD_LABEL = { skin: '护肤', makeup: '彩妆' };
+  var STATUS_META = {
+    safe: { label: '安全' },
+    near: { label: '临近到期' },
+    expired: { label: '已过期' },
+    finished: { label: '已用完' }
+  };
+
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function uid(){ return 'r-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7); }
+  function qsum(list){ return list.reduce(function(s, r){ return s + (Number(r.qty) || 0); }, 0); }
+  function cmpZh(a, b){ return String(a).localeCompare(String(b), 'zh-Hans-CN'); }
+  function clampInt(v, min, max, fallback){
+    var n = Math.round(Number(v));
+    if (!isFinite(n)) return fallback;
+    return Math.min(max, Math.max(min, n));
+  }
+
+  // 日期：统一使用本地日期字符串 YYYY-MM-DD
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+  function isoOf(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function todayISO(){ return isoOf(new Date()); }
+  function parseISO(s){
+    var p = String(s || '').split('-');
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
+  function addDays(s, n){
+    var d = parseISO(s); d.setDate(d.getDate() + n); return isoOf(d);
+  }
+  function addMonths(s, n){
+    var d = parseISO(s), day = d.getDate();
+    d.setDate(1); d.setMonth(d.getMonth() + n);
+    var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, last));
+    return isoOf(d);
+  }
+  function daysFromToday(s){
+    var a = parseISO(todayISO()).getTime(), b = parseISO(s).getTime();
+    return Math.round((b - a) / DAY);
+  }
+
+  /* =========================================================
+     2. 状态与持久化
+     ========================================================= */
+  var state = null;
+  var storageOK = true;
+  var imgCache = { meta: {}, ready: false, error: null };
+  var pendingPhoto = null; // 本次拍照流程中的压缩图（保存后才写入 IndexedDB）
+  var formPhoto = null;    // 当前表单的照片状态 { imgId, removed }
+  var ui = {
+    tab: 'overview',
+    filters: { skin: defFilter(), makeup: defFilter() },
+    collapsed: { skin: new Set(), makeup: new Set() }
+  };
+  function defFilter(){
+    return { q: '', brand: '', cat: '', type: '', status: '', sort: 'due', view: 'category' };
+  }
+  function resetFiltersAll(){
+    ui.filters = { skin: defFilter(), makeup: defFilter() };
+  }
+
+  function catMonths(board, name){
+    var arr = (state && state.categories[board]) || DEFAULT_CATS[board];
+    for (var i = 0; i < arr.length; i++) if (arr[i].name === name) return arr[i].months;
+    return 12;
+  }
+
+  function defaultRecord(board){
+    var cats = state.categories[board];
+    var first = cats[0] || { name: '其他', months: 12 };
+    return {
+      id: '', board: board, brand: '', name: '', category: first.name,
+      size: '', unit: 'ml', type: '正装', qty: 1,
+      opened: false, openDate: '', openMonths: first.months,
+      expiryDate: '', prodDate: '', shelfMonths: '',
+      location: '', note: '', shade: '', frequent: false,
+      finished: false, snoozeUntil: '', sample: false, imgId: ''
+    };
+  }
+
+  // 示例数据：覆盖护肤各功能品类 + 彩妆 5 个子类
+  function sampleRecords(){
+    var T = todayISO();
+    function base(board){
+      return {
+        id: uid(), board: board, brand: '', name: '',
+        category: board === 'skin' ? '洁面' : '底妆',
+        size: '', unit: 'ml', type: '正装', qty: 1,
+        opened: false, openDate: '', openMonths: 12,
+        expiryDate: '', prodDate: '', shelfMonths: '',
+        location: '', note: '', shade: '', frequent: false,
+        finished: false, snoozeUntil: '', sample: true, imgId: ''
+      };
+    }
+    function S(o){ return Object.assign(base('skin'), o); }
+    function M(o){ return Object.assign(base('makeup'), o); }
+
+    return [
+      S({ brand: 'SK-II', name: '护肤洁面霜', category: '洁面', size: 120, unit: 'g', opened: true, openDate: addDays(T, -70), openMonths: 12, location: '浴室镜柜', note: '泡沫细腻，早晚使用' }),
+      S({ brand: '贝德玛', name: '净妍洁肤液（蓝水）', category: '卸妆', size: 500, unit: 'ml', opened: true, openDate: addDays(T, -30), openMonths: 12, location: '浴室镜柜' }),
+      S({ brand: '兰蔻', name: '清滢柔肤水（粉水）', category: '化妆水/爽肤水', size: 400, unit: 'ml', opened: true, openDate: addDays(T, -335), openMonths: 12, location: '梳妆台' }),
+      S({ brand: '倩碧', name: '卓越润肤乳（黄油）', category: '乳液', size: 125, unit: 'ml', expiryDate: addDays(T, 200), location: '卧室抽屉' }),
+      S({ brand: '雅诗兰黛', name: '特润修护肌活精华（小棕瓶）', category: '精华', size: 50, unit: 'ml', opened: true, openDate: addDays(T, -160), openMonths: 6, location: '梳妆台', note: '晚间使用' }),
+      S({ brand: '修丽可', name: '植萃舒缓亮妍精华（色修）', category: '精华', size: 30, unit: 'ml', qty: 2, expiryDate: addDays(T, 240), location: '抽屉囤货' }),
+      S({ brand: '资生堂', name: '悦薇智感紧塑眼霜', category: '眼霜', size: 15, unit: 'ml', opened: true, openDate: addDays(T, -190), openMonths: 6, location: '梳妆台' }),
+      S({ brand: '海蓝之谜', name: '精华面霜', category: '面霜', size: 60, unit: 'ml', expiryDate: addDays(T, 75), location: '卧室抽屉' }),
+      S({ brand: '科颜氏', name: '高保湿面霜', category: '面霜', size: 7, unit: 'ml', type: '小样', qty: 3, expiryDate: addDays(T, 18), location: '旅行包' }),
+      S({ brand: '悦木之源', name: '泥娃娃活性炭面膜', category: '面膜', size: 100, unit: 'ml', prodDate: addDays(T, -700), shelfMonths: 36, location: '浴室' }),
+      S({ brand: '安热沙', name: '金灿倍护防晒乳', category: '防晒', size: 60, unit: 'ml', opened: true, openDate: addDays(T, -200), openMonths: 6, location: '玄关', note: '去年夏天买的' }),
+      S({ brand: '娇韵诗', name: '焕彩身体乳', category: '身体护理', size: 200, unit: 'ml', type: '中样', expiryDate: addDays(T, 300), location: '浴室' }),
+
+      M({ brand: '雅诗兰黛', name: '持妆粉底液', category: '底妆', size: 30, unit: 'ml', shade: '1W1', frequent: true, opened: true, openDate: addDays(T, -340), openMonths: 12, location: '梳妆台' }),
+      M({ brand: '花西子', name: '空气蜜粉', category: '底妆', size: 8, unit: 'g', shade: '03 自然色', expiryDate: addDays(T, 36), location: '化妆包' }),
+      M({ brand: '阿玛尼', name: '红管唇釉', category: '唇妆', size: 6, unit: 'ml', shade: '405 豆沙红', frequent: true, opened: true, openDate: addDays(T, -300), openMonths: 18, location: '随身包' }),
+      M({ brand: '香奈儿', name: '炫亮魅力睫毛膏', category: '眼妆', size: 6, unit: 'g', shade: '10 黑色', opened: true, openDate: addDays(T, -155), openMonths: 6, location: '化妆包', note: '开封后容易干' }),
+      M({ brand: '完美日记', name: '探险家十二色眼影盘', category: '眼妆', size: 12, unit: 'g', shade: '斑虎盘', expiryDate: addDays(T, 500), location: '抽屉' }),
+      M({ brand: 'NARS', name: '腮红（高潮）', category: '腮红修容', size: 8, unit: 'g', shade: 'Orgasm', frequent: true, opened: true, openDate: addDays(T, -400), openMonths: 24, location: '梳妆台' }),
+      M({ brand: '植村秀', name: '55号粉底刷', category: '美妆工具', size: 1, unit: '支', opened: true, openDate: addDays(T, -400), openMonths: 24, location: '化妆包' })
+    ];
+  }
+
+  function freshState(){
+    return {
+      version: 1,
+      records: sampleRecords(),
+      categories: {
+        skin: DEFAULT_CATS.skin.map(function(c){ return { name: c.name, months: c.months }; }),
+        makeup: DEFAULT_CATS.makeup.map(function(c){ return { name: c.name, months: c.months }; })
+      },
+      settings: { reminderDismissedOn: null, ai: { endpoint: '', key: '', model: '' } }
+    };
+  }
+
+  function normalizeRecord(r, cats){
+    r = r || {};
+    var board = r.board === 'makeup' ? 'makeup' : 'skin';
+    var fallbackCat = board === 'skin' ? '洁面' : '底妆';
+    var category = String(r.category || fallbackCat);
+    var list = cats[board] || [];
+    var found = list.filter(function(c){ return c.name === category; })[0];
+    return {
+      id: r.id || uid(),
+      board: board,
+      brand: String(r.brand || '').trim(),
+      name: String(r.name || '').trim(),
+      category: category,
+      size: (r.size === '' || r.size == null) ? '' : Number(r.size),
+      unit: UNITS.indexOf(r.unit) >= 0 ? r.unit : 'ml',
+      type: TYPE_LIST.indexOf(r.type) >= 0 ? r.type : '正装',
+      qty: clampInt(r.qty, 1, 999, 1),
+      opened: !!r.opened,
+      openDate: r.openDate || '',
+      openMonths: clampInt(r.openMonths, 1, 120, found ? found.months : 12),
+      expiryDate: r.expiryDate || '',
+      prodDate: r.prodDate || '',
+      shelfMonths: r.shelfMonths === '' || r.shelfMonths == null ? '' : clampInt(r.shelfMonths, 1, 120, ''),
+      location: String(r.location || ''),
+      note: String(r.note || ''),
+      shade: String(r.shade || ''),
+      frequent: !!r.frequent,
+      finished: !!r.finished,
+      snoozeUntil: r.snoozeUntil || '',
+      sample: !!r.sample,
+      imgId: String(r.imgId || '')
+    };
+  }
+
+  function normalizeState(s){
+    var cats = {};
+    ['skin', 'makeup'].forEach(function(b){
+      var src = s.categories && s.categories[b];
+      var arr = Array.isArray(src) ? src.filter(function(c){ return c && c.name; }).map(function(c){
+        return { name: String(c.name), months: clampInt(c.months, 1, 120, 12) };
+      }) : [];
+      if (!arr.length) arr = DEFAULT_CATS[b].map(function(c){ return { name: c.name, months: c.months }; });
+      cats[b] = arr;
+    });
+    var records = (Array.isArray(s.records) ? s.records : []).map(function(r){ return normalizeRecord(r, cats); });
+    return {
+      version: 1,
+      records: records,
+      categories: cats,
+      settings: {
+        reminderDismissedOn: (s.settings && s.settings.reminderDismissedOn) || null,
+        ai: {
+          endpoint: String((s.settings && s.settings.ai && s.settings.ai.endpoint) || ''),
+          key: String((s.settings && s.settings.ai && s.settings.ai.key) || ''),
+          model: String((s.settings && s.settings.ai && s.settings.ai.model) || '')
+        }
+      }
+    };
+  }
+
+  function loadState(){
+    var raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) { storageOK = false; }
+    if (raw){
+      try {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.records)) return normalizeState(parsed);
+      } catch (e) { console.warn('本地数据解析失败，使用示例数据', e); }
+    }
+    return freshState();
+  }
+
+  function persist(){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch (e){
+      console.warn('保存失败', e);
+      if (storageOK){ storageOK = false; toast('本地保存失败：浏览器可能处于无痕模式或已禁用存储'); }
+    }
+  }
+
+  /* =========================================================
+     3. 到期与状态计算
+     ========================================================= */
+  function dueInfo(r){
+    if (r.opened){
+      if (!r.openDate) return { due: null, basis: '' };
+      var om = Number(r.openMonths) || catMonths(r.board, r.category);
+      return { due: addMonths(r.openDate, om), basis: '开封后' };
+    }
+    if (r.expiryDate) return { due: r.expiryDate, basis: '未开封' };
+    if (r.prodDate && r.shelfMonths) return { due: addMonths(r.prodDate, Number(r.shelfMonths)), basis: '生产+保质期' };
+    return { due: null, basis: '' };
+  }
+
+  function recordStatus(r){
+    if (r.finished) return { key: 'finished', label: '已用完', days: null, due: null, basis: '' };
+    var info = dueInfo(r);
+    if (!info.due) return { key: 'safe', label: '安全', days: null, due: null, basis: '' };
+    var d = daysFromToday(info.due);
+    if (d < 0) return { key: 'expired', label: '已过期', days: d, due: info.due, basis: info.basis };
+    if (d <= 30) return { key: 'near', label: '临近到期', days: d, due: info.due, basis: info.basis };
+    return { key: 'safe', label: '安全', days: d, due: info.due, basis: info.basis };
+  }
+
+  function byDue(a, b){
+    var da = dueInfo(a).due, db = dueInfo(b).due;
+    if (!da && !db) return cmpZh(a.brand, b.brand);
+    if (!da) return 1;
+    if (!db) return -1;
+    return da < db ? -1 : da > db ? 1 : 0;
+  }
+
+  /* =========================================================
+     4. 筛选 / 排序 / 分组
+     ========================================================= */
+  function sortRecords(list, mode){
+    var arr = list.slice();
+    if (mode === 'brand'){
+      arr.sort(function(a, b){ return cmpZh(a.brand, b.brand) || cmpZh(a.name, b.name); });
+    } else if (mode === 'qty'){
+      arr.sort(function(a, b){ return (b.qty - a.qty) || cmpZh(a.brand, b.brand); });
+    } else {
+      arr.sort(byDue);
+    }
+    return arr;
+  }
+
+  function filteredRecords(board){
+    var f = ui.filters[board];
+    var q = f.q.trim().toLowerCase();
+    var list = state.records.filter(function(r){ return r.board === board; });
+    if (f.brand) list = list.filter(function(r){ return r.brand === f.brand; });
+    if (f.cat) list = list.filter(function(r){ return r.category === f.cat; });
+    if (f.type) list = list.filter(function(r){ return r.type === f.type; });
+    if (f.status) list = list.filter(function(r){ return recordStatus(r).key === f.status; });
+    if (q){
+      list = list.filter(function(r){
+        return [r.brand, r.name, r.category, r.note, r.location, r.shade, r.type].join(' ').toLowerCase().indexOf(q) >= 0;
+      });
+    }
+    return sortRecords(list, f.sort);
+  }
+
+  // 当前板块的分组顺序
+  function groupKeys(board, list){
+    var f = ui.filters[board];
+    var groups = {};
+    if (f.view === 'brand'){
+      list.forEach(function(r){
+        var k = r.brand.trim() || '未填写品牌';
+        (groups[k] = groups[k] || []).push(r);
+      });
+      return Object.keys(groups).sort(cmpZh);
+    }
+    list.forEach(function(r){
+      (groups[r.category] = groups[r.category] || []).push(r);
+    });
+    var order = state.categories[board].map(function(c){ return c.name; });
+    var keys = order.filter(function(k){ return groups[k]; });
+    Object.keys(groups).forEach(function(k){ if (keys.indexOf(k) < 0) keys.push(k); });
+    return keys;
+  }
+
+  /* =========================================================
+     5. 渲染：提醒、顶部导航、板块
+     ========================================================= */
+  function reminderItems(){
+    return state.records.filter(function(r){
+      var st = recordStatus(r).key;
+      if (st !== 'near' && st !== 'expired') return false;
+      if (r.snoozeUntil && r.snoozeUntil > todayISO()) return false;
+      return true;
+    }).sort(byDue);
+  }
+
+  function bannerHTML(){
+    if (state.settings.reminderDismissedOn === todayISO()) return '';
+    var items = reminderItems();
+    if (!items.length) return '';
+    var nearN = items.filter(function(r){ return recordStatus(r).key === 'near'; }).length;
+    var expN = items.length - nearN;
+    var rows = items.map(function(r){
+      var st = recordStatus(r);
+      var due = dueInfo(r).due;
+      var when = st.days != null ? (st.days < 0 ? '已超期 ' + (-st.days) + ' 天' : '剩 ' + st.days + ' 天') : '';
+      return '<div class="rrow">' +
+        '<span class="tag">' + BOARD_LABEL[r.board] + '</span>' +
+        '<div class="rmain"><b>' + esc(r.brand) + ' ' + esc(r.name) + '</b>' +
+          '<small>' + esc(due) + ' 到期 · ' + when + '</small></div>' +
+        '<div class="ractions">' +
+          '<button class="btn mini" data-act="finish" data-id="' + esc(r.id) + '">已用完</button>' +
+          '<button class="btn mini ghost" data-act="snooze" data-id="' + esc(r.id) + '">稍后提醒(7天)</button>' +
+        '</div></div>';
+    }).join('');
+    return '<div class="reminder"><div class="reminder-card">' +
+      '<div class="reminder-head"><div><strong>到期提醒</strong>' +
+        '<span>' + nearN + ' 项 30 天内临期 · ' + expN + ' 项已过期。这是页面内提醒，不是系统推送。</span></div>' +
+        '<button class="icon-btn" data-act="dismissReminder" aria-label="关闭提醒">×</button></div>' +
+      '<div class="reminder-list">' + rows + '</div>' +
+      '<div class="reminder-foot"><button class="btn ghost mini" data-act="ics">导出临期 .ics</button>' +
+        '<span>「稍后提醒」的项目 7 天内不再弹出</span></div>' +
+      '</div></div>';
+  }
+
+  function headerHTML(){
+    var tabs = [['overview', '概览'], ['skin', '护肤'], ['makeup', '彩妆'], ['data', '数据']];
+    return '<header class="topbar"><div class="topbar-inner">' +
+      '<div class="brandline">' +
+        '<div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3h6v3l2.2 3.3A5 5 0 0 1 18 12v6a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3v-6a5 5 0 0 1 .8-2.7L9 6V3z"/><path d="M8 13h8"/></svg></div>' +
+        '<div><h1>护肤品库存管理</h1><p>离线可用 · 本地自动保存</p></div>' +
+      '</div>' +
+      '<nav class="tabs">' + tabs.map(function(t){
+        return '<button data-act="tab" data-tab="' + t[0] + '" class="' + (ui.tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>';
+      }).join('') + '</nav>' +
+      '</div></header>';
+  }
+
+  function statHTML(active){
+    var skin = active.filter(function(r){ return r.board === 'skin'; });
+    var makeup = active.filter(function(r){ return r.board === 'makeup'; });
+    var near = active.filter(function(r){ return recordStatus(r).key === 'near'; });
+    var expired = active.filter(function(r){ return recordStatus(r).key === 'expired'; });
+    var samples = active.filter(function(r){ return r.type === '小样' && !r.opened; });
+    return '<div class="stat-grid">' +
+      '<div class="stat"><span class="stat-label">总件数</span><strong>' + qsum(active) + '</strong><span class="stat-sub">不含已用完</span></div>' +
+      '<div class="stat"><span class="stat-label">护肤</span><strong>' + qsum(skin) + '</strong><span class="stat-sub">' + skin.length + ' 条记录</span></div>' +
+      '<div class="stat"><span class="stat-label">彩妆</span><strong>' + qsum(makeup) + '</strong><span class="stat-sub">' + makeup.length + ' 条记录</span></div>' +
+      '<div class="stat"><span class="stat-label">未开封小样</span><strong>' + qsum(samples) + '</strong><span class="stat-sub">' + samples.length + ' 条记录</span></div>' +
+      '<div class="stat warn"><span class="stat-label">30 天内临期</span><strong>' + near.length + '</strong><span class="stat-sub">共 ' + qsum(near) + ' 件</span></div>' +
+      '<div class="stat bad"><span class="stat-label">已过期</span><strong>' + expired.length + '</strong><span class="stat-sub">共 ' + qsum(expired) + ' 件</span></div>' +
+      '</div>';
+  }
+
+  function barsHTML(board){
+    var active = state.records.filter(function(r){ return r.board === board && !r.finished; });
+    var cats = state.categories[board];
+    var counts = cats.map(function(c){ return { name: c.name, qty: qsum(active.filter(function(r){ return r.category === c.name; })) }; });
+    var max = 1;
+    counts.forEach(function(c){ if (c.qty > max) max = c.qty; });
+    return counts.map(function(c){
+      return '<div class="bar-row"><span class="bar-label" title="' + esc(c.name) + '">' + esc(c.name) + '</span>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + (c.qty / max * 100).toFixed(1) + '%"></div></div>' +
+        '<span class="bar-num">' + c.qty + '</span></div>';
+    }).join('');
+  }
+
+  function brandStats(){
+    var map = {};
+    state.records.filter(function(r){ return !r.finished; }).forEach(function(r){
+      var key = r.brand.trim() || '未填写品牌';
+      if (!map[key]) map[key] = { brand: key, qty: 0, cats: {}, boards: {} };
+      map[key].qty += r.qty;
+      map[key].cats[r.category] = (map[key].cats[r.category] || 0) + r.qty;
+      map[key].boards[r.board] = true;
+    });
+    return Object.keys(map).map(function(k){ return map[k]; })
+      .sort(function(a, b){ return (b.qty - a.qty) || cmpZh(a.brand, b.brand); });
+  }
+
+  function ovList(items, emptyText){
+    if (!items.length) return '<p class="hint">' + emptyText + '</p>';
+    var shown = items.slice(0, 8);
+    return '<div class="ov-list">' + shown.map(function(r){
+      var st = recordStatus(r);
+      var due = dueInfo(r).due;
+      var tail = st.days == null ? '' : (st.days < 0 ? '超期 ' + (-st.days) + ' 天' : '剩 ' + st.days + ' 天');
+      return '<button class="ov-row" data-act="edit" data-id="' + esc(r.id) + '">' +
+        '<span class="tag">' + BOARD_LABEL[r.board] + '</span>' +
+        '<span class="oname">' + esc(r.brand) + ' · ' + esc(r.name) + '</span>' +
+        '<span class="odate">' + esc(due) + (tail ? ' · ' + tail : '') + '</span></button>';
+    }).join('') + (items.length > 8 ? '<p class="hint">还有 ' + (items.length - 8) + ' 项，可在对应板块筛选查看</p>' : '') + '</div>';
+  }
+
+  function overviewHTML(){
+    var active = state.records.filter(function(r){ return !r.finished; });
+    var near = active.filter(function(r){ return recordStatus(r).key === 'near'; }).sort(byDue);
+    var expired = active.filter(function(r){ return recordStatus(r).key === 'expired'; }).sort(byDue);
+    var brands = brandStats();
+
+    return '<section class="panel">' +
+      '<div class="panel-head"><div><h2>库存概览</h2><p>护肤与彩妆分开统计，品牌按在用数量排序</p></div>' +
+        '<div class="head-actions"><button class="btn" data-act="photo" data-board="skin">拍照入库</button>' +
+        '<button class="btn primary" data-act="add" data-board="skin">+ 添加记录</button></div></div>' +
+      '<div style="margin-top:14px">' + statHTML(active) + '</div>' +
+      '</section>' +
+      '<section class="section"><div class="section-head"><h3>品类数量分布</h3><span class="hint">数字为件数（数量合计）</span></div>' +
+        '<div class="two-col">' +
+          '<div class="board-block"><h4>护肤<span>' + qsum(active.filter(function(r){ return r.board === 'skin'; })) + ' 件</span></h4>' + barsHTML('skin') + '</div>' +
+          '<div class="board-block"><h4>彩妆<span>' + qsum(active.filter(function(r){ return r.board === 'makeup'; })) + ' 件</span></h4>' + barsHTML('makeup') + '</div>' +
+        '</div></section>' +
+      '<section class="section"><div class="section-head"><h3>品牌分布</h3><span class="hint">每个品牌下的品类件数</span></div>' +
+        '<div>' + (brands.length ? brands.map(function(b){
+          var cats = Object.keys(b.cats).sort(cmpZh).map(function(c){
+            return '<span class="chip">' + esc(c) + ' ' + b.cats[c] + '</span>';
+          }).join('');
+          var boardTags = Object.keys(b.boards).map(function(x){ return BOARD_LABEL[x]; }).join(' / ');
+          return '<div class="brand-row"><div class="brand-line"><b>' + esc(b.brand) + '</b><span class="bq">' + boardTags + ' · ' + b.qty + ' 件</span></div><div class="brand-cats">' + cats + '</div></div>';
+        }).join('') : '<p class="hint">还没有品牌数据</p>') + '</div></section>' +
+      '<section class="section"><div class="section-head"><h3>临期 / 过期清单</h3>' +
+        '<button class="btn ghost mini" data-act="ics">导出临期 .ics</button></div>' +
+        '<div class="two-col">' +
+          '<div><h4 class="hint" style="margin-bottom:8px;color:var(--near);font-size:12.5px">30 天内临期（' + near.length + '）</h4>' + ovList(near, '暂无临期项目') + '</div>' +
+          '<div><h4 class="hint" style="margin-bottom:8px;color:var(--danger);font-size:12.5px">已过期（' + expired.length + '）</h4>' + ovList(expired, '暂无过期项目') + '</div>' +
+        '</div></section>';
+  }
+
+  function toolbarHTML(board){
+    var f = ui.filters[board];
+    var brands = {};
+    state.records.filter(function(r){ return r.board === board; }).forEach(function(r){ if (r.brand) brands[r.brand] = 1; });
+    var brandList = Object.keys(brands).sort(cmpZh);
+    var catOpts = state.categories[board].map(function(c){
+      return '<option value="' + esc(c.name) + '"' + (f.cat === c.name ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+    }).join('');
+    var brandOpts = brandList.map(function(b){
+      return '<option value="' + esc(b) + '"' + (f.brand === b ? ' selected' : '') + '>' + esc(b) + '</option>';
+    }).join('');
+    return '<div class="toolbar">' +
+      '<div class="search"><input id="search-' + board + '" data-f="q" data-board="' + board + '" value="' + esc(f.q) + '" placeholder="搜索品牌 / 产品 / 色号 / 备注" aria-label="搜索"></div>' +
+      '<div class="selects">' +
+        '<select data-f="brand" data-board="' + board + '" aria-label="品牌"><option value="">全部品牌</option>' + brandOpts + '</select>' +
+        '<select data-f="cat" data-board="' + board + '" aria-label="品类"><option value="">全部品类</option>' + catOpts + '</select>' +
+        '<select data-f="type" data-board="' + board + '" aria-label="类型"><option value="">正装/中样/小样</option>' +
+          TYPE_LIST.map(function(t){ return '<option value="' + t + '"' + (f.type === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select>' +
+        '<select data-f="status" data-board="' + board + '" aria-label="状态"><option value="">全部状态</option>' +
+          ['safe', 'near', 'expired', 'finished'].map(function(k){
+            return '<option value="' + k + '"' + (f.status === k ? ' selected' : '') + '>' + STATUS_META[k].label + '</option>';
+          }).join('') + '</select>' +
+        '<select data-f="sort" data-board="' + board + '" aria-label="排序"><option value="due"' + (f.sort === 'due' ? ' selected' : '') + '>按到期日</option>' +
+          '<option value="brand"' + (f.sort === 'brand' ? ' selected' : '') + '>按品牌</option>' +
+          '<option value="qty"' + (f.sort === 'qty' ? ' selected' : '') + '>按数量</option></select>' +
+        '<button class="btn ghost mini" data-act="resetFilters" data-board="' + board + '">重置</button>' +
+      '</div>' +
+      '<div class="view-toggle"><span class="hint">分组：</span>' +
+        '<button data-act="view" data-board="' + board + '" data-view="category" class="' + (f.view === 'category' ? 'on' : '') + '">按品类</button>' +
+        '<button data-act="view" data-board="' + board + '" data-view="brand" class="' + (f.view === 'brand' ? 'on' : '') + '">按品牌</button>' +
+      '</div>' +
+      '</div>';
+  }
+
+  function itemHTML(r){
+    var st = recordStatus(r);
+    var info = dueInfo(r);
+    var tone = st.key === 'near' ? 'tone-near' : st.key === 'expired' ? 'tone-expired' : '';
+    var meta = [r.category, r.size ? r.size + r.unit : '', r.type, '数量 ' + r.qty].filter(Boolean).join(' · ');
+    var extras = '';
+    if (r.board === 'makeup' && r.shade) extras += '<span class="spec-chip">色号 ' + esc(r.shade) + '</span> ';
+    if (r.board === 'makeup' && r.frequent) extras += '<span class="chip">常用</span>';
+    var openLine = r.opened
+      ? '开封 ' + esc(r.openDate || '未填') + ' · 开封后 ' + r.openMonths + ' 个月'
+      : '未开封' + (r.expiryDate
+          ? ' · 包装到期 ' + esc(r.expiryDate)
+          : (r.prodDate ? ' · 生产 ' + esc(r.prodDate) + ' + ' + r.shelfMonths + ' 个月' : ''));
+    var dueLine = info.due
+      ? '到期 ' + esc(info.due) + '（' + info.basis + '）' + (st.days != null ? (st.days < 0 ? ' · 已超期 ' + (-st.days) + ' 天' : ' · 剩 ' + st.days + ' 天') : '')
+      : '未设置到期日';
+    var sub = [];
+    if (r.location) sub.push('存放：' + esc(r.location));
+    var actions = '<button class="btn mini" data-act="edit" data-id="' + esc(r.id) + '">编辑</button>' +
+      (r.finished
+        ? '<button class="btn mini ghost" data-act="restore" data-id="' + esc(r.id) + '">恢复</button>'
+        : '<button class="btn mini ghost" data-act="finish" data-id="' + esc(r.id) + '">用完</button>') +
+      '<button class="btn mini danger" data-act="del" data-id="' + esc(r.id) + '">删除</button>';
+
+    var thumb = r.imgId && imgCache.meta[r.imgId] ? imgCache.meta[r.imgId].thumb : '';
+    var photo = thumb
+      ? '<button type="button" class="item-photo" data-act="viewimg" data-id="' + esc(r.id) + '" aria-label="查看照片"><img src="' + thumb + '" alt="产品照片"></button>'
+      : '';
+
+    return '<article class="item ' + tone + '">' + photo +
+      '<div class="item-main">' +
+        '<div class="item-title"><span class="ibrand">' + esc(r.brand || '未填品牌') + '</span> ' + esc(r.name) + '</div>' +
+        '<div class="item-meta">' + esc(meta) + '</div>' +
+        (extras ? '<div class="item-meta">' + extras + '</div>' : '') +
+        '<div class="item-date">' + dueLine + '</div>' +
+        '<div class="item-sub">' + openLine + (sub.length ? ' · ' + sub.join(' · ') : '') + '</div>' +
+        (r.note ? '<div class="item-note">' + esc(r.note) + '</div>' : '') +
+      '</div>' +
+      '<div class="item-side"><span class="badge ' + st.key + '">' + st.label + (st.key === 'near' && st.days != null ? ' · ' + st.days + '天' : '') + '</span>' +
+        '<div class="item-actions">' + actions + '</div></div>' +
+      '</article>';
+  }
+
+  function boardListHTML(board){
+    var list = filteredRecords(board);
+    if (!list.length) return '<div class="empty">没有符合条件的记录，试试调整筛选或添加新记录。</div>';
+    var f = ui.filters[board];
+    var keys = groupKeys(board, list);
+    return keys.map(function(k){
+      var items = sortRecords(list.filter(function(r){
+        return f.view === 'brand' ? (r.brand.trim() || '未填写品牌') === k : r.category === k;
+      }), f.sort);
+      var ckey = f.view + '|' + k;
+      var collapsed = ui.collapsed[board].has(ckey);
+      return '<section class="group">' +
+        '<button class="group-head" data-act="toggle" data-board="' + board + '" data-key="' + esc(ckey) + '">' +
+          '<span class="chev ' + (collapsed ? '' : 'open') + '"></span>' +
+          '<span class="group-name">' + esc(k) + '</span>' +
+          '<span class="group-count">' + qsum(items) + ' 件 · ' + items.length + ' 条</span>' +
+        '</button>' +
+        (collapsed ? '' : '<div class="cards">' + items.map(itemHTML).join('') + '</div>') +
+      '</section>';
+    }).join('');
+  }
+
+  function boardHTML(board){
+    var active = state.records.filter(function(r){ return r.board === board && !r.finished; });
+    var f = ui.filters[board];
+    return '<section class="panel">' +
+      '<div class="panel-head"><div><h2>' + BOARD_LABEL[board] + '清单</h2>' +
+        '<p>在用 ' + qsum(active) + ' 件 · ' + active.length + ' 条；已用完的记录保留在列表中</p></div>' +
+        '<div class="head-actions"><button class="btn" data-act="photo" data-board="' + board + '">拍照入库</button>' +
+        '<button class="btn primary" data-act="add" data-board="' + board + '">+ 添加</button></div></div>' +
+      toolbarHTML(board) +
+      '<div id="boardList">' + boardListHTML(board) + '</div>' +
+      (f.view === 'brand' ? '<p class="hint" style="margin-top:10px">按品牌分组时，每组内仍按当前排序方式排列。</p>' : '') +
+      '</section>';
+  }
+
+  function catManagerHTML(board){
+    var cats = state.categories[board];
+    return '<div class="cat-group"><h4>' + BOARD_LABEL[board] + '品类</h4>' +
+      cats.map(function(c, i){
+        return '<div class="cat-row">' +
+          '<span class="cname">' + esc(c.name) + '</span>' +
+          '<span class="cmonth">默认 ' + c.months + ' 个月</span>' +
+          '<span class="cat-btns">' +
+            '<button data-act="catup" data-board="' + board + '" data-index="' + i + '" aria-label="上移">↑</button>' +
+            '<button data-act="catdown" data-board="' + board + '" data-index="' + i + '" aria-label="下移">↓</button>' +
+            '<button data-act="catedit" data-board="' + board + '" data-index="' + i + '">编辑</button>' +
+            '<button data-act="catdel" data-board="' + board + '" data-index="' + i + '">删除</button>' +
+          '</span></div>';
+      }).join('') +
+      '<div class="cat-add">' +
+        '<input id="newcat-' + board + '" placeholder="新增自定义品类" maxlength="20">' +
+        '<input id="newcat-' + board + '-months" type="number" min="1" max="120" value="12" aria-label="默认开封后期限（月）">' +
+        '<button class="btn mini" data-act="addcat" data-board="' + board + '">新增</button>' +
+      '</div></div>';
+  }
+
+  function dataHTML(){
+    return '<section class="panel">' +
+      '<div class="panel-head"><div><h2>数据管理</h2><p>数据仅保存在本机浏览器 localStorage，不会上传到任何服务器。</p></div></div>' +
+      '<div class="block"><h3>备份与导出</h3><p class="hint">导出的 JSON 可在其他设备导入恢复（默认不含照片，含图导出体积较大）；CSV 便于在表格软件中查看；.ics 可导入手机日历。</p>' +
+        '<div class="btn-grid">' +
+          '<button class="btn" data-act="exportjson">导出 JSON 备份</button>' +
+          '<button class="btn" data-act="exportjsonimg">导出 JSON（含图片）</button>' +
+          '<button class="btn" data-act="exportcsv">导出 CSV</button>' +
+          '<button class="btn" data-act="chooseimport">导入 JSON</button>' +
+          '<button class="btn" data-act="ics">导出临期 .ics</button>' +
+          '<input type="file" id="importFile" accept="application/json,.json" hidden>' +
+        '</div></div>' +
+      '<div class="block"><h3>照片存档</h3><p class="hint">照片保存在本机 IndexedDB（localStorage 容量不足），不会自动随 JSON 导出。' + imgStatsText() + '</p>' +
+        '<div class="btn-grid">' +
+          '<button class="btn danger" data-act="delallimgs">删除全部图片</button>' +
+        '</div>' +
+        '<p class="hint" style="margin-top:8px">删除单张：在护肤 / 彩妆卡片上点开图片，在查看窗口选择「删除这张图片」。删除图片不会影响记录的其他字段。</p>' +
+        '<p class="hint" style="margin-top:6px">识别说明：本地 OCR 使用 tesseract.js，联网时从 CDN 加载（首次需下载约 30MB 中英文语言包），离线时自动降级为手动填写。包装反光、字体过小、曲面或角度倾斜都会降低识别准确率，预填结果仅供参考，请务必核对。</p>' +
+      '</div>' +
+      '<div class="block"><h3>在线 AI 识别（可选）</h3><p class="hint">开启后会优先用你配置的视觉模型识别，失败自动回退本地 OCR。API Key 只保存在本机 localStorage，不会内置或上传到其他位置；任何能打开本页面的人都能读到该 Key，请自行评估风险。</p>' +
+        '<div class="field"><label for="aiEndpoint">接口地址（OpenAI 兼容 /chat/completions）</label><input id="aiEndpoint" placeholder="https://api.openai.com/v1/chat/completions" value="' + esc((state.settings.ai && state.settings.ai.endpoint) || '') + '"></div>' +
+        '<div class="field-row" style="margin-top:10px">' +
+          '<div class="field"><label for="aiModel">模型名称</label><input id="aiModel" placeholder="gpt-4o-mini" value="' + esc((state.settings.ai && state.settings.ai.model) || '') + '"></div>' +
+          '<div class="field"><label for="aiKey">API Key</label><input id="aiKey" type="password" autocomplete="off" placeholder="sk-..." value="' + esc((state.settings.ai && state.settings.ai.key) || '') + '"></div>' +
+        '</div>' +
+        '<div class="btn-grid"><button class="btn" data-act="saveai">保存 AI 设置</button>' +
+          '<button class="btn ghost" data-act="clearai">清除 AI 设置</button>' +
+          '<span class="ai-state">' + (state.settings.ai && state.settings.ai.key ? '当前已配置，识别时优先使用' : '当前未配置') + '</span></div>' +
+        '<p class="hint" style="margin-top:6px">接口需允许浏览器跨域请求（CORS）；若调用失败会自动回退本地 OCR。</p>' +
+      '</div>' +
+      '<div class="block"><h3>数据起点</h3><p class="hint">当前共 ' + state.records.length + ' 条记录。示例记录可随时清除，不影响你后来新增的内容。</p>' +
+        '<div class="btn-grid">' +
+          '<button class="btn" data-act="clearsample">清空示例数据</button>' +
+          '<button class="btn" data-act="reloadsample">重新载入示例数据</button>' +
+          '<button class="btn danger" data-act="clearall">清空全部记录</button>' +
+        '</div></div>' +
+      '<div class="block"><h3>品类管理</h3><p class="hint">可新增、重命名、调整顺序；删除前需确保该品类下没有记录。默认期限用于新增记录时的初始值。</p>' +
+        catManagerHTML('skin') + catManagerHTML('makeup') +
+      '</div>' +
+      '</section>';
+  }
+
+  function fabHTML(){
+    if (ui.tab === 'data') return '';
+    var board = ui.tab === 'makeup' ? 'makeup' : 'skin';
+    return '<button class="fab" data-act="add" data-board="' + board + '">+ 添加记录</button>';
+  }
+
+  function mainHTML(){
+    if (ui.tab === 'skin') return boardHTML('skin');
+    if (ui.tab === 'makeup') return boardHTML('makeup');
+    if (ui.tab === 'data') return dataHTML();
+    return overviewHTML();
+  }
+
+  function renderApp(keepScroll){
+    var y = keepScroll === false ? 0 : window.scrollY;
+    document.getElementById('app').innerHTML = bannerHTML() + headerHTML() + '<main class="wrap">' + mainHTML() + '</main>' + fabHTML();
+    if (keepScroll === false) window.scrollTo(0, 0);
+    else window.scrollTo(0, y);
+  }
+
+  function renderBoardList(){
+    var host = document.getElementById('boardList');
+    if (host) host.innerHTML = boardListHTML(ui.tab);
+  }
+
+  function switchTab(tab){
+    ui.tab = tab;
+    renderApp(false);
+  }
+
+  /* =========================================================
+     6. 表单：新增 / 编辑
+     ========================================================= */
+  function catOptionsHTML(board, selected){
+    return state.categories[board].map(function(c){
+      return '<option value="' + esc(c.name) + '"' + (c.name === selected ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+    }).join('');
+  }
+
+  function segHTML(name, values, selected, labels){
+    return '<div class="seg">' + values.map(function(v, i){
+      var on = v === selected;
+      var text = labels && labels[i] ? labels[i] : v;
+      return '<label class="' + (on ? 'on' : '') + '"><input type="radio" name="' + name + '" value="' + esc(v) + '"' + (on ? ' checked' : '') + '><span>' + esc(text) + '</span></label>';
+    }).join('') + '</div>';
+  }
+
+  function openForm(rec, boardDefault, ctx){
+    var isEdit = !!rec;
+    ctx = ctx || {};
+    var data = isEdit ? rec : mergePrefill(boardDefault || 'skin', ctx.prefill);
+    formPhoto = { imgId: isEdit ? (rec.imgId || '') : '', removed: false };
+    pendingPhoto = ctx.photo || null;
+    var host = document.getElementById('modalHost');
+    var typeSeg = segHTML('fType', TYPE_LIST, data.type);
+    var boardSeg = segHTML('fBoard', ['skin', 'makeup'], data.board, ['护肤', '彩妆']);
+    var unitOpts = UNITS.map(function(u){ return '<option value="' + u + '"' + (data.unit === u ? ' selected' : '') + '>' + u + '</option>'; }).join('');
+    var openChecked = data.opened ? ' checked' : '';
+
+    host.innerHTML =
+      '<div class="backdrop" data-close="1"></div>' +
+      '<div class="sheet-wrap"><form class="sheet board-' + data.board + '" id="itemForm" novalidate>' +
+        '<div class="sheet-head"><h2>' + (isEdit ? '编辑记录' : '新增记录') + '</h2>' +
+          '<button type="button" class="icon-btn" data-close="1" aria-label="关闭">×</button></div>' +
+        '<div class="sheet-body">' +
+          '<div class="form-err" id="formErr"></div>' +
+          ocrPanelHTML(ctx.ocr) +
+          photoBlockHTML(data) +
+          '<div class="field"><label>板块</label>' + boardSeg + '</div>' +
+          '<div class="field-row">' +
+            '<div class="field"><label for="fBrand">品牌 *</label><input id="fBrand" maxlength="30" placeholder="如 兰蔻 / 雅诗兰黛" value="' + esc(data.brand) + '"></div>' +
+            '<div class="field"><label for="fName">产品名称 *</label><input id="fName" maxlength="50" placeholder="如 清滢柔肤水" value="' + esc(data.name) + '"></div>' +
+          '</div>' +
+          '<div class="field-row">' +
+            '<div class="field"><label for="fCat">品类</label><select id="fCat">' + catOptionsHTML(data.board, data.category) + '</select></div>' +
+            '<div class="field"><label for="fSize">规格</label><div class="field-row" style="grid-template-columns:1.4fr .9fr;gap:6px">' +
+              '<input id="fSize" type="number" min="0" step="0.1" placeholder="如 50" value="' + esc(data.size) + '">' +
+              '<select id="fUnit">' + unitOpts + '</select></div></div>' +
+          '</div>' +
+          '<div class="field"><label>类型</label>' + typeSeg + '</div>' +
+          '<div class="field-row">' +
+            '<div class="field"><label for="fQty">数量 *</label><input id="fQty" type="number" min="1" step="1" value="' + esc(data.qty) + '"></div>' +
+            '<div class="field makeup-only"><label for="fShade">色号 / 规格</label><input id="fShade" maxlength="30" placeholder="如 1W1 / 405" value="' + esc(data.shade) + '"></div>' +
+          '</div>' +
+          '<div class="field"><label>开封状态</label><label class="check"><input type="checkbox" id="fOpened"' + openChecked + '> 已开封（按开封日期推算到期）</label></div>' +
+          '<div class="field-row" id="openedBlock">' +
+            '<div class="field"><label for="fOpenDate">开封日期</label><input type="date" id="fOpenDate" max="' + todayISO() + '" value="' + esc(data.openDate) + '"></div>' +
+            '<div class="field"><label for="fOpenMonths">开封后建议期限（月）</label><input type="number" id="fOpenMonths" min="1" max="120" value="' + esc(data.openMonths) + '"></div>' +
+          '</div>' +
+          '<div id="unopenedBlock">' +
+            '<div class="field"><label for="fExpiry">未开封到期日</label><input type="date" id="fExpiry" value="' + esc(data.expiryDate) + '"></div>' +
+            '<div class="field-row">' +
+              '<div class="field"><label for="fProd">生产日期</label><input type="date" id="fProd" value="' + esc(data.prodDate) + '"></div>' +
+              '<div class="field"><label for="fShelf">保质期（月）</label><input type="number" id="fShelf" min="1" max="120" value="' + esc(data.shelfMonths) + '"></div>' +
+            '</div>' +
+            '<p class="hint" style="margin-top:6px">到期日与「生产日期 + 保质期」任填其一，优先使用到期日。</p>' +
+          '</div>' +
+          '<div class="preview" id="duePreview"></div>' +
+          '<div class="field-row">' +
+            '<div class="field"><label for="fLoc">存放位置</label><input id="fLoc" maxlength="40" placeholder="如 浴室镜柜" value="' + esc(data.location) + '"></div>' +
+            '<div class="field makeup-only"><label>是否常用</label><label class="check"><input type="checkbox" id="fFreq"' + (data.frequent ? ' checked' : '') + '> 日常常用</label></div>' +
+          '</div>' +
+          '<div class="field"><label for="fNote">备注</label><textarea id="fNote" rows="2" maxlength="200" placeholder="选购时间、使用感受等">' + esc(data.note) + '</textarea></div>' +
+        '</div>' +
+        '<div class="sheet-foot">' +
+          '<button type="button" class="btn" data-close="1">取消</button>' +
+          '<button type="submit" class="btn primary">保存</button>' +
+        '</div>' +
+      '</form></div>';
+
+    var form = document.getElementById('itemForm');
+    toggleFormBlocks(form);
+    updatePreview(form);
+
+    form.addEventListener('change', function(e){
+      if (e.target.name === 'fBoard'){
+        // 切换板块：更新品类选项与默认期限
+        var board = e.target.value;
+        form.classList.toggle('board-skin', board === 'skin');
+        form.classList.toggle('board-makeup', board === 'makeup');
+        form.querySelectorAll('.seg').forEach(function(seg){
+          seg.querySelectorAll('label').forEach(function(l){
+            var input = l.querySelector('input');
+            l.classList.toggle('on', input.checked);
+          });
+        });
+        var catSel = document.getElementById('fCat');
+        var first = state.categories[board][0];
+        catSel.innerHTML = catOptionsHTML(board, first.name);
+        document.getElementById('fOpenMonths').value = first.months;
+        toggleFormBlocks(form);
+      }
+      if (e.target.id === 'fCat'){
+        document.getElementById('fOpenMonths').value = catMonths(form.querySelector('input[name=fBoard]:checked').value, e.target.value);
+      }
+      if (e.target.id === 'fOpened'){
+        toggleFormBlocks(form);
+      }
+      if (e.target.type === 'radio'){
+        var seg = e.target.closest('.seg');
+        if (seg) seg.querySelectorAll('label').forEach(function(l){
+          l.classList.toggle('on', l.querySelector('input').checked);
+        });
+      }
+      updatePreview(form);
+    });
+    form.addEventListener('input', function(){ updatePreview(form); });
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      submitForm(form, isEdit ? data : null);
+    });
+
+    setTimeout(function(){ var b = document.getElementById('fBrand'); if (b) b.focus(); }, 120);
+  }
+
+  function toggleFormBlocks(form){
+    var opened = document.getElementById('fOpened').checked;
+    document.getElementById('openedBlock').style.display = opened ? '' : 'none';
+    document.getElementById('unopenedBlock').style.display = opened ? 'none' : '';
+  }
+
+  function formDue(form){
+    var opened = document.getElementById('fOpened').checked;
+    var openDate = document.getElementById('fOpenDate').value;
+    var openMonths = Number(document.getElementById('fOpenMonths').value);
+    var expiry = document.getElementById('fExpiry').value;
+    var prod = document.getElementById('fProd').value;
+    var shelf = Number(document.getElementById('fShelf').value);
+    var due = null, basis = '';
+    if (opened && openDate && openMonths >= 1){
+      due = addMonths(openDate, openMonths); basis = '开封后';
+    } else if (!opened && expiry){
+      due = expiry; basis = '未开封';
+    } else if (!opened && prod && shelf >= 1){
+      due = addMonths(prod, shelf); basis = '生产+保质期';
+    }
+    return { due: due, basis: basis };
+  }
+
+  function updatePreview(form){
+    var box = document.getElementById('duePreview');
+    if (!box) return;
+    var info = formDue(form);
+    if (!info.due){ box.innerHTML = '预计到期：<b>未设置</b>，保存后将显示为「安全」但不会提醒。'; return; }
+    var d = daysFromToday(info.due);
+    var tail = d < 0 ? '已超期 ' + (-d) + ' 天' : d <= 30 ? '剩 ' + d + ' 天（临近）' : '剩 ' + d + ' 天';
+    box.innerHTML = '预计到期：<b>' + esc(info.due) + '</b>（' + info.basis + '）· ' + tail;
+  }
+
+  function readForm(form){
+    var board = form.querySelector('input[name=fBoard]:checked').value;
+    var typeEl = form.querySelector('input[name=fType]:checked');
+    return {
+      board: board,
+      brand: document.getElementById('fBrand').value.trim(),
+      name: document.getElementById('fName').value.trim(),
+      category: document.getElementById('fCat').value,
+      size: document.getElementById('fSize').value === '' ? '' : Number(document.getElementById('fSize').value),
+      unit: document.getElementById('fUnit').value,
+      type: typeEl ? typeEl.value : '正装',
+      qty: Number(document.getElementById('fQty').value),
+      opened: document.getElementById('fOpened').checked,
+      openDate: document.getElementById('fOpenDate').value,
+      openMonths: Number(document.getElementById('fOpenMonths').value),
+      expiryDate: document.getElementById('fExpiry').value,
+      prodDate: document.getElementById('fProd').value,
+      shelfMonths: document.getElementById('fShelf').value === '' ? '' : Number(document.getElementById('fShelf').value),
+      location: document.getElementById('fLoc').value.trim(),
+      note: document.getElementById('fNote').value.trim(),
+      shade: document.getElementById('fShade').value.trim(),
+      frequent: document.getElementById('fFreq').checked
+    };
+  }
+
+  function validateRecord(d){
+    var errs = [];
+    if (!d.brand) errs.push('请填写品牌');
+    if (!d.name) errs.push('请填写产品名称');
+    if (!isFinite(d.qty) || Math.floor(d.qty) !== d.qty || d.qty < 1) errs.push('数量必须是不小于 1 的整数');
+    if (d.size !== '' && (!isFinite(d.size) || d.size <= 0)) errs.push('规格需为正数');
+    if (d.opened){
+      if (!d.openDate) errs.push('已开封时请填写开封日期');
+      else if (d.openDate > todayISO()) errs.push('开封日期不能晚于今天');
+      if (!(d.openMonths >= 1 && d.openMonths <= 120)) errs.push('开封后期限请填写 1 - 120 个月');
+    } else {
+      if (d.expiryDate && d.prodDate && d.expiryDate < d.prodDate) errs.push('未开封到期日不能早于生产日期');
+      if (d.prodDate && !(d.shelfMonths >= 1 && d.shelfMonths <= 120)) errs.push('填写生产日期时，请同时填写 1 - 120 个月的保质期');
+    }
+    return errs;
+  }
+
+  function markInvalid(form, d, errs){
+    ['fBrand', 'fName', 'fQty', 'fSize', 'fOpenDate', 'fOpenMonths', 'fExpiry', 'fProd', 'fShelf'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.classList.remove('invalid');
+    });
+    var map = {
+      '请填写品牌': ['fBrand'],
+      '请填写产品名称': ['fName'],
+      '数量必须是不小于 1 的整数': ['fQty'],
+      '规格需为正数': ['fSize']
+    };
+    errs.forEach(function(msg){
+      (map[msg] || ['fOpenDate', 'fOpenMonths', 'fExpiry', 'fProd', 'fShelf']).forEach(function(id){
+        var el = document.getElementById(id);
+        if (el) el.classList.add('invalid');
+      });
+    });
+    var box = document.getElementById('formErr');
+    box.classList.add('show');
+    box.innerHTML = '请检查以下内容：<ul>' + errs.map(function(m){ return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
+  }
+
+  function submitForm(form, existing){
+    var d = readForm(form);
+    var errs = validateRecord(d);
+    if (errs.length){
+      markInvalid(form, d, errs);
+      var box = document.getElementById('formErr');
+      if (box) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      return;
+    }
+    var keepImgId = existing ? (existing.imgId || '') : '';
+    var removedImgId = '';
+    if (formPhoto && formPhoto.removed && keepImgId){ removedImgId = keepImgId; keepImgId = ''; }
+    var newImg = null;
+    if (pendingPhoto){
+      newImg = { id: 'img-' + uid(), thumb: pendingPhoto.thumb, full: pendingPhoto.full, createdAt: Date.now() };
+      keepImgId = newImg.id;
+      pendingPhoto = null;
+    }
+    var rec = {
+      id: existing ? existing.id : uid(),
+      board: d.board,
+      brand: d.brand,
+      name: d.name,
+      category: d.category,
+      size: d.size,
+      unit: d.unit,
+      type: d.type,
+      qty: Math.round(d.qty),
+      opened: d.opened,
+      openDate: d.opened ? d.openDate : '',
+      openMonths: d.opened ? Math.round(d.openMonths) : catMonths(d.board, d.category),
+      expiryDate: d.opened ? '' : d.expiryDate,
+      prodDate: d.opened ? '' : d.prodDate,
+      shelfMonths: d.opened ? '' : d.shelfMonths,
+      location: d.location,
+      note: d.note,
+      shade: d.board === 'makeup' ? d.shade : '',
+      frequent: d.board === 'makeup' ? d.frequent : false,
+      finished: existing ? existing.finished : false,
+      snoozeUntil: '',
+      sample: existing ? existing.sample : false,
+      imgId: keepImgId
+    };
+    var idx = state.records.findIndex(function(r){ return existing && r.id === existing.id; });
+    if (idx >= 0) state.records[idx] = rec;
+    else state.records.push(rec);
+    persist();
+    closeModal();
+    toast(existing ? '已保存修改' : '已添加记录');
+    renderApp(true);
+    if (newImg){
+      imgPut(newImg.id, newImg.thumb, newImg.full).then(function(){
+        imgCache.meta[newImg.id] = {
+          id: newImg.id, thumb: newImg.thumb,
+          bytes: newImg.thumb.length + newImg.full.length, createdAt: newImg.createdAt
+        };
+        renderApp(true);
+      }).catch(function(e){
+        console.warn('照片保存失败', e);
+        var target = findRecord(rec.id);
+        if (target){ target.imgId = ''; persist(); }
+        toast('照片保存失败（浏览器存储不可用），记录本身已保存');
+        renderApp(true);
+      });
+    }
+    if (removedImgId){
+      imgDelete(removedImgId).catch(function(){});
+      delete imgCache.meta[removedImgId];
+      renderApp(true);
+    }
+  }
+
+  /* =========================================================
+     7. 品类编辑弹层
+     ========================================================= */
+  function openCatForm(board, index){
+    var cat = state.categories[board][index];
+    if (!cat) return;
+    var host = document.getElementById('modalHost');
+    host.innerHTML =
+      '<div class="backdrop" data-close="1"></div>' +
+      '<div class="sheet-wrap"><form class="sheet small" id="catForm" novalidate>' +
+        '<div class="sheet-head"><h2>编辑品类</h2><button type="button" class="icon-btn" data-close="1">×</button></div>' +
+        '<div class="sheet-body">' +
+          '<div class="form-err" id="catErr"></div>' +
+          '<div class="field"><label for="cName">品类名称</label><input id="cName" maxlength="20" value="' + esc(cat.name) + '"></div>' +
+          '<div class="field"><label for="cMonths">默认开封后期限（月）</label><input id="cMonths" type="number" min="1" max="120" value="' + cat.months + '"></div>' +
+          '<p class="hint">改名会同步更新该板块下所有记录的品类；默认期限只影响之后新增记录。</p>' +
+        '</div>' +
+        '<div class="sheet-foot"><button type="button" class="btn" data-close="1">取消</button><button type="submit" class="btn primary">保存</button></div>' +
+      '</form></div>';
+    document.getElementById('catForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var newName = document.getElementById('cName').value.trim();
+      var months = Number(document.getElementById('cMonths').value);
+      var errs = [];
+      if (!newName) errs.push('品类名称不能为空');
+      var dup = state.categories[board].some(function(c, i){ return i !== index && c.name === newName; });
+      if (dup) errs.push('已存在同名品类');
+      if (!(months >= 1 && months <= 120)) errs.push('默认期限请填写 1 - 120 个月');
+      if (errs.length){
+        var box = document.getElementById('catErr');
+        box.classList.add('show');
+        box.innerHTML = '请检查以下内容：<ul>' + errs.map(function(m){ return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
+        return;
+      }
+      var oldName = cat.name;
+      state.categories[board][index] = { name: newName, months: Math.round(months) };
+      if (newName !== oldName){
+        state.records.forEach(function(r){ if (r.board === board && r.category === oldName) r.category = newName; });
+        if (ui.filters[board].cat === oldName) ui.filters[board].cat = '';
+      }
+      persist();
+      closeModal();
+      toast('品类已更新');
+      renderApp(true);
+    });
+    var nameInput = document.getElementById('cName');
+    if (nameInput) setTimeout(function(){ nameInput.focus(); }, 100);
+  }
+
+  /* =========================================================
+     8. 导出 / 导入
+     ========================================================= */
+  function download(content, filename, type){
+    var blob = new Blob([content], { type: type });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+  }
+
+  function exportJSON(){
+    var records = state.records.map(function(r){
+      var copy = {};
+      Object.keys(r).forEach(function(k){ if (k !== 'imgId') copy[k] = r[k]; });
+      return copy;
+    });
+    var payload = {
+      app: 'skincare-inventory',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      categories: state.categories,
+      records: records
+    };
+    download(JSON.stringify(payload, null, 2), '护肤彩妆库存备份-' + todayISO() + '.json', 'application/json');
+    toast('JSON 备份已导出（不含照片，需要照片请用「含图片」导出）');
+  }
+
+  var CSV_HEAD = ['板块', '品牌', '产品名称', '品类', '规格', '类型', '数量', '状态', '是否开封', '开封日期', '开封后期限(月)', '到期日', '未开封到期日', '生产日期', '保质期(月)', '存放位置', '色号/规格', '是否常用', '备注'];
+
+  function csvCell(v){
+    var s = String(v == null ? '' : v);
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function exportCSV(){
+    var rows = state.records.slice().sort(function(a, b){
+      if (a.board !== b.board) return a.board === 'skin' ? -1 : 1;
+      return cmpZh(a.category, b.category) || byDue(a, b);
+    });
+    var csv = CSV_HEAD.map(csvCell).join(',') + '\r\n';
+    rows.forEach(function(r){
+      var st = recordStatus(r);
+      var spec = r.size ? String(r.size) + r.unit : '';
+      var line = [
+        BOARD_LABEL[r.board], r.brand, r.name, r.category, spec, r.type, r.qty,
+        st.label, r.opened ? '是' : '否', r.openDate, r.opened ? r.openMonths : '',
+        dueInfo(r).due || '', r.expiryDate, r.prodDate, r.shelfMonths,
+        r.location, r.shade, r.board === 'makeup' ? (r.frequent ? '是' : '否') : '', r.note
+      ];
+      csv += line.map(csvCell).join(',') + '\r\n';
+    });
+    download('\ufeff' + csv, '护肤彩妆库存-' + todayISO() + '.csv', 'text/csv;charset=utf-8');
+    toast('CSV 已导出');
+  }
+
+  function icsEscape(s){
+    return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,')
+      .replace(/\r/g, '').replace(/\n/g, '\\n');
+  }
+  function exportICS(){
+    var near = state.records.filter(function(r){
+      return !r.finished && recordStatus(r).key === 'near';
+    });
+    if (!near.length){ toast('当前没有 30 天内临期的项目'); return; }
+    var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+    var lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SkincareInventory//CN',
+      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:护肤彩妆临期提醒'
+    ];
+    near.forEach(function(r){
+      var due = dueInfo(r).due;
+      var spec = r.size ? r.size + r.unit : '';
+      var desc = '品牌：' + r.brand + '\n产品：' + r.name + '\n品类：' + r.category +
+        (spec ? '\n规格：' + spec : '') + '\n类型：' + r.type + '，数量：' + r.qty +
+        (r.location ? '\n存放：' + r.location : '') + '\n到期来源：' + dueInfo(r).basis + '（页面内计算）';
+      lines.push('BEGIN:VEVENT');
+      lines.push('UID:' + r.id.replace(/[^A-Za-z0-9-]/g, '') + '@skincare-inventory');
+      lines.push('DTSTAMP:' + stamp);
+      lines.push('DTSTART;VALUE=DATE:' + due.replace(/-/g, ''));
+      lines.push('DTEND;VALUE=DATE:' + addDays(due, 1).replace(/-/g, ''));
+      lines.push('SUMMARY:' + icsEscape('到期提醒：' + r.brand + ' ' + r.name));
+      lines.push('DESCRIPTION:' + icsEscape(desc));
+      lines.push('BEGIN:VALARM', 'TRIGGER:-P3D', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape('3 天后到期：' + r.name), 'END:VALARM');
+      lines.push('END:VEVENT');
+    });
+    lines.push('END:VCALENDAR');
+    download(lines.join('\r\n') + '\r\n', '临期提醒-' + todayISO() + '.ics', 'text/calendar;charset=utf-8');
+    toast('已导出 ' + near.length + ' 条临期日程');
+  }
+
+  function importJSON(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var parsed;
+      try { parsed = JSON.parse(reader.result); }
+      catch (e){ toast('文件不是有效的 JSON'); return; }
+      var arr = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.records) ? parsed.records : null);
+      if (!arr){ toast('JSON 结构中找不到记录数组'); return; }
+      if (!arr.length){ toast('该文件没有记录，未做改动'); return; }
+      var imgs = (parsed && Array.isArray(parsed.images)) ? parsed.images : [];
+      confirmDialog('导入将用文件中的 ' + arr.length + ' 条记录替换当前全部数据' +
+        (imgs.length ? '，并恢复 ' + imgs.length + ' 张照片' : '') + '，确定继续？', function(){
+        var normalized = normalizeState({
+          records: arr,
+          categories: (parsed && parsed.categories) || state.categories,
+          settings: state.settings
+        });
+        var commit = function(){
+          state = normalized;
+          state.records.forEach(function(r){ if (r.imgId && !imgCache.meta[r.imgId]) r.imgId = ''; });
+          resetFiltersAll();
+          persist();
+          toast('已导入 ' + state.records.length + ' 条记录' + (imgs.length ? '（含 ' + imgs.length + ' 张照片）' : ''));
+          renderApp(false);
+        };
+        if (!imgs.length){ commit(); return; }
+        var chain = Promise.resolve();
+        imgs.forEach(function(im){
+          if (!im || !im.id || !im.full) return;
+          chain = chain.then(function(){
+            return imgPut(im.id, im.thumb || '', im.full).then(function(){
+              imgCache.meta[im.id] = {
+                id: im.id, thumb: im.thumb || '',
+                bytes: (im.thumb || '').length + im.full.length,
+                createdAt: im.createdAt || Date.now()
+              };
+            });
+          });
+        });
+        chain.then(commit).catch(function(e){
+          console.warn('图片导入失败', e);
+          toast('部分照片导入失败，记录仍会导入');
+          commit();
+        });
+      }, '确认导入');
+    };
+    reader.onerror = function(){ toast('读取文件失败'); };
+    reader.readAsText(file, 'utf-8');
+  }
+
+  /* =========================================================
+     9. 拍照识别 / 图片存档
+     ========================================================= */
+
+  /* ---------- 9.1 IndexedDB 图片库（localStorage 存不下图片） ---------- */
+  var PHOTO_DB = 'skincarePhotosV1';
+  var idbPromise = null;
+
+  function idbOpen(){
+    if (idbPromise) return idbPromise;
+    idbPromise = new Promise(function(resolve, reject){
+      if (!window.indexedDB){ reject(new Error('浏览器不支持 IndexedDB')); return; }
+      var req = indexedDB.open(PHOTO_DB, 1);
+      req.onupgradeneeded = function(){
+        var db = req.result;
+        if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'id' });
+        if (!db.objectStoreNames.contains('full')) db.createObjectStore('full', { keyPath: 'id' });
+      };
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ reject(req.error || new Error('图片库打开失败')); };
+    });
+    return idbPromise;
+  }
+
+  function idbRun(storeName, mode, fn){
+    return idbOpen().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction(storeName, mode);
+        var store = tx.objectStore(storeName);
+        var result;
+        var req = fn(store);
+        if (req) req.onsuccess = function(){ result = req.result; };
+        tx.oncomplete = function(){ resolve(result); };
+        tx.onerror = function(){ reject(tx.error || new Error('图片库读写失败')); };
+        tx.onabort = function(){ reject(tx.error || new Error('图片库操作中止')); };
+      });
+    });
+  }
+
+  function imgPut(id, thumb, full){
+    var bytes = (thumb || '').length + (full || '').length;
+    return idbRun('meta', 'readwrite', function(s){
+      return s.put({ id: id, thumb: thumb, bytes: bytes, createdAt: Date.now() });
+    }).then(function(){
+      return idbRun('full', 'readwrite', function(s){ return s.put({ id: id, data: full }); });
+    }).then(function(){ return { id: id, thumb: thumb, bytes: bytes }; });
+  }
+  function imgGetFull(id){
+    return idbRun('full', 'readonly', function(s){ return s.get(id); }).then(function(v){ return v && v.data ? v.data : ''; });
+  }
+  function imgDelete(id){
+    return idbRun('meta', 'readwrite', function(s){ return s.delete(id); }).then(function(){
+      return idbRun('full', 'readwrite', function(s){ return s.delete(id); });
+    });
+  }
+  function imgAllMeta(){ return idbRun('meta', 'readonly', function(s){ return s.getAll(); }).then(function(v){ return v || []; }); }
+  function imgAllFull(){ return idbRun('full', 'readonly', function(s){ return s.getAll(); }).then(function(v){ return v || []; }); }
+  function imgClearAll(){
+    return idbRun('meta', 'readwrite', function(s){ return s.clear(); }).then(function(){
+      return idbRun('full', 'readwrite', function(s){ return s.clear(); });
+    });
+  }
+
+  function loadImgCache(){
+    return imgAllMeta().then(function(list){
+      var map = {};
+      list.forEach(function(m){ if (m && m.id) map[m.id] = m; });
+      imgCache.meta = map;
+      imgCache.ready = true;
+      imgCache.error = null;
+    }).catch(function(e){
+      imgCache.ready = true;
+      imgCache.error = e;
+      console.warn('本机图片库不可用', e);
+    });
+  }
+
+  function imgStatsText(){
+    if (!imgCache.ready) return '正在读取图片占用…';
+    if (imgCache.error){
+      return '本机图片库不可用（' + esc(imgCache.error.message || '浏览器限制') + '），照片可以识别，但无法存档。';
+    }
+    var ids = Object.keys(imgCache.meta);
+    var bytes = 0;
+    ids.forEach(function(k){ bytes += Number(imgCache.meta[k].bytes) || 0; });
+    var mb = bytes / (1024 * 1024);
+    return '已保存 ' + ids.length + ' 张照片，约 ' + (mb < 0.1 ? '不足 0.1' : mb.toFixed(1)) + ' MB。';
+  }
+
+  /* ---------- 9.2 图片解码与压缩 ---------- */
+  function fileToImageEl(file){
+    return new Promise(function(resolve, reject){
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){ URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('无法解码这张图片')); };
+      img.src = url;
+    });
+  }
+  function decodeImage(file){
+    if (window.createImageBitmap){
+      return createImageBitmap(file, { imageOrientation: 'from-image' })
+        .catch(function(){ return createImageBitmap(file); })
+        .catch(function(){ return fileToImageEl(file); });
+    }
+    return fileToImageEl(file);
+  }
+  function drawToDataURL(img, maxEdge, quality){
+    var w = img.width || img.naturalWidth, h = img.height || img.naturalHeight;
+    if (!w || !h) throw new Error('图片尺寸异常');
+    var scale = Math.min(1, maxEdge / Math.max(w, h));
+    var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+    var canvas = document.createElement('canvas');
+    canvas.width = cw; canvas.height = ch;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cw, ch);
+    ctx.drawImage(img, 0, 0, cw, ch);
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+  function compressPhoto(img){
+    return {
+      full: drawToDataURL(img, 1200, 0.82),
+      thumb: drawToDataURL(img, 300, 0.68)
+    };
+  }
+
+  /* ---------- 9.3 内置品牌 / 品类词库与文本解析 ---------- */
+  var BRANDS = [
+    { name: '兰蔻', aliases: ['LANCOME', '兰蔻'] },
+    { name: '雅诗兰黛', aliases: ['ESTEE LAUDER', '雅诗兰黛'] },
+    { name: '海蓝之谜', aliases: ['LA MER', 'LAMER', '海蓝之谜'] },
+    { name: 'SK-II', aliases: ['SK-II', 'SKII', 'SK2'] },
+    { name: '资生堂', aliases: ['SHISEIDO', '资生堂'] },
+    { name: '倩碧', aliases: ['CLINIQUE', '倩碧'] },
+    { name: '科颜氏', aliases: ['KIEHLS', "KIEHL'S", '科颜氏'] },
+    { name: '悦木之源', aliases: ['ORIGINS', '悦木之源'] },
+    { name: '娇韵诗', aliases: ['CLARINS', '娇韵诗'] },
+    { name: '修丽可', aliases: ['SKINCEUTICALS', '修丽可'] },
+    { name: '欧莱雅', aliases: ['LOREAL', "L'OREAL", '欧莱雅'] },
+    { name: '兰芝', aliases: ['LANEIGE', '兰芝'] },
+    { name: '雪花秀', aliases: ['SULWHASOO', '雪花秀'] },
+    { name: '后', aliases: ['THE HISTORY OF WHOO', 'WHOO', '后'] },
+    { name: '苏秘37°', aliases: ['SUM37', 'SU:M37', '苏秘'] },
+    { name: '赫莲娜', aliases: ['HELENA RUBINSTEIN', '赫莲娜'] },
+    { name: '黛珂', aliases: ['COSME DECORTE', 'DECORTE', '黛珂'] },
+    { name: '植村秀', aliases: ['SHU UEMURA', '植村秀'] },
+    { name: '阿玛尼', aliases: ['GIORGIO ARMANI', 'ARMANI', '阿玛尼'] },
+    { name: '香奈儿', aliases: ['CHANEL', '香奈儿'] },
+    { name: '迪奥', aliases: ['DIOR', '迪奥'] },
+    { name: '圣罗兰', aliases: ['YVES SAINT LAURENT', 'YSL', '圣罗兰'] },
+    { name: '纪梵希', aliases: ['GIVENCHY', '纪梵希'] },
+    { name: '汤姆福特', aliases: ['TOM FORD', '汤姆福特'] },
+    { name: '魅可', aliases: ['MAC', '魅可'] },
+    { name: 'NARS', aliases: ['NARS'] },
+    { name: '芭比波朗', aliases: ['BOBBI BROWN', '芭比波朗'] },
+    { name: '玫珂菲', aliases: ['MAKE UP FOR EVER', '玫珂菲'] },
+    { name: '花西子', aliases: ['FLORASIS', '花西子'] },
+    { name: '完美日记', aliases: ['PERFECT DIARY', '完美日记'] },
+    { name: '毛戈平', aliases: ['MAOGEPING', '毛戈平'] },
+    { name: '橘朵', aliases: ['JUDYDOLL', '橘朵'] },
+    { name: '珂拉琪', aliases: ['COLORKEY', '珂拉琪'] },
+    { name: '卡姿兰', aliases: ['CARSLAN', '卡姿兰'] },
+    { name: '玛丽黛佳', aliases: ['MARIE DALGAR', '玛丽黛佳'] },
+    { name: '百雀羚', aliases: ['PECHOIN', '百雀羚'] },
+    { name: '自然堂', aliases: ['CHANDO', '自然堂'] },
+    { name: '珀莱雅', aliases: ['PROYA', '珀莱雅'] },
+    { name: '薇诺娜', aliases: ['WINONA', '薇诺娜'] },
+    { name: '玉兰油', aliases: ['OLAY', '玉兰油'] },
+    { name: '多芬', aliases: ['DOVE', '多芬'] },
+    { name: '妮维雅', aliases: ['NIVEA', '妮维雅'] },
+    { name: '理肤泉', aliases: ['LA ROCHE-POSAY', 'ROCHE-POSAY', '理肤泉'] },
+    { name: '雅漾', aliases: ['AVENE', '雅漾'] },
+    { name: '碧欧泉', aliases: ['BIOTHERM', '碧欧泉'] },
+    { name: '伊丽莎白雅顿', aliases: ['ELIZABETH ARDEN', '雅顿'] },
+    { name: '馥蕾诗', aliases: ['FRESH', '馥蕾诗'] },
+    { name: '祖玛珑', aliases: ['JO MALONE', '祖玛珑'] },
+    { name: '希思黎', aliases: ['SISLEY', '希思黎'] },
+    { name: '宝拉珍选', aliases: ["PAULA'S CHOICE", '宝拉珍选'] },
+    { name: '城野医生', aliases: ['DR.CI:LABO', 'DRCI LABO', '城野医生'] },
+    { name: '芳珂', aliases: ['FANCL', '芳珂'] },
+    { name: '怡丽丝尔', aliases: ['ELIXIR', '怡丽丝尔'] },
+    { name: '安热沙', aliases: ['ANESSA', '安热沙'] },
+    { name: '贝德玛', aliases: ['BIODERMA', '贝德玛'] },
+    { name: '欧舒丹', aliases: ["L'OCCITANE", '欧舒丹'] },
+    { name: '露得清', aliases: ['NEUTROGENA', '露得清'] },
+    { name: '适乐肤', aliases: ['CERAVE', '适乐肤'] },
+    { name: '娇兰', aliases: ['GUERLAIN', '娇兰'] }
+  ];
+
+  var CAT_WORDS = {
+    skin: {
+      '洁面': ['洁面', '洗面奶', '洁颜', '洁肤', '洗颜', 'CLEANSER', 'FOAMING'],
+      '卸妆': ['卸妆', '洁颜油', '卸妆水', '卸妆油', 'MAKEUP REMOVER', 'CLEANSING OIL'],
+      '化妆水/爽肤水': ['爽肤水', '化妆水', '柔肤水', '精华水', '精粹水', 'TONER'],
+      '乳液': ['乳液', '润肤乳', 'EMULSION', 'LOTION'],
+      '面霜': ['面霜', '乳霜', '精华霜', '晚霜', '日霜', 'CREAM'],
+      '精华': ['精华', '精华液', '肌底液', 'SERUM', 'ESSENCE', 'AMPOULE'],
+      '眼霜': ['眼霜', '眼部精华', 'EYE CREAM', 'EYE SERUM'],
+      '面膜': ['面膜', '面贴膜', '泥膜', 'MASK'],
+      '防晒': ['防晒', '隔离', 'SPF', 'SUNSCREEN', 'UV'],
+      '身体护理': ['身体乳', '沐浴', '润体', '护手', 'BODY LOTION', 'BODY WASH'],
+      '其他': []
+    },
+    makeup: {
+      '底妆': ['粉底', '气垫', '遮瑕', '粉饼', '蜜粉', '散粉', '妆前', 'BB霜', 'CC霜', 'FOUNDATION', 'CUSHION', 'CONCEALER', 'POWDER'],
+      '唇妆': ['口红', '唇釉', '唇膏', '唇彩', '染唇', 'LIPSTICK', 'LIP GLOSS', 'LIP TINT'],
+      '眼妆': ['眼影', '眼线', '睫毛膏', '眉笔', '眉粉', 'EYESHADOW', 'EYELINER', 'MASCARA', 'BROW'],
+      '腮红修容': ['腮红', '修容', '高光', '阴影', 'BLUSH', 'BRONZER', 'HIGHLIGHTER', 'CONTOUR'],
+      '美妆工具': ['化妆刷', '粉扑', '海绵', '美妆蛋', '化妆棉', 'BRUSH', 'PUFF', 'SPONGE'],
+      '其他': []
+    }
+  };
+
+  function normText(s){
+    return String(s || '').toUpperCase()
+      .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(ch){ return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0); })
+      .replace(/[‐‑–—]/g, '-')
+      .replace(/\s+/g, '')
+      .replace(/[·・.,，。:：;；'"“”‘’()（）\[\]【】<>《》!！?？]/g, '');
+  }
+  function escapeReg(s){
+    return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function brandCandidates(text){
+    var raw = String(text || '').toUpperCase();
+    var glued = normText(text);
+    var found = {};
+    BRANDS.forEach(function(b){
+      var best = 0, hit = '';
+      b.aliases.forEach(function(a){
+        var na = normText(a);
+        if (!na) return;
+        var latin = /^[A-Z0-9]/.test(na);
+        var matched = false;
+        if (latin && na.length <= 3){
+          matched = new RegExp('(^|[^A-Z0-9])' + escapeReg(na) + '([^A-Z0-9]|$)').test(raw);
+        } else {
+          matched = glued.indexOf(na) >= 0;
+        }
+        if (!matched) return;
+        var base = 50 + Math.min(24, na.length * 6);
+        if (!latin) base += 4;
+        if (na.length >= 6) base += 4;
+        if (glued.indexOf(na) >= 0 && glued.indexOf(na) < 40) base += 2;
+        var score = Math.min(95, base);
+        if (score > best){ best = score; hit = a; }
+      });
+      if (best && !found[b.name]) found[b.name] = { name: b.name, score: best, hit: hit };
+    });
+    return Object.keys(found).map(function(k){ return found[k]; })
+      .sort(function(a, b){ return b.score - a.score; }).slice(0, 3);
+  }
+
+  function categoryCandidates(text){
+    var res = { skin: [], makeup: [] };
+    var flat = normText(text);
+    ['skin', 'makeup'].forEach(function(board){
+      Object.keys(CAT_WORDS[board]).forEach(function(name){
+        var words = CAT_WORDS[board][name];
+        if (!words.length) return;
+        var hits = [], score = 45;
+        words.forEach(function(kw){
+          var nk = normText(kw);
+          if (nk && flat.indexOf(nk) >= 0){ hits.push(kw); score += 10 + Math.min(10, kw.length * 2); }
+        });
+        if (hits.length){
+          res[board].push({ name: name, score: Math.min(95, score), hits: hits.slice(0, 3) });
+        }
+      });
+      res[board].sort(function(a, b){ return b.score - a.score; });
+    });
+    return res;
+  }
+
+  function extractProductName(text, brandHit, board, candidates){
+    var lines = text.split(/\n/).map(function(l){ return l.replace(/\s+/g, ' ').trim(); })
+      .filter(function(l){ return l.length >= 3 && l.length <= 40; });
+    var catWords = [];
+    candidates.forEach(function(c){
+      (CAT_WORDS[board][c.name] || []).forEach(function(k){ catWords.push(k); });
+    });
+    var bad = /(成分|用法|注意|生产|保质|批号|地址|电话|网址|官网|净含量|执行标准|许可证|合格|客服|微信|扫码|使用说明|过敏|避免|置于|儿童)/;
+    var best = { score: 0, name: '' };
+    lines.forEach(function(line){
+      var flatLine = normText(line), s = 0;
+      if (brandHit && flatLine.indexOf(normText(brandHit)) >= 0) s += 2;
+      if (catWords.some(function(k){ return normText(k) && flatLine.indexOf(normText(k)) >= 0; })) s += 2;
+      if (/[水乳霜精华液膏粉油露膜洗眼唇盘笔刷]/.test(line)) s += 1;
+      if (line.length >= 5) s += 1;
+      if (line.replace(/[^A-Za-z\u4e00-\u9fa5]/g, '').length < 2) s -= 6;
+      if (/^[\d\sA-Za-z.\-/]+$/.test(line)) s -= 4;
+      if (bad.test(line)) s -= 4;
+      if (s > best.score){ best = { score: s, name: line }; }
+    });
+    if (best.score < 3) return '';
+    var name = best.name;
+    if (brandHit){
+      name = name.replace(new RegExp(escapeReg(brandHit), 'ig'), ' ');
+    }
+    name = name.replace(/\d+(?:\.\d+)?\s*(ml|mL|g|克)/ig, ' ')
+      .replace(/净含量|规格|产品名称|品名/g, ' ')
+      .replace(/([\u4e00-\u9fa5])\s+(?=[\u4e00-\u9fa5])/g, '$1')
+      .replace(/^[\s\-*/·:：=%|]+|[\s\-*/·:：=%|]+$/g, '')
+      .replace(/\s{2,}/g, ' ');
+    return name.length >= 2 ? name.slice(0, 30) : '';
+  }
+
+  function parseSpec(text){
+    var t = String(text || '').replace(/\s+/g, ' ');
+    var re = /(\d{1,4}(?:\.\d+)?)\s*(ml|mL|ML|m1|mI|g|G|克|片|支|枚)/g;
+    var m;
+    while ((m = re.exec(t))){
+      var n = Number(m[1]);
+      if (!(n > 0 && n <= 2000)) continue;
+      var u = m[2].toLowerCase();
+      u = (u === 'ml' || u === 'm1' || u === 'mi') ? 'ml' : (u === 'g' || u === '克') ? 'g' : (u === '片' ? '片' : '支');
+      return { size: n, unit: u };
+    }
+    return { size: '', unit: 'ml' };
+  }
+
+  function parseShade(text){
+    var m1 = String(text || '').match(/(?:色号|颜色|shade|color)\s*[:：]?\s*([A-Za-z0-9][A-Za-z0-9\-.]{0,11})/i);
+    if (m1) return m1[1].trim();
+    var m2 = String(text || '').match(/\b(\d{1,2}[A-Z]{1,2})\b/);
+    if (m2) return m2[1];
+    return '';
+  }
+
+  function validISO(y, mo, da){
+    var ys = Number(y), ms = Number(mo), ds = Number(da);
+    if (ys < 2000 || ys > 2100 || ms < 1 || ms > 12 || ds < 1 || ds > 31) return '';
+    var d = new Date(ys, ms - 1, ds);
+    if (d.getFullYear() !== ys || d.getMonth() !== ms - 1 || d.getDate() !== ds) return '';
+    return ys + '-' + pad(ms) + '-' + pad(ds);
+  }
+
+  function parseExpiry(text){
+    var src = String(text || '');
+    var found = [];
+    var m, reA = /(20\d{2})\s*[年.\-/]\s*(\d{1,2})\s*[月.\-/]\s*(\d{1,2})\s*日?/g;
+    while ((m = reA.exec(src))){ var d = validISO(m[1], m[2], m[3]); if (d) found.push({ d: d, before: src.slice(Math.max(0, m.index - 18), m.index) }); }
+    var reB = /(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])/g;
+    while ((m = reB.exec(src))){ var d2 = validISO(m[1], m[2], m[3]); if (d2) found.push({ d: d2, before: '' }); }
+    if (!found.length) return '';
+    var expiry = '';
+    found.forEach(function(x){
+      if (/生产|制造|MFG|PD/i.test(x.before)) return;
+      if (/到期|保质|有效|限期|EXP/i.test(x.before) && !expiry) expiry = x.d;
+    });
+    if (expiry) return expiry;
+    var future = found.map(function(x){ return x.d; })
+      .filter(function(d){ return daysFromToday(d) >= 0; }).sort();
+    return future.length ? future[future.length - 1] : '';
+  }
+
+  function parseType(text){
+    if (/小样|试用装|体验装|旅行装|sample/i.test(text)) return '小样';
+    if (/中样|deluxe/i.test(text)) return '中样';
+    return '正装';
+  }
+
+  function parseOcrText(text, hintBoard){
+    var raw = String(text || '').replace(/\r/g, '');
+    var boardHint = hintBoard === 'makeup' ? 'makeup' : 'skin';
+    var brands = brandCandidates(raw);
+    var catRes = categoryCandidates(raw);
+    var skinScore = catRes.skin.reduce(function(s, c){ return s + c.score; }, 0);
+    var makeupScore = catRes.makeup.reduce(function(s, c){ return s + c.score; }, 0);
+    var board = boardHint;
+    if (makeupScore > skinScore + 12) board = 'makeup';
+    else if (skinScore > makeupScore + 12) board = 'skin';
+
+    var cats = catRes[board];
+    var bestBrand = brands[0] && brands[0].score >= 58 ? brands[0] : null;
+    var bestCat = cats[0] && cats[0].score >= 55 ? cats[0] : null;
+    var category = bestCat ? bestCat.name : state.categories[board][0].name;
+    if (!state.categories[board].some(function(c){ return c.name === category; })) category = state.categories[board][0].name;
+
+    var spec = parseSpec(raw);
+    var fields = {
+      board: board,
+      brand: bestBrand ? bestBrand.name : '',
+      name: extractProductName(raw, bestBrand ? bestBrand.hit : '', board, cats),
+      category: category,
+      size: spec.size,
+      unit: spec.unit,
+      type: parseType(raw),
+      shade: board === 'makeup' ? parseShade(raw) : '',
+      expiryDate: parseExpiry(raw),
+      openMonths: catMonths(board, category)
+    };
+    return {
+      fields: fields, brandCandidates: brands, catCandidates: cats,
+      text: raw, source: '本地 OCR', confidence: 0, warn: ''
+    };
+  }
+
+  function mergePrefill(boardHint, prefill){
+    var board = prefill && prefill.board === 'makeup' ? 'makeup' : (prefill && prefill.board === 'skin' ? 'skin' : boardHint);
+    var data = defaultRecord(board);
+    if (!prefill) return data;
+    var cat = prefill.category;
+    if (!state.categories[board].some(function(c){ return c.name === cat; })) cat = state.categories[board][0].name;
+    data.board = board;
+    data.brand = prefill.brand || '';
+    data.name = prefill.name || '';
+    data.category = cat;
+    data.size = (prefill.size === '' || prefill.size == null) ? '' : Number(prefill.size);
+    data.unit = UNITS.indexOf(prefill.unit) >= 0 ? prefill.unit : 'ml';
+    data.type = TYPE_LIST.indexOf(prefill.type) >= 0 ? prefill.type : '正装';
+    data.shade = board === 'makeup' ? (prefill.shade || '') : '';
+    data.expiryDate = prefill.expiryDate || '';
+    data.openMonths = catMonths(board, cat);
+    return data;
+  }
+
+  function ocrPanelHTML(ocr){
+    if (!ocr) return '';
+    if (ocr.warn){
+      return '<div class="ocr-panel"><div class="ocr-head"><b>拍照入库</b><span class="tag">未识别</span></div>' +
+        '<div class="cand">' + esc(ocr.warn) + '</div></div>';
+    }
+    var bc = (ocr.brandCandidates && ocr.brandCandidates.length)
+      ? ocr.brandCandidates.map(function(c){ return c.name + ' ' + c.score + '%（匹配「' + c.hit + '」）'; }).join(' · ')
+      : '未识别到品牌，请手动填写';
+    var cc = (ocr.catCandidates && ocr.catCandidates.length)
+      ? ocr.catCandidates.slice(0, 3).map(function(c){ return c.name + ' ' + c.score + '%（关键词「' + c.hits.join('、') + '」）'; }).join(' · ')
+      : '未识别到品类，已使用当前板块默认品类';
+    var conf = ocr.confidence ? ('文字识别置信度约 ' + ocr.confidence + '%。') : '';
+    return '<div class="ocr-panel"><div class="ocr-head"><b>拍照识别结果</b><span class="tag">' + esc(ocr.source || '本地 OCR') + '</span></div>' +
+      '<div class="cand"><b>品牌候选：</b>' + esc(bc) + '</div>' +
+      '<div class="cand"><b>品类候选：</b>' + esc(cc) + '</div>' +
+      '<div class="cand">' + esc(conf) + '识别结果仅供参考，请核对后再保存；识别不到的内容已留空。</div>' +
+      (ocr.text ? '<details><summary>查看识别原文（最多 500 字）</summary><pre>' + esc(ocr.text.slice(0, 500)) + '</pre></details>' : '') +
+      '</div>';
+  }
+
+  function photoBlockHTML(data){
+    var thumb = '';
+    if (pendingPhoto) thumb = pendingPhoto.thumb;
+    else if (data.imgId && imgCache.meta[data.imgId]) thumb = imgCache.meta[data.imgId].thumb;
+    if (!thumb) return '';
+    var note = pendingPhoto ? '保存记录时写入本机图片库' : '已存档，点开列表卡片可看大图';
+    return '<div class="form-photo" id="formPhotoBlock"><img src="' + thumb + '" alt="产品照片">' +
+      '<div class="fp-main"><b>已附带产品照片</b><small>' + note + '</small></div>' +
+      '<button type="button" class="btn mini ghost" data-act="removePhoto">移除</button></div>';
+  }
+
+  /* ---------- 9.4 在线 AI 通道（可选） ---------- */
+  var AI_PROMPT = '请识别这张化妆品包装照片，只输出严格 JSON，不要任何解释。字段：' +
+    '{"board":"skin或makeup","brand":"品牌名，看不到就留空","name":"产品名称","category":"品类",' +
+    '"size":数字或null,"unit":"ml或g或支或片","shade":"色号","type":"正装或中样或小样",' +
+    '"expiryDate":"YYYY-MM-DD或空","confidence":0到1}。' +
+    '品类参考：护肤=洁面/卸妆/化妆水/爽肤水/乳液/面霜/精华/眼霜/面膜/防晒/身体护理/其他；' +
+    '彩妆=底妆/唇妆/眼妆/腮红修容/美妆工具/其他。不要猜测看不清的内容。';
+
+  function aiRecognize(dataUrl){
+    var ai = state.settings.ai || {};
+    var body = {
+      model: ai.model || 'gpt-4o-mini',
+      temperature: 0,
+      max_tokens: 400,
+      messages: [
+        { role: 'system', content: '你是化妆品包装信息提取助手，只输出 JSON。' },
+        { role: 'user', content: [
+          { type: 'text', text: AI_PROMPT },
+          { type: 'image_url', image_url: { url: dataUrl, detail: 'high' } }
+        ] }
+      ]
+    };
+    return fetch(ai.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ai.key },
+      body: JSON.stringify(body)
+    }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).then(function(json){
+      var msg = json && json.choices && json.choices[0] && json.choices[0].message;
+      var content = msg && msg.content;
+      var text = '';
+      if (typeof content === 'string') text = content;
+      else if (Array.isArray(content)) text = content.map(function(p){ return (p && p.text) || ''; }).join('');
+      var m = text.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('返回内容不是 JSON');
+      return { obj: JSON.parse(m[0]), text: text };
+    });
+  }
+
+  function aiToPrefill(obj, rawText){
+    var board = obj.board === 'makeup' ? 'makeup' : 'skin';
+    var readText = [obj.brand, obj.name, obj.category, obj.shade, rawText].join('\n');
+    var catRes = categoryCandidates(readText);
+    var cats = catRes[board];
+    var category = cats[0] && cats[0].score >= 55 ? cats[0].name : '';
+    var exact = state.categories[board].filter(function(c){ return String(obj.category || '').indexOf(c.name) >= 0; })[0];
+    if (exact) category = exact.name;
+    if (!category) category = state.categories[board][0].name;
+
+    var p = parseOcrText(readText, board);
+    p.fields.board = board;
+    p.fields.category = category;
+    p.fields.openMonths = catMonths(board, category);
+    if (obj.brand) p.fields.brand = String(obj.brand).trim();
+    if (obj.name) p.fields.name = String(obj.name).trim().slice(0, 40);
+    if (obj.size && Number(obj.size) > 0){ p.fields.size = Number(obj.size); p.fields.unit = UNITS.indexOf(obj.unit) >= 0 ? obj.unit : 'ml'; }
+    if (obj.shade && board === 'makeup') p.fields.shade = String(obj.shade).trim().slice(0, 20);
+    if (TYPE_LIST.indexOf(obj.type) >= 0) p.fields.type = obj.type;
+    var exp = String(obj.expiryDate || '');
+    if (/^\d{4}-\d{2}-\d{2}$/.test(exp)) p.fields.expiryDate = exp;
+
+    p.brandCandidates = p.fields.brand
+      ? [{ name: p.fields.brand, score: Math.round((Number(obj.confidence) || 0.7) * 100), hit: 'AI 返回' }]
+      : [];
+    p.catCandidates = cats;
+    p.source = '在线 AI';
+    p.confidence = Math.round((Number(obj.confidence) || 0.7) * 100);
+    p.text = rawText || '';
+    return p;
+  }
+
+  /* ---------- 9.5 tesseract.js 本地 OCR（CDN 加载，离线降级） ---------- */
+  var TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  var tesseractPromise = null;
+  var ocrWorker = null;
+
+  function loadTesseract(){
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    if (tesseractPromise) return tesseractPromise;
+    tesseractPromise = new Promise(function(resolve, reject){
+      var s = document.createElement('script');
+      s.src = TESSERACT_URL;
+      s.async = true;
+      var timer = setTimeout(function(){ reject(new Error('识别组件加载超时')); }, 30000);
+      s.onload = function(){
+        clearTimeout(timer);
+        if (window.Tesseract) resolve(window.Tesseract);
+        else reject(new Error('识别组件对象缺失'));
+      };
+      s.onerror = function(){ clearTimeout(timer); reject(new Error('识别组件网络加载失败')); };
+      document.head.appendChild(s);
+    }).catch(function(e){ tesseractPromise = null; throw e; });
+    return tesseractPromise;
+  }
+
+  function localRecognize(dataUrl, onProgress){
+    return loadTesseract().then(function(T){
+      var ready;
+      if (!ocrWorker){
+        ready = T.createWorker('chi_sim+eng', 1, {
+          workerBlobURL: true,
+          logger: function(m){
+            var p = m && typeof m.progress === 'number' ? m.progress : 0;
+            if (m.status === 'loading language traineddata') onProgress('正在下载中英文识别数据（首次约 30MB）…', 60 * p);
+            else if (m.status === 'initializing api') onProgress('正在初始化识别引擎…', 62);
+            else if (m.status === 'recognizing text') onProgress('正在识别包装文字…', 64 + 36 * p);
+          }
+        }).then(function(w){ ocrWorker = w; return w; });
+      } else {
+        ready = Promise.resolve(ocrWorker);
+      }
+      return ready.then(function(w){
+        onProgress('正在识别包装文字…', 64);
+        return w.recognize(dataUrl);
+      }).then(function(ret){
+        return {
+          text: String((ret && ret.data && ret.data.text) || '').replace(/\r/g, '').replace(/\n{3,}/g, '\n\n'),
+          confidence: Math.round(Number(ret && ret.data && ret.data.confidence) || 0)
+        };
+      });
+    });
+  }
+
+  function withTimeout(promise, ms, message){
+    return new Promise(function(resolve, reject){
+      var timer = setTimeout(function(){ reject(new Error(message)); }, ms);
+      promise.then(function(v){ clearTimeout(timer); resolve(v); },
+        function(e){ clearTimeout(timer); reject(e); });
+    });
+  }
+
+  /* ---------- 9.6 拍照入库流程 ---------- */
+  var photoJob = 0;
+  var photoBusy = false;
+  var photoHint = 'skin';
+
+  function cancelPhoto(){
+    if (photoBusy){
+      photoJob++;
+      photoBusy = false;
+      if (ocrWorker){
+        try { ocrWorker.terminate(); } catch (e) {}
+        ocrWorker = null;
+      }
+    }
+    pendingPhoto = null;
+    formPhoto = null;
+  }
+
+  function openPhotoModal(boardHint){
+    photoHint = boardHint === 'makeup' ? 'makeup' : 'skin';
+    document.getElementById('modalHost').innerHTML =
+      '<div class="backdrop" data-close="1"></div>' +
+      '<div class="sheet-wrap"><div class="sheet small photo-sheet">' +
+        '<div class="sheet-head"><h2>拍照入库</h2><button type="button" class="icon-btn" data-close="1" aria-label="关闭">×</button></div>' +
+        '<div class="sheet-body">' +
+          '<p class="hint">拍产品包装正面（含品牌、品名、规格），识别后自动预填表单，确认后才保存。</p>' +
+          '<div class="photo-choices">' +
+            '<button type="button" class="photo-choice" data-act="picCamera"><span class="pico">◉</span><b>拍照</b><small>调用手机后置摄像头</small></button>' +
+            '<button type="button" class="photo-choice" data-act="picAlbum"><span class="pico">▣</span><b>从相册 / 文件选择</b><small>手机相册或电脑文件</small></button>' +
+          '</div>' +
+          '<p class="hint">电脑端也可以把图片直接拖到页面任意位置；桌面端两个入口都会打开文件选择框。</p>' +
+          '<div class="ocr-note">识别限制：本地 OCR 需联网下载识别组件，离线时自动降级为「带图手动填写」，照片存档不受影响。反光、曲面、小字、倾斜都可能识别错误，结果仅作预填参考。</div>' +
+          '<input type="file" id="photoCamera" accept="image/*" capture="environment" data-board="' + photoHint + '" hidden>' +
+          '<input type="file" id="photoAlbum" accept="image/*" data-board="' + photoHint + '" hidden>' +
+        '</div>' +
+        '<div class="sheet-foot"><button type="button" class="btn" data-close="1">取消</button></div>' +
+      '</div></div>';
+  }
+
+  function showPhotoProcessing(){
+    document.getElementById('modalHost').innerHTML =
+      '<div class="backdrop" data-close="1"></div>' +
+      '<div class="sheet-wrap"><div class="sheet small photo-sheet">' +
+        '<div class="sheet-head"><h2>正在识别</h2><button type="button" class="icon-btn" data-close="1" aria-label="关闭">×</button></div>' +
+        '<div class="sheet-body">' +
+          '<img class="photo-preview" id="photoPreview" alt="待识别照片">' +
+          '<div class="ocr-status" id="ocrStatus">正在读取图片…</div>' +
+          '<div class="pbar"><i id="ocrBar"></i></div>' +
+          '<div class="ocr-note" id="ocrNote">识别结果会自动填入可编辑表单，保存前请核对。</div>' +
+        '</div>' +
+        '<div class="sheet-foot"><button type="button" class="btn" data-act="picCancel">取消</button></div>' +
+      '</div></div>';
+  }
+
+  function setOcrStatus(text, pct){
+    var s = document.getElementById('ocrStatus');
+    if (s) s.textContent = text;
+    var b = document.getElementById('ocrBar');
+    if (b) b.style.width = Math.max(0, Math.min(100, Math.round(pct || 0))) + '%';
+  }
+
+  function degradePhoto(err){
+    photoBusy = false;
+    var offline = navigator.onLine === false;
+    var reason = offline
+      ? '离线状态，识别不可用。照片已压缩完成，可以带图手动填写，图片仍会存档到本机。'
+      : '识别不可用（' + esc(String((err && err.message) || '未知原因')) + '）。照片已压缩完成，可以带图手动填写并保存。';
+    document.getElementById('modalHost').innerHTML =
+      '<div class="backdrop" data-close="1"></div>' +
+      '<div class="sheet-wrap"><div class="sheet small photo-sheet">' +
+        '<div class="sheet-head"><h2>拍照入库</h2><button type="button" class="icon-btn" data-close="1" aria-label="关闭">×</button></div>' +
+        '<div class="sheet-body">' +
+          '<img class="photo-preview" src="' + (pendingPhoto ? pendingPhoto.thumb : '') + '" alt="产品照片">' +
+          '<div class="ocr-warn"><b>' + (offline ? '离线状态，识别不可用' : '识别失败') + '</b><p>' + reason + '</p></div>' +
+          '<div class="ocr-note">网络恢复后可重新拍照识别；手动填写时照片会随记录保存。</div>' +
+        '</div>' +
+        '<div class="sheet-foot"><button type="button" class="btn" data-close="1">取消</button>' +
+          '<button type="button" class="btn primary" data-act="picManual">带图手动填写</button></div>' +
+      '</div></div>';
+  }
+
+  function recognizePhoto(dataUrl, hint, job){
+    return new Promise(function(resolve){
+      var ai = state.settings.ai || {};
+      var done = function(p){ resolve(p); };
+      var toLocal = function(){
+        if (job !== photoJob) return;
+        if (navigator.onLine === false){ degradePhoto(null); resolve(null); return; }
+        setOcrStatus('正在准备本地 OCR…', 12);
+        withTimeout(localRecognize(dataUrl, function(msg, pct){
+          if (job === photoJob) setOcrStatus(msg, pct);
+        }), 150000, '识别超时，请重试或手动填写').then(function(res){
+          if (job !== photoJob) return;
+          var parsed = parseOcrText(res.text, hint);
+          parsed.confidence = res.confidence;
+          parsed.source = '本地 OCR';
+          setOcrStatus('识别完成，正在整理结果…', 100);
+          done(parsed);
+        }).catch(function(e){
+          if (job !== photoJob) return;
+          degradePhoto(e);
+          resolve(null);
+        });
+      };
+      if (ai.endpoint && ai.key){
+        setOcrStatus('正在调用在线 AI 识别…', 15);
+        withTimeout(aiRecognize(dataUrl), 60000, '在线 AI 识别超时').then(function(r){
+          if (job !== photoJob) return;
+          var parsed = aiToPrefill(r.obj, r.text);
+          setOcrStatus('在线识别完成，正在整理结果…', 100);
+          done(parsed);
+        }).catch(function(e){
+          if (job !== photoJob) return;
+          console.warn('在线 AI 识别失败，回退本地 OCR', e);
+          setOcrStatus('在线识别失败，改用本地 OCR…', 12);
+          toLocal();
+        });
+      } else {
+        toLocal();
+      }
+    });
+  }
+
+  function runPhotoFlow(file, boardHint){
+    if (!file) return;
+    if (!/^image\//.test(file.type)){ toast('请选择图片文件'); return; }
+    if (file.size > 40 * 1024 * 1024){ toast('图片超过 40MB，请重新拍摄或先压缩'); return; }
+    photoHint = boardHint === 'makeup' ? 'makeup' : 'skin';
+    var job = ++photoJob;
+    photoBusy = true;
+    var previewUrl = URL.createObjectURL(file);
+    showPhotoProcessing();
+    var pv = document.getElementById('photoPreview');
+    if (pv) pv.src = previewUrl;
+    setOcrStatus('正在读取并压缩图片…', 4);
+
+    decodeImage(file).then(function(img){
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = '';
+      if (job !== photoJob) return null;
+      var c = compressPhoto(img);
+      pendingPhoto = { full: c.full, thumb: c.thumb };
+      var view = document.getElementById('photoPreview');
+      if (view) view.src = c.thumb;
+      setOcrStatus('照片已在本地压缩（长边约 1200px）', 10);
+      return recognizePhoto(c.full, photoHint, job);
+    }).then(function(parsed){
+      if (job !== photoJob || !parsed) return;
+      photoBusy = false;
+      var ocrInfo = {
+        source: parsed.source,
+        brandCandidates: parsed.brandCandidates,
+        catCandidates: parsed.catCandidates,
+        confidence: parsed.confidence,
+        text: parsed.text,
+        warn: parsed.warn || ''
+      };
+      openForm(null, parsed.fields.board || photoHint, {
+        prefill: parsed.fields,
+        photo: pendingPhoto,
+        ocr: ocrInfo
+      });
+    }).catch(function(e){
+      if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = ''; }
+      console.warn('拍照识别失败', e);
+      if (job !== photoJob) return;
+      if (pendingPhoto) { photoBusy = false; degradePhoto(e); }
+      else { photoBusy = false; closeModal(); toast('图片处理失败：' + (e.message || '无法读取')); }
+    });
+  }
+
+  function openImageViewer(rec){
+    if (!rec || !rec.imgId){ toast('这条记录没有照片'); return; }
+    imgGetFull(rec.imgId).then(function(data){
+      if (!data){ toast('照片在本机图片库中不存在'); return; }
+      document.getElementById('modalHost').innerHTML =
+        '<div class="backdrop" data-close="1"></div>' +
+        '<div class="viewer"><img class="vimg" src="' + data + '" alt="产品照片">' +
+          '<div class="vbar"><span>' + esc(rec.brand) + ' ' + esc(rec.name) + ' · 图片保存在本机</span>' +
+            '<button class="btn mini danger" data-act="delimg" data-id="' + esc(rec.id) + '">删除这张图片</button>' +
+            '<button class="btn mini" data-close="1">关闭</button></div></div>';
+    }).catch(function(e){ console.warn(e); toast('读取图片失败'); });
+  }
+
+  /* ---------- 9.7 导出 / 删除图片 ---------- */
+  function exportJSONWithImages(){
+    Promise.all([imgAllMeta(), imgAllFull()]).then(function(res){
+      var metas = res[0] || [], fulls = res[1] || [];
+      var fullMap = {};
+      fulls.forEach(function(f){ if (f && f.id) fullMap[f.id] = f.data; });
+      var images = metas.filter(function(m){ return fullMap[m.id]; }).map(function(m){
+        return { id: m.id, thumb: m.thumb, full: fullMap[m.id], createdAt: m.createdAt };
+      });
+      var payload = {
+        app: 'skincare-inventory', version: 1,
+        exportedAt: new Date().toISOString(),
+        categories: state.categories,
+        records: state.records,
+        images: images
+      };
+      var json = JSON.stringify(payload);
+      var mb = json.length / (1024 * 1024);
+      if (mb > 8 && !window.confirm('含图片备份约 ' + mb.toFixed(1) + ' MB，导出与导入都会较慢，确定继续？')) return;
+      download(json, '护肤彩妆库存含图片-' + todayISO() + '.json', 'application/json');
+      toast('已导出含 ' + images.length + ' 张图片的备份');
+    }).catch(function(e){ console.warn(e); toast('读取图片失败，未导出'); });
+  }
+
+  /* =========================================================
+     10. 交互事件
+     ========================================================= */
+  function findRecord(id){ return state.records.filter(function(r){ return r.id === id; })[0]; }
+
+  function toggleGroup(board, key){
+    var set = ui.collapsed[board];
+    if (set.has(key)) set.delete(key); else set.add(key);
+    renderBoardList();
+  }
+
+  function addCategory(board){
+    var input = document.getElementById('newcat-' + board);
+    var monthsInput = document.getElementById('newcat-' + board + '-months');
+    var name = input.value.trim();
+    var months = Number(monthsInput.value);
+    if (!name){ toast('请填写品类名称'); input.focus(); return; }
+    if (state.categories[board].some(function(c){ return c.name === name; })){
+      toast('已存在同名品类'); return;
+    }
+    if (!(months >= 1 && months <= 120)){ toast('默认期限请填写 1 - 120 个月'); return; }
+    state.categories[board].push({ name: name, months: Math.round(months) });
+    persist();
+    toast('已新增品类「' + name + '」');
+    renderApp(true);
+  }
+
+  function moveCategory(board, index, delta){
+    var arr = state.categories[board];
+    var j = index + delta;
+    if (j < 0 || j >= arr.length) return;
+    var tmp = arr[index]; arr[index] = arr[j]; arr[j] = tmp;
+    persist();
+    renderApp(true);
+  }
+
+  var modalHost = document.getElementById('modalHost');
+  function closeModal(){ cancelPhoto(); modalHost.innerHTML = ''; }
+  function toast(msg){
+    var el = document.getElementById('toast');
+    if (!el){
+      el = document.createElement('div');
+      el.id = 'toast';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(function(){ el.classList.remove('show'); }, 2400);
+  }
+  function confirmDialog(text, onOk, okLabel){
+    modalHost.innerHTML =
+      '<div class="backdrop" data-close="1"></div>' +
+      '<div class="dialog"><h3>请确认</h3><p>' + esc(text) + '</p>' +
+        '<div class="drow"><button class="btn" data-close="1">取消</button>' +
+        '<button class="btn danger" id="okBtn">' + esc(okLabel || '确认删除') + '</button></div></div>';
+    document.getElementById('okBtn').onclick = function(){ closeModal(); onOk(); };
+  }
+
+  document.addEventListener('click', function(ev){
+    var closeEl = ev.target.closest('[data-close]');
+    if (closeEl){ closeModal(); return; }
+    var el = ev.target.closest('[data-act]');
+    if (!el) return;
+    var act = el.getAttribute('data-act');
+    var id = el.getAttribute('data-id');
+    var board = el.getAttribute('data-board');
+
+    if (act === 'tab'){ switchTab(el.getAttribute('data-tab')); return; }
+    if (act === 'add'){ openForm(null, board || (ui.tab === 'makeup' ? 'makeup' : 'skin')); return; }
+    if (act === 'photo'){ openPhotoModal(board || (ui.tab === 'makeup' ? 'makeup' : 'skin')); return; }
+    if (act === 'picCamera'){ var cam = document.getElementById('photoCamera'); if (cam) cam.click(); return; }
+    if (act === 'picAlbum'){ var album = document.getElementById('photoAlbum'); if (album) album.click(); return; }
+    if (act === 'picCancel'){ closeModal(); return; }
+    if (act === 'picManual'){
+      if (!pendingPhoto){ toast('照片已失效，请重新拍照'); return; }
+      openForm(null, photoHint, {
+        prefill: null, photo: pendingPhoto,
+        ocr: { warn: '未进行文字识别，请手动填写；照片会随记录一起保存。' }
+      });
+      return;
+    }
+    if (act === 'removePhoto'){
+      if (formPhoto) formPhoto.removed = true;
+      var fb = document.getElementById('formPhotoBlock');
+      if (fb) fb.style.display = 'none';
+      toast('保存后将不保留这张照片');
+      return;
+    }
+    if (act === 'viewimg'){
+      var vr = findRecord(id);
+      if (vr) openImageViewer(vr);
+      return;
+    }
+    if (act === 'delimg'){
+      var ir = findRecord(id);
+      if (!ir || !ir.imgId) return;
+      confirmDialog('删除这张照片以释放空间？记录本身会保留，此操作不可撤销。', function(){
+        imgDelete(ir.imgId).catch(function(e){ console.warn(e); });
+        delete imgCache.meta[ir.imgId];
+        ir.imgId = '';
+        persist();
+        toast('照片已删除');
+        renderApp(true);
+      }, '确认删除');
+      return;
+    }
+    if (act === 'delallimgs'){
+      if (imgCache.error){ toast('图片库不可用'); return; }
+      var stats = imgStatsText();
+      confirmDialog('删除全部照片？' + stats + '记录字段会保留，此操作不可撤销。', function(){
+        imgClearAll().catch(function(e){ console.warn(e); });
+        state.records.forEach(function(r){ r.imgId = ''; });
+        imgCache.meta = {};
+        persist();
+        toast('全部照片已删除');
+        renderApp(true);
+      }, '删除全部');
+      return;
+    }
+    if (act === 'saveai'){
+      var endpoint = (document.getElementById('aiEndpoint').value || '').trim();
+      var key = (document.getElementById('aiKey').value || '').trim();
+      var model = (document.getElementById('aiModel').value || '').trim();
+      if (!endpoint || !key){ toast('请填写接口地址和 API Key'); return; }
+      if (!/^https?:\/\//i.test(endpoint)){ toast('接口地址需以 http:// 或 https:// 开头'); return; }
+      state.settings.ai = { endpoint: endpoint, key: key, model: model || 'gpt-4o-mini' };
+      persist();
+      toast('AI 设置已保存（仅存本机）');
+      renderApp(true);
+      return;
+    }
+    if (act === 'clearai'){
+      state.settings.ai = { endpoint: '', key: '', model: '' };
+      persist();
+      toast('已清除 AI 设置');
+      renderApp(true);
+      return;
+    }
+    if (act === 'exportjsonimg'){ exportJSONWithImages(); return; }
+    if (act === 'edit'){
+      var rec = findRecord(id);
+      if (rec) openForm(rec);
+      return;
+    }
+    if (act === 'del'){
+      var target = findRecord(id);
+      if (!target) return;
+      confirmDialog('删除「' + target.brand + ' ' + target.name + '」这条记录？此操作不可撤销。', function(){
+        if (target.imgId){
+          imgDelete(target.imgId).catch(function(e){ console.warn(e); });
+          delete imgCache.meta[target.imgId];
+        }
+        state.records = state.records.filter(function(r){ return r.id !== id; });
+        persist();
+        toast('已删除');
+        renderApp(true);
+      });
+      return;
+    }
+    if (act === 'finish'){
+      var f = findRecord(id);
+      if (f){ f.finished = true; f.snoozeUntil = ''; persist(); toast('已标记为用完'); renderApp(true); }
+      return;
+    }
+    if (act === 'restore'){
+      var rr = findRecord(id);
+      if (rr){ rr.finished = false; persist(); toast('已恢复为在用'); renderApp(true); }
+      return;
+    }
+    if (act === 'snooze'){
+      var sr = findRecord(id);
+      if (sr){ sr.snoozeUntil = addDays(todayISO(), 7); persist(); toast('7 天内不再提醒'); renderApp(true); }
+      return;
+    }
+    if (act === 'dismissReminder'){
+      state.settings.reminderDismissedOn = todayISO();
+      persist();
+      renderApp(true);
+      return;
+    }
+    if (act === 'ics'){ exportICS(); return; }
+    if (act === 'toggle'){ toggleGroup(board, el.getAttribute('data-key')); return; }
+    if (act === 'view'){ ui.filters[board].view = el.getAttribute('data-view'); renderApp(true); return; }
+    if (act === 'resetFilters'){
+      ui.filters[board] = defFilter();
+      renderApp(true);
+      return;
+    }
+    if (act === 'exportjson'){ exportJSON(); return; }
+    if (act === 'exportcsv'){ exportCSV(); return; }
+    if (act === 'chooseimport'){
+      var fi = document.getElementById('importFile');
+      if (fi) fi.click();
+      return;
+    }
+    if (act === 'clearsample'){
+      var sampleCount = state.records.filter(function(r){ return r.sample; }).length;
+      if (!sampleCount){ toast('没有示例数据'); return; }
+      confirmDialog('清除 ' + sampleCount + ' 条示例记录？你自己新增的记录会保留。', function(){
+        state.records = state.records.filter(function(r){ return !r.sample; });
+        resetFiltersAll();
+        persist();
+        toast('示例数据已清除');
+        renderApp(true);
+      }, '确认清除');
+      return;
+    }
+    if (act === 'reloadsample'){
+      var sampleCount = sampleRecords().length;
+      confirmDialog('追加 ' + sampleCount + ' 条示例记录到当前数据？', function(){
+        var samples = sampleRecords();
+        state.records = state.records.concat(samples);
+        persist();
+        toast('已载入示例数据');
+        renderApp(true);
+      }, '载入');
+      return;
+    }
+    if (act === 'clearall'){
+      confirmDialog('清空全部记录（包括示例和你新增的内容）？品类设置会保留，此操作不可撤销。', function(){
+        state.records = [];
+        resetFiltersAll();
+        persist();
+        toast('已清空全部记录');
+        renderApp(true);
+      }, '清空全部');
+      return;
+    }
+    if (act === 'addcat'){ addCategory(board); return; }
+    if (act === 'catup'){ moveCategory(board, Number(el.getAttribute('data-index')), -1); return; }
+    if (act === 'catdown'){ moveCategory(board, Number(el.getAttribute('data-index')), 1); return; }
+    if (act === 'catedit'){ openCatForm(board, Number(el.getAttribute('data-index'))); return; }
+    if (act === 'catdel'){
+      var idx = Number(el.getAttribute('data-index'));
+      var cat = state.categories[board][idx];
+      if (!cat) return;
+      var used = state.records.filter(function(r){ return r.board === board && r.category === cat.name; }).length;
+      if (used){ toast('该品类下还有 ' + used + ' 条记录，请先调整这些记录'); return; }
+      confirmDialog('删除品类「' + cat.name + '」？', function(){
+        state.categories[board].splice(idx, 1);
+        if (ui.filters[board].cat === cat.name) ui.filters[board].cat = '';
+        persist();
+        toast('品类已删除');
+        renderApp(true);
+      });
+      return;
+    }
+  });
+
+  // 筛选：搜索与下拉
+  document.addEventListener('input', function(ev){
+    var board = ev.target.getAttribute && ev.target.getAttribute('data-board');
+    var field = ev.target.getAttribute && ev.target.getAttribute('data-f');
+    if (field === 'q' && board){
+      ui.filters[board].q = ev.target.value;
+      renderBoardList();
+    }
+  });
+  document.addEventListener('change', function(ev){
+    var board = ev.target.getAttribute && ev.target.getAttribute('data-board');
+    var field = ev.target.getAttribute && ev.target.getAttribute('data-f');
+    if (field && board && field !== 'q'){
+      ui.filters[board][field] = ev.target.value;
+      renderBoardList();
+      return;
+    }
+    if (ev.target.id === 'importFile' && ev.target.files && ev.target.files[0]){
+      importJSON(ev.target.files[0]);
+      ev.target.value = '';
+      return;
+    }
+    if ((ev.target.id === 'photoCamera' || ev.target.id === 'photoAlbum') && ev.target.files && ev.target.files[0]){
+      var picked = ev.target.files[0];
+      var bh = ev.target.getAttribute('data-board');
+      ev.target.value = '';
+      runPhotoFlow(picked, bh);
+    }
+  });
+
+  // ESC 关闭弹层
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape' && modalHost.innerHTML) closeModal();
+  });
+
+  function initDropZone(){
+    var overlay = document.createElement('div');
+    overlay.className = 'drop-overlay';
+    overlay.innerHTML = '<div>松开即可拍照入库</div>';
+    document.body.appendChild(overlay);
+    var depth = 0;
+    function hasFiles(e){
+      var dt = e.dataTransfer;
+      return !!(dt && dt.types && Array.prototype.indexOf.call(dt.types, 'Files') >= 0);
+    }
+    document.addEventListener('dragenter', function(e){
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      depth++;
+      overlay.classList.add('show');
+    });
+    document.addEventListener('dragover', function(e){
+      if (hasFiles(e)) e.preventDefault();
+    });
+    document.addEventListener('dragleave', function(e){
+      if (!hasFiles(e)) return;
+      depth = Math.max(0, depth - 1);
+      if (!depth) overlay.classList.remove('show');
+    });
+    document.addEventListener('drop', function(e){
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      depth = 0;
+      overlay.classList.remove('show');
+      var file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      if (!/^image\//.test(file.type)){ toast('请拖入图片文件'); return; }
+      if (ui.tab === 'data'){ toast('请先切换到概览或护肤 / 彩妆页面'); return; }
+      runPhotoFlow(file, ui.tab === 'makeup' ? 'makeup' : 'skin');
+    });
+  }
+
+  /* =========================================================
+     11. 初始化
+     ========================================================= */
+  state = loadState();
+  persist();
+  renderApp(false);
+  loadImgCache().then(function(){ renderApp(true); });
+  initDropZone();
+  window.addEventListener('offline', function(){
+    toast('网络已断开：拍照识别将降级为手动填写，已有数据不受影响');
+  });
+  window.addEventListener('online', function(){
+    toast('网络已恢复：本地 OCR 可继续使用');
+  });
+})();
+</script>
+</body>
+</html>
