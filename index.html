@@ -289,8 +289,27 @@ textarea{resize:vertical;min-height:56px}
    拍照入库 / 图片存档
    ========================================================= */
 .head-actions{display:flex;gap:8px;flex-wrap:wrap}
-.item-photo{flex:none;width:58px;height:58px;padding:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.item-photo{flex:none;position:relative;width:58px;height:58px;padding:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface-2)}
 .item-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.item-photo .pcount{position:absolute;right:2px;bottom:2px;background:rgba(0,0,0,.66);color:#fff;font-size:10px;line-height:1.4;padding:0 5px;border-radius:6px}
+.photo-gallery{border:1px solid var(--border);border-radius:12px;padding:10px;background:var(--surface-2);display:flex;flex-direction:column;gap:8px}
+.pg-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:13px}
+.pg-head b{font-size:13px}
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
+.pg-item{position:relative;border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:6px;display:flex;flex-direction:column;gap:4px}
+.pg-item.is-cover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.pg-thumb{padding:0;border:0;border-radius:8px;overflow:hidden;background:var(--surface-2);width:100%;aspect-ratio:1/1}
+.pg-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.pg-thumb.missing{display:grid;place-items:center;font-size:11px;color:var(--muted)}
+.pg-main{position:absolute;left:10px;top:10px;background:var(--accent);color:#fff;font-size:10px;line-height:1.5;padding:1px 6px;border-radius:6px}
+.pg-size{font-size:10.5px;color:var(--muted)}
+.pg-ops{display:flex;flex-wrap:wrap;gap:3px}
+.pg-ops .btn{padding:2px 5px;font-size:10.5px;border-radius:6px}
+.pg-add{border:1px dashed var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.pg-add span{font-size:12.5px;font-weight:600}
+.pg-add small{font-size:11px;color:var(--muted)}
+.pg-add-btns{display:flex;gap:6px}
+.gallery-note{font-size:11px;color:var(--muted);line-height:1.6}
 .photo-sheet{max-width:560px}
 .photo-choices{display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:560px){.photo-choices{grid-template-columns:1fr 1fr}}
@@ -312,17 +331,45 @@ textarea{resize:vertical;min-height:56px}
 .ocr-panel .cand b{color:var(--text);font-weight:600}
 .ocr-panel details{margin-top:8px;font-size:11.5px;color:var(--muted)}
 .ocr-panel pre{white-space:pre-wrap;word-break:break-word;max-height:150px;overflow:auto;margin:6px 0 0;font-size:11.5px;background:var(--surface);border-radius:8px;padding:8px}
-.form-photo{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:8px;background:var(--surface-2)}
-.form-photo img{width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none;background:var(--surface)}
-.form-photo .fp-main{flex:1;min-width:0}
-.form-photo .fp-main b{display:block;font-size:12.5px}
-.form-photo .fp-main small{font-size:11px;color:var(--muted)}
+.editor-backdrop{position:fixed;inset:0;background:rgba(8,12,20,.62);z-index:60}
+.editor-wrap{position:fixed;z-index:61;inset:0;display:flex;flex-direction:column;background:var(--surface)}
+@media(min-width:720px){
+  .editor-wrap{inset:auto;top:50%;left:50%;transform:translate(-50%,-50%);width:min(720px,94vw);max-height:92vh;border-radius:16px;box-shadow:var(--shadow)}
+}
+.editor-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+.editor-head h3{font-size:15px}
+.editor-stage{position:relative;flex:1;min-height:220px;display:flex;align-items:center;justify-content:center;background:#0b0d10;overflow:hidden}
+.editor-stage canvas{display:block;max-width:100%;max-height:100%}
+.crop-box{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.45);cursor:move;touch-action:none}
+.crop-box i{position:absolute;right:-10px;bottom:-10px;width:20px;height:20px;background:#fff;border-radius:4px;cursor:nwse-resize}
+.editor-tools{padding:10px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;max-height:42vh;overflow:auto}
+.tool-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.tool-row .btn{padding:5px 9px;font-size:12px}
+.tool-row .btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.tool-row input[type=range]{flex:1;min-width:118px}
+.tool-val{font-size:11px;color:var(--muted);width:34px;text-align:right}
+.editor-foot{display:flex;gap:10px;padding:12px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border)}
+.editor-foot .btn{flex:1;padding:10px}
 .drop-overlay{position:fixed;inset:0;z-index:45;display:none;place-items:center;background:rgba(108,76,241,.14);pointer-events:none}
 .drop-overlay.show{display:grid}
 .drop-overlay div{border:2px dashed var(--accent);background:var(--surface);border-radius:16px;padding:26px 34px;font-size:15px;font-weight:650;box-shadow:var(--shadow)}
-.viewer{position:fixed;inset:0;z-index:31;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;gap:12px}
-.viewer .vimg{max-width:min(92vw,720px);max-height:70vh;object-fit:contain;border-radius:12px;background:#000}
-.viewer .vbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 10px;font-size:12px;color:var(--muted);max-width:94vw}
+.viewer-host{position:fixed;inset:0;z-index:55;display:flex;flex-direction:column;background:rgba(6,8,12,.95);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom))}
+.vhead{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;color:#c9d0da;flex:none}
+.vhead button{background:none;border:0;color:#fff;font-size:17px;padding:4px 8px}
+.vstage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+.vstage img{max-width:94vw;max-height:74vh;object-fit:contain;will-change:transform}
+.vnav{display:flex;align-items:center;justify-content:center;gap:14px;padding:6px 0;flex:none}
+.vnav button{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:19px}
+.vnav button:disabled{opacity:.35}
+.vnav span{font-size:12px;color:#c9d0da;min-width:52px;text-align:center}
+.vstrip{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;flex:none}
+.vstrip button{padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;background:none;flex:none}
+.vstrip button.on{border-color:var(--accent-2)}
+.vstrip img{width:46px;height:46px;object-fit:cover;display:block;opacity:.72}
+.vfoot{display:flex;gap:8px;padding-top:8px;flex:none}
+.vfoot .btn{flex:1;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#fff;padding:9px}
+.vfoot .btn.danger{color:#ff9a9a;border-color:rgba(255,154,154,.5)}
+.zoom-hint{font-size:10.5px;color:#8f98a5;text-align:center;padding-top:4px}
 .ai-state{font-size:11.5px;color:var(--muted);align-self:center}
 </style>
 </head>
@@ -417,7 +464,9 @@ textarea{resize:vertical;min-height:56px}
   var storageOK = true;
   var imgCache = { meta: {}, ready: false, error: null };
   var pendingPhoto = null; // 本次拍照流程中的压缩图（保存后才写入 IndexedDB）
-  var formPhoto = null;    // 当前表单的照片状态 { imgId, removed }
+  var photoDraft = null;   // 表单内的照片草稿 { items:[{id,thumb,full,added}], cover }
+  var replaceTarget = '';  // 「替换」时目标照片的 id
+  var pendingDelKey = '';  // 表单内删除照片的二次确认状态
   var ui = {
     tab: 'overview',
     filters: { skin: defFilter(), makeup: defFilter() },
@@ -445,7 +494,8 @@ textarea{resize:vertical;min-height:56px}
       opened: false, openDate: '', openMonths: first.months,
       expiryDate: '', prodDate: '', shelfMonths: '',
       location: '', note: '', shade: '', frequent: false,
-      finished: false, snoozeUntil: '', sample: false, imgId: ''
+      finished: false, snoozeUntil: '', sample: false,
+      photos: [], cover: '', imgId: ''
     };
   }
 
@@ -460,7 +510,8 @@ textarea{resize:vertical;min-height:56px}
         opened: false, openDate: '', openMonths: 12,
         expiryDate: '', prodDate: '', shelfMonths: '',
         location: '', note: '', shade: '', frequent: false,
-        finished: false, snoozeUntil: '', sample: true, imgId: ''
+        finished: false, snoozeUntil: '', sample: true,
+        photos: [], cover: '', imgId: ''
       };
     }
     function S(o){ return Object.assign(base('skin'), o); }
@@ -509,6 +560,21 @@ textarea{resize:vertical;min-height:56px}
     var category = String(r.category || fallbackCat);
     var list = cats[board] || [];
     var found = list.filter(function(c){ return c.name === category; })[0];
+
+    // 多图与旧单图字段兼容：旧记录只有 imgId，归一到 photos + cover
+    var photos = [];
+    if (Array.isArray(r.photos)){
+      r.photos.forEach(function(id){
+        id = String(id || '');
+        if (id && photos.indexOf(id) < 0) photos.push(id);
+      });
+    }
+    photos = photos.slice(0, 9);
+    var legacy = String(r.imgId || '');
+    if (!photos.length && legacy) photos = [legacy];
+    var cover = String(r.cover || '');
+    if (photos.indexOf(cover) < 0) cover = legacy && photos.indexOf(legacy) >= 0 ? legacy : (photos[0] || '');
+
     return {
       id: r.id || uid(),
       board: board,
@@ -532,7 +598,9 @@ textarea{resize:vertical;min-height:56px}
       finished: !!r.finished,
       snoozeUntil: r.snoozeUntil || '',
       sample: !!r.sample,
-      imgId: String(r.imgId || '')
+      photos: photos,
+      cover: cover,
+      imgId: cover
     };
   }
 
@@ -842,6 +910,15 @@ textarea{resize:vertical;min-height:56px}
       '</div>';
   }
 
+  function coverId(r){
+    var arr = r.photos || [];
+    if (r.cover && arr.indexOf(r.cover) >= 0) return r.cover;
+    return arr[0] || '';
+  }
+  function imgThumb(id){
+    return id && imgCache.meta[id] ? imgCache.meta[id].thumb : '';
+  }
+
   function itemHTML(r){
     var st = recordStatus(r);
     var info = dueInfo(r);
@@ -866,9 +943,11 @@ textarea{resize:vertical;min-height:56px}
         : '<button class="btn mini ghost" data-act="finish" data-id="' + esc(r.id) + '">用完</button>') +
       '<button class="btn mini danger" data-act="del" data-id="' + esc(r.id) + '">删除</button>';
 
-    var thumb = r.imgId && imgCache.meta[r.imgId] ? imgCache.meta[r.imgId].thumb : '';
+    var photos = r.photos || [];
+    var thumb = imgThumb(coverId(r));
     var photo = thumb
-      ? '<button type="button" class="item-photo" data-act="viewimg" data-id="' + esc(r.id) + '" aria-label="查看照片"><img src="' + thumb + '" alt="产品照片"></button>'
+      ? '<button type="button" class="item-photo" data-act="viewimg" data-id="' + esc(r.id) + '" aria-label="查看照片"><img src="' + thumb + '" alt="产品照片">' +
+        (photos.length > 1 ? '<span class="pcount">' + photos.length + ' 张</span>' : '') + '</button>'
       : '';
 
     return '<article class="item ' + tone + '">' + photo +
@@ -954,11 +1033,11 @@ textarea{resize:vertical;min-height:56px}
           '<button class="btn" data-act="ics">导出临期 .ics</button>' +
           '<input type="file" id="importFile" accept="application/json,.json" hidden>' +
         '</div></div>' +
-      '<div class="block"><h3>照片存档</h3><p class="hint">照片保存在本机 IndexedDB（localStorage 容量不足），不会自动随 JSON 导出。' + imgStatsText() + '</p>' +
+      '<div class="block"><h3>照片存档</h3><p class="hint">每条记录最多 9 张照片，保存在本机 IndexedDB（localStorage 容量不足）；普通 JSON 备份不含照片，需要迁移照片时用「导出 JSON（含图片）」。' + imgStatsText() + '</p>' +
         '<div class="btn-grid">' +
           '<button class="btn danger" data-act="delallimgs">删除全部图片</button>' +
         '</div>' +
-        '<p class="hint" style="margin-top:8px">删除单张：在护肤 / 彩妆卡片上点开图片，在查看窗口选择「删除这张图片」。删除图片不会影响记录的其他字段。</p>' +
+        '<p class="hint" style="margin-top:8px">删除单张：点开护肤 / 彩妆卡片上的缩略图进入查看器，点两次「删除这张照片」确认；也可在编辑表单里删除。删除图片不会影响记录的其他字段。</p>' +
         '<p class="hint" style="margin-top:6px">识别说明：本地 OCR 使用 tesseract.js，联网时从 CDN 加载（首次需下载约 30MB 中英文语言包），离线时自动降级为手动填写。包装反光、字体过小、曲面或角度倾斜都会降低识别准确率，预填结果仅供参考，请务必核对。</p>' +
       '</div>' +
       '<div class="block"><h3>在线 AI 识别（可选）</h3><p class="hint">开启后会优先用你配置的视觉模型识别，失败自动回退本地 OCR。API Key 只保存在本机 localStorage，不会内置或上传到其他位置；任何能打开本页面的人都能读到该 Key，请自行评估风险。</p>' +
@@ -1035,8 +1114,22 @@ textarea{resize:vertical;min-height:56px}
     var isEdit = !!rec;
     ctx = ctx || {};
     var data = isEdit ? rec : mergePrefill(boardDefault || 'skin', ctx.prefill);
-    formPhoto = { imgId: isEdit ? (rec.imgId || '') : '', removed: false };
-    pendingPhoto = ctx.photo || null;
+    // 照片草稿：编辑时读取已有照片；新记录可由拍照流程带入一张
+    photoDraft = isEdit
+      ? {
+          items: (rec.photos || []).slice(0, 9).map(function(id){
+            return { id: id, thumb: imgThumb(id), full: '', added: false };
+          }),
+          cover: coverId(rec)
+        }
+      : { items: [], cover: '' };
+    if (ctx.photo){
+      var pid = 'img-' + uid();
+      photoDraft.items.push({ id: pid, thumb: ctx.photo.thumb, full: ctx.photo.full, added: true });
+      photoDraft.cover = pid;
+    }
+    pendingPhoto = null;
+    pendingDelKey = '';
     var host = document.getElementById('modalHost');
     var typeSeg = segHTML('fType', TYPE_LIST, data.type);
     var boardSeg = segHTML('fBoard', ['skin', 'makeup'], data.board, ['护肤', '彩妆']);
@@ -1051,7 +1144,7 @@ textarea{resize:vertical;min-height:56px}
         '<div class="sheet-body">' +
           '<div class="form-err" id="formErr"></div>' +
           ocrPanelHTML(ctx.ocr) +
-          photoBlockHTML(data) +
+          photoGalleryHTML() +
           '<div class="field"><label>板块</label>' + boardSeg + '</div>' +
           '<div class="field-row">' +
             '<div class="field"><label for="fBrand">品牌 *</label><input id="fBrand" maxlength="30" placeholder="如 兰蔻 / 雅诗兰黛" value="' + esc(data.brand) + '"></div>' +
@@ -1246,15 +1339,11 @@ textarea{resize:vertical;min-height:56px}
       if (box) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       return;
     }
-    var keepImgId = existing ? (existing.imgId || '') : '';
-    var removedImgId = '';
-    if (formPhoto && formPhoto.removed && keepImgId){ removedImgId = keepImgId; keepImgId = ''; }
-    var newImg = null;
-    if (pendingPhoto){
-      newImg = { id: 'img-' + uid(), thumb: pendingPhoto.thumb, full: pendingPhoto.full, createdAt: Date.now() };
-      keepImgId = newImg.id;
-      pendingPhoto = null;
-    }
+    var draft = photoDraft || { items: [], cover: '' };
+    var ids = draft.items.map(function(it){ return it.id; });
+    var cover = ids.indexOf(draft.cover) >= 0 ? draft.cover : (ids[0] || '');
+    var newImgs = draft.items.filter(function(it){ return it.added && it.full; });
+    var oldIds = existing ? (existing.photos || []).slice() : [];
     var rec = {
       id: existing ? existing.id : uid(),
       board: d.board,
@@ -1278,35 +1367,55 @@ textarea{resize:vertical;min-height:56px}
       finished: existing ? existing.finished : false,
       snoozeUntil: '',
       sample: existing ? existing.sample : false,
-      imgId: keepImgId
+      photos: ids,
+      cover: cover,
+      imgId: cover
     };
     var idx = state.records.findIndex(function(r){ return existing && r.id === existing.id; });
     if (idx >= 0) state.records[idx] = rec;
     else state.records.push(rec);
     persist();
+    photoDraft = null;
     closeModal();
     toast(existing ? '已保存修改' : '已添加记录');
+
+    // 已从记录中移除的照片，保存后删除以释放空间
+    oldIds.forEach(function(id){
+      if (ids.indexOf(id) < 0){
+        imgDelete(id).catch(function(){});
+        delete imgCache.meta[id];
+      }
+    });
     renderApp(true);
-    if (newImg){
-      imgPut(newImg.id, newImg.thumb, newImg.full).then(function(){
-        imgCache.meta[newImg.id] = {
-          id: newImg.id, thumb: newImg.thumb,
-          bytes: newImg.thumb.length + newImg.full.length, createdAt: newImg.createdAt
-        };
-        renderApp(true);
-      }).catch(function(e){
-        console.warn('照片保存失败', e);
-        var target = findRecord(rec.id);
-        if (target){ target.imgId = ''; persist(); }
-        toast('照片保存失败（浏览器存储不可用），记录本身已保存');
-        renderApp(true);
+    if (!newImgs.length) return;
+    var failed = [];
+    var chain = Promise.resolve();
+    newImgs.forEach(function(im){
+      chain = chain.then(function(){
+        return imgPut(im.id, im.thumb, im.full).then(function(){
+          imgCache.meta[im.id] = {
+            id: im.id, thumb: im.thumb,
+            bytes: im.thumb.length + im.full.length, createdAt: Date.now()
+          };
+        }).catch(function(e){
+          console.warn('照片保存失败', e);
+          failed.push(im.id);
+        });
       });
-    }
-    if (removedImgId){
-      imgDelete(removedImgId).catch(function(){});
-      delete imgCache.meta[removedImgId];
+    });
+    chain.then(function(){
+      if (failed.length){
+        var target = findRecord(rec.id);
+        if (target){
+          target.photos = (target.photos || []).filter(function(id){ return failed.indexOf(id) < 0; });
+          if (target.photos.indexOf(target.cover) < 0) target.cover = target.photos[0] || '';
+          target.imgId = target.cover;
+          persist();
+        }
+        toast('部分照片保存失败（浏览器存储可能已满），记录本身已保存');
+      }
       renderApp(true);
-    }
+    });
   }
 
   /* =========================================================
@@ -1375,7 +1484,7 @@ textarea{resize:vertical;min-height:56px}
   function exportJSON(){
     var records = state.records.map(function(r){
       var copy = {};
-      Object.keys(r).forEach(function(k){ if (k !== 'imgId') copy[k] = r[k]; });
+      Object.keys(r).forEach(function(k){ if (k !== 'imgId' && k !== 'photos' && k !== 'cover') copy[k] = r[k]; });
       return copy;
     });
     var payload = {
@@ -1470,7 +1579,11 @@ textarea{resize:vertical;min-height:56px}
         });
         var commit = function(){
           state = normalized;
-          state.records.forEach(function(r){ if (r.imgId && !imgCache.meta[r.imgId]) r.imgId = ''; });
+          state.records.forEach(function(r){
+            r.photos = (r.photos || []).filter(function(id){ return imgCache.meta[id]; });
+            if (r.photos.indexOf(r.cover) < 0) r.cover = r.photos[0] || '';
+            r.imgId = r.cover;
+          });
           resetFiltersAll();
           persist();
           toast('已导入 ' + state.records.length + ' 条记录' + (imgs.length ? '（含 ' + imgs.length + ' 张照片）' : ''));
@@ -1584,10 +1697,11 @@ textarea{resize:vertical;min-height:56px}
       return '本机图片库不可用（' + esc(imgCache.error.message || '浏览器限制') + '），照片可以识别，但无法存档。';
     }
     var ids = Object.keys(imgCache.meta);
+    var photoRecords = state.records.filter(function(r){ return (r.photos || []).length; }).length;
     var bytes = 0;
     ids.forEach(function(k){ bytes += Number(imgCache.meta[k].bytes) || 0; });
     var mb = bytes / (1024 * 1024);
-    return '已保存 ' + ids.length + ' 张照片，约 ' + (mb < 0.1 ? '不足 0.1' : mb.toFixed(1)) + ' MB。';
+    return '已保存 ' + ids.length + ' 张照片（' + photoRecords + ' 条记录有图），约 ' + (mb < 0.1 ? '不足 0.1' : mb.toFixed(1)) + ' MB。';
   }
 
   /* ---------- 9.2 图片解码与压缩 ---------- */
@@ -1940,15 +2054,390 @@ textarea{resize:vertical;min-height:56px}
       '</div>';
   }
 
-  function photoBlockHTML(data){
-    var thumb = '';
-    if (pendingPhoto) thumb = pendingPhoto.thumb;
-    else if (data.imgId && imgCache.meta[data.imgId]) thumb = imgCache.meta[data.imgId].thumb;
-    if (!thumb) return '';
-    var note = pendingPhoto ? '保存记录时写入本机图片库' : '已存档，点开列表卡片可看大图';
-    return '<div class="form-photo" id="formPhotoBlock"><img src="' + thumb + '" alt="产品照片">' +
-      '<div class="fp-main"><b>已附带产品照片</b><small>' + note + '</small></div>' +
-      '<button type="button" class="btn mini ghost" data-act="removePhoto">移除</button></div>';
+  /* ---------- 9.3b 记录照片管理：多图、主图、排序、替换、编辑 ---------- */
+  function bytesText(n){
+    n = Number(n) || 0;
+    if (!n) return '—';
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+    return (n / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+  function photoItemSize(it){
+    if (it.added && it.full) return bytesText((it.thumb || '').length + it.full.length);
+    var m = imgCache.meta[it.id];
+    return m ? bytesText(m.bytes) : '—';
+  }
+  function draftItem(key){
+    return photoDraft ? photoDraft.items.filter(function(it){ return it.id === key; })[0] : null;
+  }
+
+  function photoGalleryHTML(){
+    var d = photoDraft || { items: [], cover: '' };
+    var n = d.items.length;
+    var cards = d.items.map(function(it, i){
+      var isCover = it.id === d.cover;
+      var thumb = it.thumb || imgThumb(it.id);
+      return '<div class="pg-item' + (isCover ? ' is-cover' : '') + '">' +
+        (thumb
+          ? '<button type="button" class="pg-thumb" data-act="pview" data-key="' + esc(it.id) + '"><img src="' + thumb + '" alt="照片 ' + (i + 1) + '"></button>'
+          : '<div class="pg-thumb missing">图片缺失</div>') +
+        (isCover ? '<span class="pg-main">主图</span>' : '') +
+        '<span class="pg-size">' + (it.added ? '待保存 · ' : '') + '约 ' + photoItemSize(it) + '</span>' +
+        '<div class="pg-ops">' +
+          (isCover ? '' : '<button type="button" class="btn mini ghost" data-act="pcover" data-key="' + esc(it.id) + '">设主图</button>') +
+          '<button type="button" class="btn mini ghost" data-act="pup" data-key="' + esc(it.id) + '"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+          '<button type="button" class="btn mini ghost" data-act="pdown" data-key="' + esc(it.id) + '"' + (i === n - 1 ? ' disabled' : '') + '>↓</button>' +
+          '<button type="button" class="btn mini ghost" data-act="pedit" data-key="' + esc(it.id) + '">编辑</button>' +
+          '<button type="button" class="btn mini ghost" data-act="preplace" data-key="' + esc(it.id) + '">替换</button>' +
+          '<button type="button" class="btn mini danger" data-act="pdel" data-key="' + esc(it.id) + '">' + (pendingDelKey === it.id ? '确认删除' : '删除') + '</button>' +
+        '</div></div>';
+    }).join('');
+
+    var add = n < 9
+      ? '<div class="pg-add"><span>＋ 添加照片</span><small>还可添加 ' + (9 - n) + ' 张；长边约 1600px，自动压缩</small>' +
+        '<div class="pg-add-btns"><button type="button" class="btn mini" data-act="paddcam">拍照</button>' +
+        '<button type="button" class="btn mini" data-act="paddalbum">相册 / 文件</button></div></div>'
+      : '';
+
+    return '<div class="photo-gallery" id="photoGallery">' +
+      '<div class="pg-head"><b>产品照片</b><span class="hint">' + n + ' / 9 · 主图显示在列表卡片</span></div>' +
+      (n ? '<div class="pg-grid">' + cards + '</div>' : '<p class="hint">还没有照片。可以拍照、从相册选图，或把图片拖进表单。</p>') +
+      add +
+      '<p class="gallery-note">照片保存在本机 IndexedDB，不上传；删除照片可释放空间。编辑 / 裁剪后点「保存记录」才写回，取消不会改动原图。</p>' +
+      '<input type="file" id="formPhotoCamera" accept="image/*" capture="environment" hidden>' +
+      '<input type="file" id="formPhotoAlbum" accept="image/*" multiple hidden>' +
+      '<input type="file" id="formPhotoReplace" accept="image/*" hidden>' +
+      '</div>';
+  }
+
+  function renderPhotoGallery(){
+    var host = document.getElementById('photoGallery');
+    if (!host) return;
+    host.outerHTML = photoGalleryHTML();
+  }
+
+  function moveDraftPhoto(key, delta){
+    if (!photoDraft) return;
+    var i = photoDraft.items.findIndex(function(it){ return it.id === key; });
+    var j = i + delta;
+    if (i < 0 || j < 0 || j >= photoDraft.items.length) return;
+    var tmp = photoDraft.items[i];
+    photoDraft.items[i] = photoDraft.items[j];
+    photoDraft.items[j] = tmp;
+    renderPhotoGallery();
+  }
+
+  function askDeleteDraftPhoto(key){
+    if (!photoDraft) return;
+    if (pendingDelKey !== key){
+      pendingDelKey = key;
+      renderPhotoGallery();
+      setTimeout(function(){
+        if (pendingDelKey === key){
+          pendingDelKey = '';
+          renderPhotoGallery();
+        }
+      }, 3000);
+      return;
+    }
+    pendingDelKey = '';
+    photoDraft.items = photoDraft.items.filter(function(it){ return it.id !== key; });
+    if (photoDraft.cover === key) photoDraft.cover = photoDraft.items[0] ? photoDraft.items[0].id : '';
+    renderPhotoGallery();
+    toast('已移除这张照片，保存记录后生效');
+  }
+
+  function addDraftFiles(files, replaceKey){
+    if (!photoDraft || !files || !files.length) return;
+    var list = Array.prototype.slice.call(files).filter(function(f){ return f && /^image\//.test(f.type); });
+    if (!list.length){ toast('请选择图片文件'); return; }
+    if (list.some(function(f){ return f.size > 40 * 1024 * 1024; })){ toast('单张图片不能超过 40MB'); return; }
+    var target = replaceKey || '';
+    if (target){
+      if (!draftItem(target)){ toast('目标照片已不存在'); return; }
+      list = list.slice(0, 1);
+    } else {
+      var slots = 9 - photoDraft.items.length;
+      if (slots <= 0){ toast('最多 9 张照片，请先删除一些'); return; }
+      if (list.length > slots){ list = list.slice(0, slots); toast('已按上限 9 张截取'); }
+    }
+    toast('正在压缩 ' + list.length + ' 张照片…');
+    var i = 0;
+    var next = function(){
+      if (i >= list.length) return;
+      var f = list[i++];
+      decodeImage(f).then(function(img){
+        var full = drawToDataURL(img, 1600, 0.85);
+        var thumb = drawToDataURL(img, 300, 0.7);
+        var item = { id: 'img-' + uid(), thumb: thumb, full: full, added: true };
+        if (target){
+          var pos = photoDraft.items.findIndex(function(it){ return it.id === target; });
+          if (pos < 0) return;
+          var old = photoDraft.items[pos];
+          photoDraft.items[pos] = item;
+          if (photoDraft.cover === old.id) photoDraft.cover = item.id;
+        } else {
+          if (photoDraft.items.length >= 9) return;
+          photoDraft.items.push(item);
+          if (!photoDraft.cover) photoDraft.cover = item.id;
+        }
+        renderPhotoGallery();
+      }).catch(function(e){
+        console.warn('照片处理失败', e);
+        toast('有一张图片处理失败：' + (e.message || '无法读取'));
+      }).then(next);
+    };
+    next();
+  }
+
+  /* ---------- 9.3c 基础图片编辑（旋转 / 镜像 / 裁剪 / 亮度对比度） ---------- */
+  var photoEdit = null;
+
+  function openPhotoEditor(key){
+    var item = draftItem(key);
+    if (!item){ toast('照片不存在'); return; }
+    var start = function(dataUrl){
+      var img = new Image();
+      img.onload = function(){ showPhotoEditor(img, item); };
+      img.onerror = function(){ toast('无法加载原图'); };
+      img.src = dataUrl;
+    };
+    if (item.full){ start(item.full); return; }
+    toast('正在读取原图…');
+    imgGetFull(key).then(function(d){
+      if (d) start(d); else toast('原图不在本机图片库，无法编辑');
+    }).catch(function(e){ console.warn(e); toast('读取原图失败'); });
+  }
+
+  function showPhotoEditor(img, item){
+    closePhotoEditor();
+    var host = document.createElement('div');
+    host.id = 'photoEditor';
+    host.innerHTML =
+      '<div class="editor-backdrop" data-eclose="1"></div>' +
+      '<div class="editor-wrap">' +
+        '<div class="editor-head"><h3>编辑照片</h3><button type="button" class="icon-btn" data-eclose="1" aria-label="关闭">×</button></div>' +
+        '<div class="editor-stage" id="edStage"><canvas id="edCanvas"></canvas>' +
+          '<div class="crop-box" id="edCrop"><i data-handle="se"></i></div></div>' +
+        '<div class="editor-tools">' +
+          '<div class="tool-row"><button type="button" class="btn mini" data-eact="rotl">⟲ 左转 90°</button>' +
+            '<button type="button" class="btn mini" data-eact="rotr">⟳ 右转 90°</button>' +
+            '<button type="button" class="btn mini" data-eact="flip">⇋ 左右镜像</button></div>' +
+          '<div class="tool-row">裁剪<button type="button" class="btn mini on" data-eact="cropfree">自由</button>' +
+            '<button type="button" class="btn mini" data-eact="crop11">1:1</button>' +
+            '<button type="button" class="btn mini ghost" data-eact="cropreset">重置裁剪</button></div>' +
+          '<div class="tool-row">亮度<input type="range" id="edBright" min="50" max="150" value="100"><span class="tool-val" id="edBrightVal">100%</span></div>' +
+          '<div class="tool-row">对比度<input type="range" id="edContrast" min="50" max="150" value="100"><span class="tool-val" id="edContrastVal">100%</span></div>' +
+          '<div class="tool-row"><button type="button" class="btn mini ghost" data-eact="ereset">全部重置</button>' +
+            '<span class="hint">拖动白框移动裁剪，拖右下角调整大小</span></div>' +
+        '</div>' +
+        '<div class="editor-foot"><button type="button" class="btn" data-eclose="1">取消</button>' +
+          '<button type="button" class="btn primary" data-esave="1">应用并保存</button></div>' +
+      '</div>';
+    document.body.appendChild(host);
+    photoEdit = { img: img, item: item, rot: 0, flip: false, crop: { x: 0, y: 0, w: 1, h: 1 }, bright: 100, contrast: 100, mode: 'free', drag: null };
+    bindPhotoEditor(host);
+    renderPhotoEditor();
+    requestAnimationFrame(renderPhotoEditor);
+  }
+
+  function closePhotoEditor(){
+    var host = document.getElementById('photoEditor');
+    if (host) host.remove();
+    photoEdit = null;
+  }
+
+  function editorMetrics(){
+    var w = photoEdit.img.naturalWidth || photoEdit.img.width;
+    var h = photoEdit.img.naturalHeight || photoEdit.img.height;
+    return photoEdit.rot % 180 ? { w: h, h: w } : { w: w, h: h };
+  }
+
+  function renderPhotoEditor(){
+    var host = document.getElementById('photoEditor');
+    if (!host || !photoEdit) return;
+    var stage = host.querySelector('#edStage');
+    var canvas = host.querySelector('#edCanvas');
+    var m = editorMetrics();
+    var maxW = Math.max(160, Math.min(stage.clientWidth || 600, 680));
+    var maxH = Math.max(160, Math.min(stage.clientHeight || 420, 460));
+    var scale = Math.min(maxW / m.w, maxH / m.h);
+    if (!isFinite(scale) || scale <= 0) scale = 1;
+    canvas.width = Math.max(1, Math.round(m.w * scale));
+    canvas.height = Math.max(1, Math.round(m.h * scale));
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var iw = photoEdit.img.naturalWidth || photoEdit.img.width;
+    var ih = photoEdit.img.naturalHeight || photoEdit.img.height;
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(photoEdit.rot * Math.PI / 180);
+    if (photoEdit.flip) ctx.scale(-1, 1);
+    ctx.filter = 'brightness(' + photoEdit.bright + '%) contrast(' + photoEdit.contrast + '%)';
+    ctx.drawImage(photoEdit.img, -iw * scale / 2, -ih * scale / 2, iw * scale, ih * scale);
+    ctx.restore();
+    positionEditorCrop();
+  }
+
+  function positionEditorCrop(){
+    var host = document.getElementById('photoEditor');
+    if (!host || !photoEdit) return;
+    var canvas = host.querySelector('#edCanvas');
+    var stage = host.querySelector('#edStage');
+    var box = host.querySelector('#edCrop');
+    var cr = canvas.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    if (!cr.width) return;
+    var c = photoEdit.crop;
+    box.style.left = (cr.left - sr.left + c.x * cr.width) + 'px';
+    box.style.top = (cr.top - sr.top + c.y * cr.height) + 'px';
+    box.style.width = Math.max(18, c.w * cr.width) + 'px';
+    box.style.height = Math.max(18, c.h * cr.height) + 'px';
+  }
+
+  function setEditorMode(mode){
+    if (!photoEdit) return;
+    photoEdit.mode = mode;
+    var host = document.getElementById('photoEditor');
+    host.querySelectorAll('[data-eact="cropfree"], [data-eact="crop11"]').forEach(function(btn){
+      var isSquare = btn.getAttribute('data-eact') === 'crop11';
+      btn.classList.toggle('on', isSquare === (mode === 'square'));
+    });
+    if (mode === 'square'){
+      var m = editorMetrics();
+      var ratio = m.w / m.h;
+      var maxS = Math.min(1 - photoEdit.crop.x, (1 - photoEdit.crop.y) / ratio, 1);
+      var s = Math.max(0.12, Math.min(photoEdit.crop.w, photoEdit.crop.h / ratio, maxS));
+      photoEdit.crop.w = s;
+      photoEdit.crop.h = s * ratio;
+    }
+    renderPhotoEditor();
+  }
+
+  function bindPhotoEditor(host){
+    host.addEventListener('click', function(ev){
+      if (ev.target.closest('[data-eclose]')){ closePhotoEditor(); return; }
+      if (ev.target.closest('[data-esave]')){ savePhotoEditor(); return; }
+      var actEl = ev.target.closest('[data-eact]');
+      if (!actEl || !photoEdit) return;
+      var act = actEl.getAttribute('data-eact');
+      if (act === 'rotl'){ photoEdit.rot = (photoEdit.rot + 270) % 360; photoEdit.crop = { x: 0, y: 0, w: 1, h: 1 }; renderPhotoEditor(); }
+      else if (act === 'rotr'){ photoEdit.rot = (photoEdit.rot + 90) % 360; photoEdit.crop = { x: 0, y: 0, w: 1, h: 1 }; renderPhotoEditor(); }
+      else if (act === 'flip'){
+        photoEdit.flip = !photoEdit.flip;
+        var c = photoEdit.crop;
+        photoEdit.crop = { x: Math.max(0, 1 - c.x - c.w), y: c.y, w: c.w, h: c.h };
+        renderPhotoEditor();
+      }
+      else if (act === 'cropfree'){ setEditorMode('free'); }
+      else if (act === 'crop11'){ setEditorMode('square'); }
+      else if (act === 'cropreset'){ photoEdit.crop = { x: 0, y: 0, w: 1, h: 1 }; renderPhotoEditor(); }
+      else if (act === 'ereset'){
+        photoEdit.rot = 0; photoEdit.flip = false;
+        photoEdit.crop = { x: 0, y: 0, w: 1, h: 1 };
+        photoEdit.bright = 100; photoEdit.contrast = 100;
+        host.querySelector('#edBright').value = 100;
+        host.querySelector('#edContrast').value = 100;
+        document.getElementById('edBrightVal').textContent = '100%';
+        document.getElementById('edContrastVal').textContent = '100%';
+        setEditorMode('free');
+      }
+    });
+    host.querySelector('#edBright').addEventListener('input', function(){
+      if (!photoEdit) return;
+      photoEdit.bright = Number(this.value);
+      document.getElementById('edBrightVal').textContent = this.value + '%';
+      renderPhotoEditor();
+    });
+    host.querySelector('#edContrast').addEventListener('input', function(){
+      if (!photoEdit) return;
+      photoEdit.contrast = Number(this.value);
+      document.getElementById('edContrastVal').textContent = this.value + '%';
+      renderPhotoEditor();
+    });
+
+    var box = host.querySelector('#edCrop');
+    box.addEventListener('pointerdown', function(ev){
+      if (!photoEdit) return;
+      ev.preventDefault();
+      var handle = ev.target.getAttribute && ev.target.getAttribute('data-handle');
+      photoEdit.drag = { mode: handle ? 'resize' : 'move', sx: ev.clientX, sy: ev.clientY, crop: { x: photoEdit.crop.x, y: photoEdit.crop.y, w: photoEdit.crop.w, h: photoEdit.crop.h } };
+      try { box.setPointerCapture(ev.pointerId); } catch (e) {}
+    });
+    box.addEventListener('pointermove', function(ev){
+      if (!photoEdit || !photoEdit.drag) return;
+      var d = photoEdit.drag;
+      var canvas = host.querySelector('#edCanvas');
+      var rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      var dx = (ev.clientX - d.sx) / rect.width;
+      var dy = (ev.clientY - d.sy) / rect.height;
+      var c = { x: d.crop.x, y: d.crop.y, w: d.crop.w, h: d.crop.h };
+      if (d.mode === 'move'){
+        c.x = Math.min(1 - c.w, Math.max(0, d.crop.x + dx));
+        c.y = Math.min(1 - c.h, Math.max(0, d.crop.y + dy));
+      } else {
+        c.w = Math.min(1 - c.x, Math.max(0.12, d.crop.w + dx));
+        c.h = Math.min(1 - c.y, Math.max(0.12, d.crop.h + dy));
+        if (photoEdit.mode === 'square'){
+          var ratio = rect.width / rect.height;
+          c.h = Math.min(1 - c.y, c.w * ratio);
+          c.w = Math.min(1 - c.x, c.h / ratio);
+        }
+      }
+      photoEdit.crop = c;
+      positionEditorCrop();
+    });
+    var endDrag = function(){ if (photoEdit) photoEdit.drag = null; };
+    box.addEventListener('pointerup', endDrag);
+    box.addEventListener('pointercancel', endDrag);
+  }
+
+  function savePhotoEditor(){
+    if (!photoEdit) return;
+    var m = editorMetrics();
+    var img = photoEdit.img;
+    var rotC = document.createElement('canvas');
+    rotC.width = m.w; rotC.height = m.h;
+    var rctx = rotC.getContext('2d');
+    var iw = img.naturalWidth || img.width;
+    var ih = img.naturalHeight || img.height;
+    rctx.save();
+    rctx.translate(m.w / 2, m.h / 2);
+    rctx.rotate(photoEdit.rot * Math.PI / 180);
+    if (photoEdit.flip) rctx.scale(-1, 1);
+    rctx.drawImage(img, -iw / 2, -ih / 2, iw, ih);
+    rctx.restore();
+
+    var c = photoEdit.crop;
+    var sx = Math.max(0, Math.round(c.x * m.w));
+    var sy = Math.max(0, Math.round(c.y * m.h));
+    var sw = Math.min(m.w - sx, Math.round(c.w * m.w));
+    var sh = Math.min(m.h - sy, Math.round(c.h * m.h));
+    if (sw < 2 || sh < 2){ toast('裁剪区域太小，请调整后再保存'); return; }
+
+    var outScale = Math.min(1, 1600 / Math.max(sw, sh));
+    var out = document.createElement('canvas');
+    out.width = Math.max(1, Math.round(sw * outScale));
+    out.height = Math.max(1, Math.round(sh * outScale));
+    var octx = out.getContext('2d');
+    octx.fillStyle = '#ffffff';
+    octx.fillRect(0, 0, out.width, out.height);
+    octx.filter = 'brightness(' + photoEdit.bright + '%) contrast(' + photoEdit.contrast + '%)';
+    octx.drawImage(rotC, sx, sy, sw, sh, 0, 0, out.width, out.height);
+
+    var full = out.toDataURL('image/jpeg', 0.85);
+    var thumb = drawToDataURL(out, 300, 0.7);
+
+    var item = photoEdit.item;
+    var oldId = item.id;
+    item.id = 'img-' + uid();
+    item.thumb = thumb;
+    item.full = full;
+    item.added = true;
+    if (photoDraft.cover === oldId) photoDraft.cover = item.id;
+    closePhotoEditor();
+    renderPhotoGallery();
+    toast('照片已更新，保存记录后生效');
   }
 
   /* ---------- 9.4 在线 AI 通道（可选） ---------- */
@@ -2099,7 +2588,6 @@ textarea{resize:vertical;min-height:56px}
       }
     }
     pendingPhoto = null;
-    formPhoto = null;
   }
 
   function openPhotoModal(boardHint){
@@ -2255,22 +2743,202 @@ textarea{resize:vertical;min-height:56px}
     });
   }
 
+  var viewerState = null;
+
+  function viewerGetUrl(id){
+    var it = draftItem(id);
+    if (it && it.full) return Promise.resolve(it.full);
+    return imgGetFull(id);
+  }
+
   function openImageViewer(rec){
-    if (!rec || !rec.imgId){ toast('这条记录没有照片'); return; }
-    imgGetFull(rec.imgId).then(function(data){
-      if (!data){ toast('照片在本机图片库中不存在'); return; }
-      document.getElementById('modalHost').innerHTML =
-        '<div class="backdrop" data-close="1"></div>' +
-        '<div class="viewer"><img class="vimg" src="' + data + '" alt="产品照片">' +
-          '<div class="vbar"><span>' + esc(rec.brand) + ' ' + esc(rec.name) + ' · 图片保存在本机</span>' +
-            '<button class="btn mini danger" data-act="delimg" data-id="' + esc(rec.id) + '">删除这张图片</button>' +
-            '<button class="btn mini" data-close="1">关闭</button></div></div>';
-    }).catch(function(e){ console.warn(e); toast('读取图片失败'); });
+    if (!rec) return;
+    var ids = (rec.photos || []).slice();
+    if (!ids.length){ toast('这条记录没有照片'); return; }
+    openPhotoViewer(rec, ids, 0);
+  }
+  function openDraftViewer(key){
+    if (!photoDraft) return;
+    var ids = photoDraft.items.map(function(it){ return it.id; });
+    var idx = ids.indexOf(key);
+    if (idx < 0) idx = 0;
+    openPhotoViewer(null, ids, idx);
+  }
+
+  function openPhotoViewer(rec, ids, index){
+    closePhotoViewer();
+    var host = document.createElement('div');
+    host.id = 'photoViewer';
+    host.className = 'viewer-host';
+    host.innerHTML =
+      '<div class="vhead"><span>' + (rec ? esc(rec.brand + ' ' + rec.name) : '照片预览（尚未保存）') + '</span>' +
+        '<button type="button" data-vclose="1" aria-label="关闭">×</button></div>' +
+      '<div class="vstage" id="vStage"><img id="vImg" alt="产品照片"></div>' +
+      '<div class="vnav"><button type="button" data-vprev="1" aria-label="上一张">‹</button>' +
+        '<span id="vCount"></span><button type="button" data-vnext="1" aria-label="下一张">›</button></div>' +
+      '<div class="vstrip" id="vStrip"></div>' +
+      '<div class="vfoot"><button type="button" class="btn danger" id="vDel" data-vdel="1">删除这张照片</button>' +
+        '<button type="button" class="btn" data-vclose="1">关闭</button></div>' +
+      '<div class="zoom-hint">双指缩放 · 滚轮缩放 · 放大后可拖动</div>';
+    document.body.appendChild(host);
+    viewerState = { rec: rec, ids: ids, idx: 0, scale: 1, tx: 0, ty: 0, delPending: 0 };
+    bindViewer(host);
+    viewerShow(index);
+  }
+
+  function closePhotoViewer(){
+    var host = document.getElementById('photoViewer');
+    if (host) host.remove();
+    viewerState = null;
+  }
+
+  function viewerShow(i){
+    var st = viewerState;
+    if (!st) return;
+    if (!st.ids.length){ closePhotoViewer(); return; }
+    st.idx = (i + st.ids.length) % st.ids.length;
+    st.scale = 1; st.tx = 0; st.ty = 0; st.delPending = 0;
+    var id = st.ids[st.idx];
+    var count = document.getElementById('vCount');
+    if (count) count.textContent = (st.idx + 1) + ' / ' + st.ids.length;
+    var img = document.getElementById('vImg');
+    if (img){
+      img.style.transform = 'translate(0,0) scale(1)';
+      img.removeAttribute('src');
+      viewerGetUrl(id).then(function(url){
+        if (!viewerState || viewerState.ids[viewerState.idx] !== id) return;
+        if (url) img.src = url;
+        else toast('这张照片在本机图片库中不存在');
+      }).catch(function(e){ console.warn(e); toast('读取图片失败'); });
+    }
+    var del = document.getElementById('vDel');
+    if (del) del.textContent = '删除这张照片';
+    var prev = document.querySelector('#photoViewer [data-vprev]');
+    var next = document.querySelector('#photoViewer [data-vnext]');
+    if (prev) prev.disabled = st.ids.length < 2;
+    if (next) next.disabled = st.ids.length < 2;
+    var strip = document.getElementById('vStrip');
+    if (strip){
+      strip.innerHTML = st.ids.map(function(pid, k){
+        var th = (draftItem(pid) && draftItem(pid).thumb) || imgThumb(pid);
+        return '<button type="button" data-vthumb="' + k + '" class="' + (k === st.idx ? 'on' : '') + '" aria-label="第 ' + (k + 1) + ' 张">' +
+          (th ? '<img src="' + th + '" alt="">' : '<span style="display:block;width:46px;height:46px"></span>') + '</button>';
+      }).join('');
+    }
+  }
+
+  function applyViewerZoom(){
+    var st = viewerState;
+    if (!st) return;
+    var img = document.getElementById('vImg');
+    if (img) img.style.transform = 'translate(' + st.tx + 'px,' + st.ty + 'px) scale(' + st.scale + ')';
+  }
+
+  function viewerAskDelete(){
+    var st = viewerState;
+    if (!st) return;
+    var btn = document.getElementById('vDel');
+    if (!st.delPending){
+      st.delPending = 1;
+      if (btn) btn.textContent = '再点一次确认删除';
+      setTimeout(function(){
+        if (viewerState && viewerState.delPending && document.getElementById('vDel')){
+          viewerState.delPending = 0;
+          document.getElementById('vDel').textContent = '删除这张照片';
+        }
+      }, 3000);
+      return;
+    }
+    var id = st.ids[st.idx];
+    imgDelete(id).catch(function(){});
+    delete imgCache.meta[id];
+    if (st.rec){
+      var rec = findRecord(st.rec.id);
+      if (rec){
+        rec.photos = (rec.photos || []).filter(function(x){ return x !== id; });
+        if (rec.photos.indexOf(rec.cover) < 0) rec.cover = rec.photos[0] || '';
+        rec.imgId = rec.cover;
+        persist();
+      }
+      renderApp(true);
+    } else if (photoDraft){
+      photoDraft.items = photoDraft.items.filter(function(it){ return it.id !== id; });
+      if (photoDraft.cover === id) photoDraft.cover = photoDraft.items[0] ? photoDraft.items[0].id : '';
+      renderPhotoGallery();
+    }
+    st.ids.splice(st.idx, 1);
+    st.delPending = 0;
+    if (!st.ids.length){ closePhotoViewer(); toast('照片已删除'); return; }
+    if (st.idx >= st.ids.length) st.idx = st.ids.length - 1;
+    viewerShow(st.idx);
+    toast('照片已删除');
+  }
+
+  function bindViewer(host){
+    host.addEventListener('click', function(ev){
+      if (ev.target.closest('[data-vclose]')){ closePhotoViewer(); return; }
+      if (ev.target.closest('[data-vprev]')){ if (viewerState) viewerShow(viewerState.idx - 1); return; }
+      if (ev.target.closest('[data-vnext]')){ if (viewerState) viewerShow(viewerState.idx + 1); return; }
+      if (ev.target.closest('[data-vdel]')){ viewerAskDelete(); return; }
+      var th = ev.target.closest('[data-vthumb]');
+      if (th){ viewerShow(Number(th.getAttribute('data-vthumb'))); return; }
+    });
+
+    var stage = host.querySelector('#vStage');
+    stage.addEventListener('wheel', function(ev){
+      if (!viewerState) return;
+      ev.preventDefault();
+      var s = viewerState.scale * Math.exp(-ev.deltaY * 0.0015);
+      viewerState.scale = Math.max(1, Math.min(4, s));
+      if (viewerState.scale === 1){ viewerState.tx = 0; viewerState.ty = 0; }
+      applyViewerZoom();
+    }, { passive: false });
+
+    var pts = {};
+    var startDist = 0, startScale = 1, pan = null;
+    stage.addEventListener('pointerdown', function(ev){
+      if (!viewerState) return;
+      pts[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+      var n = Object.keys(pts).length;
+      if (n === 2){
+        var ks = Object.keys(pts);
+        var a = pts[ks[0]], b = pts[ks[1]];
+        startDist = Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2)) || 1;
+        startScale = viewerState.scale;
+      } else if (n === 1){
+        pan = { x: ev.clientX, y: ev.clientY, tx: viewerState.tx, ty: viewerState.ty };
+      }
+      try { stage.setPointerCapture(ev.pointerId); } catch (e) {}
+    });
+    stage.addEventListener('pointermove', function(ev){
+      if (!viewerState || !pts[ev.pointerId]) return;
+      pts[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+      var n = Object.keys(pts).length;
+      if (n === 2 && startDist){
+        var ks = Object.keys(pts);
+        var a = pts[ks[0]], b = pts[ks[1]];
+        var d = Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2)) || 1;
+        viewerState.scale = Math.max(1, Math.min(4, startScale * d / startDist));
+        if (viewerState.scale === 1){ viewerState.tx = 0; viewerState.ty = 0; }
+        applyViewerZoom();
+      } else if (n === 1 && pan && viewerState.scale > 1){
+        viewerState.tx = pan.tx + (ev.clientX - pan.x);
+        viewerState.ty = pan.ty + (ev.clientY - pan.y);
+        applyViewerZoom();
+      }
+    });
+    var up = function(ev){
+      delete pts[ev.pointerId];
+      if (!Object.keys(pts).length){ startDist = 0; pan = null; }
+    };
+    stage.addEventListener('pointerup', up);
+    stage.addEventListener('pointercancel', up);
   }
 
   /* ---------- 9.7 导出 / 删除图片 ---------- */
   function exportJSONWithImages(){
     Promise.all([imgAllMeta(), imgAllFull()]).then(function(res){
+      // 多图结构：records 内含 photos / cover，images 提供每张的 thumb 与 full
       var metas = res[0] || [], fulls = res[1] || [];
       var fullMap = {};
       fulls.forEach(function(f){ if (f && f.id) fullMap[f.id] = f.data; });
@@ -2278,7 +2946,7 @@ textarea{resize:vertical;min-height:56px}
         return { id: m.id, thumb: m.thumb, full: fullMap[m.id], createdAt: m.createdAt };
       });
       var payload = {
-        app: 'skincare-inventory', version: 1,
+        app: 'skincare-inventory', version: 2,
         exportedAt: new Date().toISOString(),
         categories: state.categories,
         records: state.records,
@@ -2329,7 +2997,15 @@ textarea{resize:vertical;min-height:56px}
   }
 
   var modalHost = document.getElementById('modalHost');
-  function closeModal(){ cancelPhoto(); modalHost.innerHTML = ''; }
+  function closeModal(){
+    cancelPhoto();
+    closePhotoEditor();
+    closePhotoViewer();
+    photoDraft = null;
+    replaceTarget = '';
+    pendingDelKey = '';
+    modalHost.innerHTML = '';
+  }
   function toast(msg){
     var el = document.getElementById('toast');
     if (!el){
@@ -2374,37 +3050,49 @@ textarea{resize:vertical;min-height:56px}
       });
       return;
     }
-    if (act === 'removePhoto'){
-      if (formPhoto) formPhoto.removed = true;
-      var fb = document.getElementById('formPhotoBlock');
-      if (fb) fb.style.display = 'none';
-      toast('保存后将不保留这张照片');
-      return;
-    }
     if (act === 'viewimg'){
       var vr = findRecord(id);
       if (vr) openImageViewer(vr);
       return;
     }
-    if (act === 'delimg'){
-      var ir = findRecord(id);
-      if (!ir || !ir.imgId) return;
-      confirmDialog('删除这张照片以释放空间？记录本身会保留，此操作不可撤销。', function(){
-        imgDelete(ir.imgId).catch(function(e){ console.warn(e); });
-        delete imgCache.meta[ir.imgId];
-        ir.imgId = '';
-        persist();
-        toast('照片已删除');
-        renderApp(true);
-      }, '确认删除');
+    if (act === 'paddcam'){
+      var fc = document.getElementById('formPhotoCamera');
+      if (fc) fc.click();
       return;
     }
+    if (act === 'paddalbum'){
+      var fa = document.getElementById('formPhotoAlbum');
+      if (fa) fa.click();
+      return;
+    }
+    if (act === 'pview'){ openDraftViewer(el.getAttribute('data-key')); return; }
+    if (act === 'pcover'){
+      if (photoDraft){
+        photoDraft.cover = el.getAttribute('data-key');
+        renderPhotoGallery();
+        toast('已设为主图');
+      }
+      return;
+    }
+    if (act === 'pup' || act === 'pdown'){
+      moveDraftPhoto(el.getAttribute('data-key'), act === 'pup' ? -1 : 1);
+      return;
+    }
+    if (act === 'pedit'){ openPhotoEditor(el.getAttribute('data-key')); return; }
+    if (act === 'preplace'){
+      replaceTarget = el.getAttribute('data-key');
+      var fr = document.getElementById('formPhotoReplace');
+      if (fr){ fr.value = ''; fr.click(); }
+      return;
+    }
+    if (act === 'pdel'){ askDeleteDraftPhoto(el.getAttribute('data-key')); return; }
     if (act === 'delallimgs'){
       if (imgCache.error){ toast('图片库不可用'); return; }
       var stats = imgStatsText();
       confirmDialog('删除全部照片？' + stats + '记录字段会保留，此操作不可撤销。', function(){
         imgClearAll().catch(function(e){ console.warn(e); });
-        state.records.forEach(function(r){ r.imgId = ''; });
+        state.records.forEach(function(r){ r.photos = []; r.cover = ''; r.imgId = ''; });
+        if (photoDraft){ photoDraft.items = []; photoDraft.cover = ''; }
         imgCache.meta = {};
         persist();
         toast('全部照片已删除');
@@ -2441,10 +3129,10 @@ textarea{resize:vertical;min-height:56px}
       var target = findRecord(id);
       if (!target) return;
       confirmDialog('删除「' + target.brand + ' ' + target.name + '」这条记录？此操作不可撤销。', function(){
-        if (target.imgId){
-          imgDelete(target.imgId).catch(function(e){ console.warn(e); });
-          delete imgCache.meta[target.imgId];
-        }
+        (target.photos || []).forEach(function(pid){
+          imgDelete(pid).catch(function(e){ console.warn(e); });
+          delete imgCache.meta[pid];
+        });
         state.records = state.records.filter(function(r){ return r.id !== id; });
         persist();
         toast('已删除');
@@ -2512,7 +3200,9 @@ textarea{resize:vertical;min-height:56px}
       return;
     }
     if (act === 'clearall'){
-      confirmDialog('清空全部记录（包括示例和你新增的内容）？品类设置会保留，此操作不可撤销。', function(){
+      confirmDialog('清空全部记录（包括示例和你新增的内容）？品类设置会保留，此操作不可撤销，关联照片也会一并删除。', function(){
+        imgClearAll().catch(function(e){ console.warn(e); });
+        imgCache.meta = {};
         state.records = [];
         resetFiltersAll();
         persist();
@@ -2569,12 +3259,29 @@ textarea{resize:vertical;min-height:56px}
       var bh = ev.target.getAttribute('data-board');
       ev.target.value = '';
       runPhotoFlow(picked, bh);
+      return;
+    }
+    if (ev.target.id === 'formPhotoCamera' || ev.target.id === 'formPhotoAlbum'){
+      var files = Array.prototype.slice.call(ev.target.files || []);
+      ev.target.value = '';
+      if (files.length) addDraftFiles(files);
+      return;
+    }
+    if (ev.target.id === 'formPhotoReplace' && ev.target.files && ev.target.files[0]){
+      var rf = ev.target.files[0];
+      var rk = replaceTarget;
+      ev.target.value = '';
+      replaceTarget = '';
+      addDraftFiles([rf], rk);
     }
   });
 
-  // ESC 关闭弹层
+  // ESC 关闭弹层（编辑 > 查看器 > 表单）
   document.addEventListener('keydown', function(ev){
-    if (ev.key === 'Escape' && modalHost.innerHTML) closeModal();
+    if (ev.key !== 'Escape') return;
+    if (photoEdit){ closePhotoEditor(); return; }
+    if (viewerState){ closePhotoViewer(); return; }
+    if (modalHost.innerHTML) closeModal();
   });
 
   function initDropZone(){
@@ -2606,8 +3313,14 @@ textarea{resize:vertical;min-height:56px}
       e.preventDefault();
       depth = 0;
       overlay.classList.remove('show');
-      var file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (!file) return;
+      var files = Array.prototype.slice.call(e.dataTransfer.files || []);
+      if (!files.length) return;
+      // 表单已打开时：拖入的照片直接加入当前记录，不再进入拍照识别流程
+      if (photoDraft && document.getElementById('itemForm')){
+        addDraftFiles(files);
+        return;
+      }
+      var file = files[0];
       if (!/^image\//.test(file.type)){ toast('请拖入图片文件'); return; }
       if (ui.tab === 'data'){ toast('请先切换到概览或护肤 / 彩妆页面'); return; }
       runPhotoFlow(file, ui.tab === 'makeup' ? 'makeup' : 'skin');
