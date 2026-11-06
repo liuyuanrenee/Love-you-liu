@@ -343,7 +343,7 @@ textarea{resize:vertical;min-height:56px}
 .draft.invalid{border-color:var(--danger);background:var(--danger-bg)}
 .draft-check{flex:0 0 auto;width:auto;height:auto;margin-top:4px}
 .draft-thumb{width:56px;height:56px;flex:none;border-radius:8px;object-fit:cover;background:var(--surface-2);border:0;padding:0;overflow:hidden}
-.draft-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.draft-thumb img{width:100%;height:100%;object-fit:contain;display:block}
 .draft-main{flex:1;min-width:0}
 .draft-title{font-size:13px;font-weight:650;line-height:1.35}
 .draft-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
@@ -381,6 +381,20 @@ textarea{resize:vertical;min-height:56px}
 .ocr-panel .cand b{color:var(--text);font-weight:600}
 .ocr-panel details{margin-top:8px;font-size:11.5px;color:var(--muted)}
 .ocr-panel pre{white-space:pre-wrap;word-break:break-word;max-height:150px;overflow:auto;margin:6px 0 0;font-size:11.5px;background:var(--surface);border-radius:8px;padding:8px}
+.draft-thumb{position:relative}
+.bbox-hint{position:absolute;left:0;top:0;border:2px solid rgba(108,76,241,.9);background:rgba(108,76,241,.14);border-radius:3px;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.5) inset}
+.ocr-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px;margin-top:8px;font-size:11.5px;line-height:1.5}
+.ocr-meta-grid span{display:flex;flex-direction:column;align-items:flex-start;gap:0;border-bottom:1px dashed var(--border);padding-bottom:2px;min-width:0}
+.ocr-meta-grid span.low{color:var(--near)}
+.ocr-meta-grid span.low b{color:var(--near)}
+.ocr-meta-grid b{font-weight:650;color:var(--text);font-size:11.5px}
+.ocr-meta-grid i{font-style:normal;color:var(--muted);font-size:10px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.field.low-conf input,.field.low-conf select{border-color:var(--near);background:var(--near-bg)}
+.conf-flag{display:inline-block;font-size:10.5px;color:var(--near);background:var(--near-bg);border-radius:6px;padding:1px 6px;margin-top:4px}
+.draft-fieldconf{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;font-size:10.5px}
+.draft-fieldconf span{padding:1px 5px;border-radius:5px;background:var(--surface-2);color:var(--muted)}
+.draft-fieldconf span.low{background:var(--near-bg);color:var(--near);font-weight:650}
+@media(max-width:420px){.ocr-meta-grid{grid-template-columns:1fr}}
 .editor-backdrop{position:fixed;inset:0;background:rgba(8,12,20,.62);z-index:60}
 .editor-wrap{position:fixed;z-index:61;inset:0;display:flex;flex-direction:column;background:var(--surface)}
 @media(min-width:720px){
@@ -599,7 +613,7 @@ textarea{resize:vertical;min-height:56px}
         skin: DEFAULT_CATS.skin.map(function(c){ return { name: c.name, months: c.months }; }),
         makeup: DEFAULT_CATS.makeup.map(function(c){ return { name: c.name, months: c.months }; })
       },
-      settings: { reminderDismissedOn: null, ai: { endpoint: '', key: '', model: '', batchAi: false } }
+      settings: { reminderDismissedOn: null, ocrHighAccuracy: true, ocrPreprocess: true, ai: { endpoint: '', key: '', model: '', batchAi: false } }
     };
   }
 
@@ -671,6 +685,8 @@ textarea{resize:vertical;min-height:56px}
       categories: cats,
       settings: {
         reminderDismissedOn: (s.settings && s.settings.reminderDismissedOn) || null,
+        ocrHighAccuracy: !(s.settings && s.settings.ocrHighAccuracy === false),
+        ocrPreprocess: !(s.settings && s.settings.ocrPreprocess === false),
         ai: {
           endpoint: String((s.settings && s.settings.ai && s.settings.ai.endpoint) || ''),
           key: String((s.settings && s.settings.ai && s.settings.ai.key) || ''),
@@ -1102,8 +1118,12 @@ textarea{resize:vertical;min-height:56px}
         '</div>' +
         '<p class="hint" style="margin-top:8px">删除单张：点开护肤 / 彩妆卡片上的缩略图进入查看器，点两次「删除这张照片」确认；也可在编辑表单里删除。删除图片不会影响记录的其他字段。</p>' +
         '<p class="hint" style="margin-top:6px">批量入库 / 一图多件生成的同图多条记录会共用同一张原图；删除其中一条记录时，只要还有其他记录在用这张图，图片就不会被真正删除。</p>' +
-        '<p class="hint" style="margin-top:6px">识别说明：本地 OCR 使用 tesseract.js，联网时从 CDN 加载（首次需下载约 30MB 中英文语言包），离线时自动降级为手动填写。包装反光、字体过小、曲面或角度倾斜都会降低识别准确率，预填结果仅供参考，请务必核对。</p>' +
+        '<p class="hint" style="margin-top:6px">识别说明：本地 OCR 使用 tesseract.js，联网时从 CDN 加载（首次需下载约 30MB 中英文语言包），离线时自动降级为手动填写。默认用原图（长边上限 2400px）识别，支持高精度多遍识别与图像预处理；包装反光、字体过小、曲面或角度倾斜仍会降低准确率，低置信字段必须人工核对。</p>' +
       '</div>' +
+      '<div class="block"><h3>识别精度</h3><p class="hint">本地 OCR 默认使用原图（长边上限 2400px，超出才缩），预览和照片存档仍用压缩图。高精度模式会做灰度化、对比度/亮度自适应拉伸、必要时 2 倍放大，并用多种页面分割模式多遍识别后择优，速度更慢。</p>' +
+        '<div class="field"><label class="check"><input type="checkbox" id="ocrHighAccuracy"' + (state.settings.ocrHighAccuracy ? ' checked' : '') + '> 高精度识别（更慢，推荐开启）</label></div>' +
+        '<div class="field" style="margin-top:8px"><label class="check"><input type="checkbox" id="ocrPreprocess"' + (state.settings.ocrPreprocess ? ' checked' : '') + '> 图像预处理（灰度化 + 对比度拉伸 + 必要时 2 倍放大）</label></div>' +
+        '<p class="hint" style="margin-top:6px">关闭高精度后只跑单遍快速 OCR；关闭预处理后直接识别原图。反光、曲面、字体过小仍会影响结果，低置信字段会高亮提示人工核对。</p></div>' +
       '<div class="block"><h3>在线 AI 识别（可选）</h3><p class="hint">开启后会优先用你配置的视觉模型识别，失败自动回退本地 OCR。API Key 只保存在本机 localStorage，不会内置或上传到其他位置；任何能打开本页面的人都能读到该 Key，请自行评估风险。</p>' +
         '<div class="field"><label for="aiEndpoint">接口地址（OpenAI 兼容 /chat/completions）</label><input id="aiEndpoint" placeholder="https://api.openai.com/v1/chat/completions" value="' + esc((state.settings.ai && state.settings.ai.endpoint) || '') + '"></div>' +
         '<div class="field-row" style="margin-top:10px">' +
@@ -1256,6 +1276,7 @@ textarea{resize:vertical;min-height:56px}
     var form = document.getElementById('itemForm');
     toggleFormBlocks(form);
     updatePreview(form);
+    applyOcrLowConf(ctx && ctx.ocr && ctx.ocr.fieldMeta);
 
     form.addEventListener('change', function(e){
       if (e.target.name === 'fBoard'){
@@ -1296,6 +1317,37 @@ textarea{resize:vertical;min-height:56px}
     });
 
     setTimeout(function(){ var b = document.getElementById('fBrand'); if (b) b.focus(); }, 120);
+  }
+
+  function applyOcrLowConf(meta){
+    if (!meta) return;
+    var map = { brand: 'fBrand', name: 'fName', category: 'fCat', size: 'fSize', shade: 'fShade', expiryDate: 'fExpiry' };
+    Object.keys(map).forEach(function(k){
+      var m = meta[k];
+      if (!m || !m.low) return;
+      var el = document.getElementById(map[k]);
+      if (!el) return;
+      var field = el.closest ? el.closest('.field') : el.parentNode;
+      if (!field) return;
+      field.classList.add('low-conf');
+      if (field.querySelector('.conf-flag')) return;
+      var flag = document.createElement('span');
+      flag.className = 'conf-flag';
+      flag.textContent = m.confidence ? ('自动识别置信度 ' + m.confidence + '%，请核对') : '未识别，请手动填写';
+      field.appendChild(flag);
+    });
+    var tm = meta.type;
+    if (tm && tm.low){
+      var radio = document.getElementById('fType');
+      var f = radio && radio.closest ? radio.closest('.field') : null;
+      if (f && !f.querySelector('.conf-flag')){
+        f.classList.add('low-conf');
+        var flag = document.createElement('span');
+        flag.className = 'conf-flag';
+        flag.textContent = '类型依据「' + tm.source + '」推断，请核对';
+        f.appendChild(flag);
+      }
+    }
   }
 
   function toggleFormBlocks(form){
@@ -1871,32 +1923,172 @@ textarea{resize:vertical;min-height:56px}
     { name: '娇兰', aliases: ['GUERLAIN', '娇兰'] }
   ];
 
+  // 扩充品牌词库：护肤、彩妆、香水、药妆与小众国货，含常见缩写/连写/易错写法
+  BRANDS.push(
+    { name: '欧珀莱', aliases: ['AUPRES', '欧珀莱'] },
+    { name: '雪肌精', aliases: ['SEKKISEI', '雪肌精'] },
+    { name: '茵芙莎', aliases: ['IPSA', '茵芙莎'] },
+    { name: '肌肤之钥', aliases: ['CLE DE PEAU BEAUTE', 'CLE DE PEAU', 'CPB', 'CDP', '肌肤之钥'] },
+    { name: '宝丽', aliases: ['POLA', '宝丽'] },
+    { name: '澳尔滨', aliases: ['ALBION', '澳尔滨', '奥尔滨'] },
+    { name: '高丝', aliases: ['KOSE', '高丝'] },
+    { name: '嘉娜宝', aliases: ['KANEBO', '嘉娜宝'] },
+    { name: '芙丽芳丝', aliases: ['FREEPLUS', 'FREE PLUS', '芙丽芳丝'] },
+    { name: '珂润', aliases: ['CUREL', '珂润'] },
+    { name: '苏菲娜', aliases: ['SOFINA', '苏菲娜'] },
+    { name: '娜丽丝', aliases: ['NARIS', '娜丽丝'] },
+    { name: '乐敦', aliases: ['ROHTO', '乐敦'] },
+    { name: '曼秀雷敦', aliases: ['MENTHOLATUM', '曼秀雷敦'] },
+    { name: '施巴', aliases: ['SEBAMED', '施巴'] },
+    { name: '优色林', aliases: ['EUCERIN', '优色林'] },
+    { name: '丝塔芙', aliases: ['CETAPHIL', '丝塔芙'] },
+    { name: '薇姿', aliases: ['VICHY', '薇姿'] },
+    { name: '依泉', aliases: ['URIAGE', '依泉'] },
+    { name: '欧缇丽', aliases: ['CAUDALIE', '欧缇丽'] },
+    { name: '茱莉蔻', aliases: ['JURLIQUE', '茱莉蔻'] },
+    { name: '伊索', aliases: ['AESOP', '伊索'] },
+    { name: '蒂佳婷', aliases: ['DR JART', 'DR.JART', 'DRJART', '蒂佳婷'] },
+    { name: '敷尔佳', aliases: ['FUERJIA', '敷尔佳'] },
+    { name: '可复美', aliases: ['COMFY', '可复美'] },
+    { name: '润百颜', aliases: ['BLOOMAGE', '润百颜'] },
+    { name: '夸迪', aliases: ['QUADHA', '夸迪'] },
+    { name: '米蓓尔', aliases: ['MEDREPAIR', '米蓓尔'] },
+    { name: '至本', aliases: ['ZIBEN', '至本'] },
+    { name: '逐本', aliases: ['ZHUIBEN', '逐本'] },
+    { name: '雏菊的天空', aliases: ['DAISY SKY', '雏菊的天空'] },
+    { name: '谷雨', aliases: ['GUYU', '谷雨'] },
+    { name: 'HBN', aliases: ['HBN', 'HONEYMATE BEAUTY'] },
+    { name: '溪木源', aliases: ['SIMPCARE', '溪木源'] },
+    { name: '稀物集', aliases: ['XIWUJI', '稀物集'] },
+    { name: '凌博士', aliases: ['DR LING', '凌博士'] },
+    { name: '韩束', aliases: ['KANS', '韩束'] },
+    { name: '欧诗漫', aliases: ['OSM', '欧诗漫'] },
+    { name: '丸美', aliases: ['MARUBI', '丸美'] },
+    { name: '佰草集', aliases: ['HERBORIST', '佰草集'] },
+    { name: '相宜本草', aliases: ['INOHERB', '相宜本草'] },
+    { name: '美肤宝', aliases: ['MEIFUBAO', '美肤宝'] },
+    { name: '韩后', aliases: ['HANHOO', '韩后'] },
+    { name: '一叶子', aliases: ['ONELIKE', '一叶子'] },
+    { name: '御泥坊', aliases: ['YUNIFANG', '御泥坊'] },
+    { name: '膜法世家', aliases: ['MASK FAMILY', '膜法世家'] },
+    { name: '植物医生', aliases: ['DR PLANT', '植物医生'] },
+    { name: '林清轩', aliases: ['FOREST CABIN', '林清轩'] },
+    { name: '阿芙', aliases: ['AFU', '阿芙'] },
+    { name: '半亩花田', aliases: ['BANMUHUATIAN', '半亩花田'] },
+    { name: '凡士林', aliases: ['VASELINE', '凡士林'] },
+    { name: '大宝', aliases: ['DABAO', '大宝'] },
+    { name: '郁美净', aliases: ['YUMEIJING', '郁美净'] },
+    { name: '隆力奇', aliases: ['LONGLIQI', '隆力奇'] },
+    { name: '六神', aliases: ['LIUSHEN', '六神'] },
+    { name: '启初', aliases: ['QICHU', '启初'] },
+    { name: '红色小象', aliases: ['RED ELEPHANT', '红色小象'] },
+    { name: '松达', aliases: ['SONGDA', '松达'] },
+    { name: '戴可思', aliases: ['DEXTER', '戴可思'] },
+    { name: '艾维诺', aliases: ['AVEENO', '艾维诺'] },
+    { name: '加州宝宝', aliases: ['CALIFORNIA BABY', '加州宝宝'] },
+    { name: '妙思乐', aliases: ['MUSTELA', '妙思乐'] },
+    { name: '贝亲', aliases: ['PIGEON', '贝亲'] },
+    { name: '强生', aliases: ["JOHNSON'S", 'JOHNSONS', '强生'] },
+    { name: '施华蔻', aliases: ['SCHWARZKOPF', '施华蔻'] },
+    { name: '卡诗', aliases: ['KERASTASE', '卡诗'] },
+    { name: '潘婷', aliases: ['PANTENE', '潘婷'] },
+    { name: '海飞丝', aliases: ['HEAD SHOULDERS', 'HEAD & SHOULDERS', '海飞丝'] },
+    { name: '沙宣', aliases: ['VIDAL SASSOON', '沙宣'] },
+    { name: '馥绿德雅', aliases: ['RENE FURTERER', '馥绿德雅'] },
+    { name: '吕', aliases: ['RYO', '吕'] },
+    { name: '阿蒂仙', aliases: ["L'ARTISAN PARFUMEUR", 'L ARTISAN', '阿蒂仙'] },
+    { name: '蒂普提克', aliases: ['DIPTYQUE', '蒂普提克'] },
+    { name: '拜里朵', aliases: ['BYREDO', '拜里朵'] },
+    { name: '芦丹氏', aliases: ['SERGE LUTENS', '芦丹氏'] },
+    { name: '梅森马吉拉', aliases: ['MAISON MARGIELA', 'MARGIELA', '梅森马吉拉'] },
+    { name: '欧珑', aliases: ['ATELIER COLOGNE', '欧珑'] },
+    { name: '潘海利根', aliases: ['PENHALIGONS', "PENHALIGON'S", '潘海利根'] },
+    { name: '爱马仕', aliases: ['HERMES', '爱马仕'] },
+    { name: '宝格丽', aliases: ['BVLGARI', '宝格丽'] },
+    { name: '范思哲', aliases: ['VERSACE', '范思哲'] },
+    { name: '普拉达', aliases: ['PRADA', '普拉达'] },
+    { name: '古驰', aliases: ['GUCCI', '古驰'] },
+    { name: '博柏利', aliases: ['BURBERRY', '博柏利', '巴宝莉'] },
+    { name: '蔻驰', aliases: ['COACH', '蔻驰'] },
+    { name: '罗意威', aliases: ['LOEWE', '罗意威'] },
+    { name: '帕尔玛之水', aliases: ['ACQUA DI PARMA', '帕尔玛之水'] },
+    { name: '大卫杜夫', aliases: ['DAVIDOFF', '大卫杜夫'] },
+    { name: '卡尔文克莱恩', aliases: ['CALVIN KLEIN', 'CALVINKLEIN', 'CK', '卡尔文克莱恩'] },
+    { name: '三宅一生', aliases: ['ISSEY MIYAKE', '三宅一生'] },
+    { name: '观夏', aliases: ['TO SUMMER', '观夏'] },
+    { name: '闻献', aliases: ['DOCUMENTS', '闻献'] },
+    { name: '野兽派', aliases: ['THE BEAST', '野兽派'] },
+    { name: '冰希黎', aliases: ['BOITOWN', '冰希黎'] },
+    { name: '气味图书馆', aliases: ['SCENT LIBRARY', '气味图书馆'] },
+    { name: '芯丝翠', aliases: ['NEOSTRATA', '芯丝翠'] },
+    { name: '怡思丁', aliases: ['ISDIN', '怡思丁'] },
+    { name: '美帕', aliases: ['MEDSPA', '美帕'] },
+    { name: '绽妍', aliases: ['ZHANYAN', '绽妍'] },
+    { name: '创福康', aliases: ['CHUANGFUKANG', '创福康'] },
+    { name: '珀芙研', aliases: ['PERFECT ONE', '珀芙研'] },
+    { name: '皮宝', aliases: ['PIBAO', '皮宝'] },
+    { name: '雅莎尔', aliases: ['YASHAR', '雅莎尔'] },
+    { name: '欧敏肤', aliases: ['DERMINA', '欧敏肤'] },
+    { name: '三草两木', aliases: ['SANCAO', '三草两木'] },
+    { name: '彩棠', aliases: ['TIMAGE', '彩棠'] },
+    { name: '酵色', aliases: ['JOOCYEE', '酵色'] },
+    { name: '小奥汀', aliases: ['LITTLE ONDINE', '小奥汀'] },
+    { name: '方里', aliases: ['FUNNY ELVES', '方里'] },
+    { name: '柏瑞美', aliases: ['PRAMY', '柏瑞美'] },
+    { name: '卡婷', aliases: ['CATKIN', '卡婷'] },
+    { name: '谢馥春', aliases: ['XIEFUCHUN', '谢馥春'] },
+    { name: '戴春林', aliases: ['DAICHUNLIN', '戴春林'] },
+    { name: '孔凤春', aliases: ['KONGFENGCHUN', '孔凤春'] },
+    { name: '双妹', aliases: ['SHUANGMEI', '双妹'] },
+    { name: '雅邦', aliases: ['YABANG', '雅邦'] },
+    { name: '谜尚', aliases: ['MISSHA', '谜尚'] },
+    { name: '伊蒂之屋', aliases: ['ETUDE HOUSE', 'ETUDE', '伊蒂之屋'] },
+    { name: '悦诗风吟', aliases: ['INNISFREE', '悦诗风吟'] },
+    { name: '菲诗小铺', aliases: ['THE FACE SHOP', 'FACESHOP', '菲诗小铺'] },
+    { name: '得鲜', aliases: ['THE SAEM', 'SAEM', '得鲜'] },
+    { name: '珂莱欧', aliases: ['CLIO', '珂莱欧'] },
+    { name: '赫拉', aliases: ['HERA', '赫拉'] },
+    { name: '梦妆', aliases: ['MAMONDE', '梦妆'] },
+    { name: '芭妮兰', aliases: ['BANILA CO', 'BANILA', '芭妮兰'] },
+    { name: '爱敬', aliases: ["AGE20'S", 'AGE20S', '爱敬'] },
+    { name: '郑瑄茉', aliases: ['JUNG SAEM MOOL', '郑瑄茉'] },
+    { name: '3CE', aliases: ['3CE', 'THREE CONCEPT EYES'] },
+    { name: '衰败城市', aliases: ['URBAN DECAY', '衰败城市'] },
+    { name: '贝玲妃', aliases: ['BENEFIT', '贝玲妃'] },
+    { name: '罗拉玛斯亚', aliases: ['LAURA MERCIER', '罗拉玛斯亚'] }
+  );
+
+  // 品类同义词表：中英文、常见叫法与缩写，按命中数量加权
   var CAT_WORDS = {
     skin: {
-      '洁面': ['洁面', '洗面奶', '洁颜', '洁肤', '洗颜', 'CLEANSER', 'FOAMING'],
-      '卸妆': ['卸妆', '洁颜油', '卸妆水', '卸妆油', 'MAKEUP REMOVER', 'CLEANSING OIL'],
-      '化妆水/爽肤水': ['爽肤水', '化妆水', '柔肤水', '精华水', '精粹水', 'TONER'],
-      '乳液': ['乳液', '润肤乳', 'EMULSION', 'LOTION'],
-      '面霜': ['面霜', '乳霜', '精华霜', '晚霜', '日霜', 'CREAM'],
-      '精华': ['精华', '精华液', '肌底液', 'SERUM', 'ESSENCE', 'AMPOULE'],
-      '眼霜': ['眼霜', '眼部精华', 'EYE CREAM', 'EYE SERUM'],
-      '面膜': ['面膜', '面贴膜', '泥膜', 'MASK'],
-      '防晒': ['防晒', '隔离', 'SPF', 'SUNSCREEN', 'UV'],
-      '身体护理': ['身体乳', '沐浴', '润体', '护手', 'BODY LOTION', 'BODY WASH'],
+      '洁面': ['洁面', '洗面奶', '洗面乳', '洁面乳', '洁颜', '洁肤', '洗颜', '洗面', '洁颜蜜', 'CLEANSER', 'CLEANSING FOAM', 'CLEANSING GEL', 'FACE WASH', 'FOAMING'],
+      '卸妆': ['卸妆', '洁颜油', '卸妆水', '卸妆油', '卸妆膏', '卸妆巾', 'MAKEUP REMOVER', 'CLEANSING OIL', 'CLEANSING BALM', 'CLEANSING WATER'],
+      '化妆水/爽肤水': ['化妆水', '爽肤水', '柔肤水', '保湿水', '收敛水', '精华水', '精粹水', '二次清洁水', '神仙水', '健康水', '流金水', '菌菇水', '紫苏水', '水', 'TONER', 'TONER WATER', 'LOTION TONER'],
+      '乳液': ['乳液', '润肤乳', '保湿乳', '润肤露', '保湿露', 'EMULSION', 'LOTION', 'MILK'],
+      '面霜': ['面霜', '乳霜', '精华霜', '晚霜', '日霜', '保湿霜', '修护霜', '修复霜', '特护霜', '舒缓霜', '抗皱霜', 'CREAM', 'MOISTURIZER', 'MOISTURISER', 'BAUME', 'BALM', 'SALVE'],
+      '精华': ['精华', '精华液', '精华露', '肌底液', '原液', '安瓶', 'SERUM', 'ESSENCE', 'AMPOULE', 'CONCENTRATE'],
+      '眼霜': ['眼霜', '眼部精华', '眼胶', '眼部凝胶', 'EYE CREAM', 'EYE SERUM', 'EYE GEL'],
+      '面膜': ['面膜', '面贴膜', '泥膜', '睡眠面膜', '涂抹面膜', 'MASK', 'SHEET MASK'],
+      '防晒': ['防晒', '防晒霜', '防晒乳', '防晒喷雾', '隔离', '隔离霜', 'SPF', 'SUNSCREEN', 'SUNBLOCK', 'UV'],
+      '身体护理': ['身体乳', '身体霜', '身体油', '沐浴', '润体', '护手', '护手霜', 'BODY LOTION', 'BODY CREAM', 'BODY WASH'],
       '其他': []
     },
     makeup: {
-      '底妆': ['粉底', '气垫', '遮瑕', '粉饼', '蜜粉', '散粉', '妆前', 'BB霜', 'CC霜', 'FOUNDATION', 'CUSHION', 'CONCEALER', 'POWDER'],
-      '唇妆': ['口红', '唇釉', '唇膏', '唇彩', '染唇', 'LIPSTICK', 'LIP GLOSS', 'LIP TINT'],
-      '眼妆': ['眼影', '眼线', '睫毛膏', '眉笔', '眉粉', 'EYESHADOW', 'EYELINER', 'MASCARA', 'BROW'],
-      '腮红修容': ['腮红', '修容', '高光', '阴影', 'BLUSH', 'BRONZER', 'HIGHLIGHTER', 'CONTOUR'],
-      '美妆工具': ['化妆刷', '粉扑', '海绵', '美妆蛋', '化妆棉', 'BRUSH', 'PUFF', 'SPONGE'],
+      '底妆': ['粉底', '粉底液', '粉霜', '粉条', '气垫', '遮瑕', '粉饼', '蜜粉', '散粉', '妆前', '隔离霜', '素颜霜', 'BB霜', 'CC霜', 'BB CREAM', 'CC CREAM', 'FOUNDATION', 'CUSHION', 'CONCEALER', 'POWDER'],
+      '唇妆': ['口红', '唇釉', '唇膏', '唇彩', '唇泥', '唇蜜', '唇油', '染唇', 'LIPSTICK', 'LIP GLOSS', 'LIP TINT', 'LIP BALM', 'LIP OIL', 'LIP MAESTRO', 'LIP CRAYON'],
+      '眼妆': ['眼影', '眼影盘', '眼线', '眼线笔', '睫毛膏', '眉笔', '眉粉', '染眉膏', 'EYESHADOW', 'EYE PALETTE', 'EYELINER', 'LINER', 'MASCARA', 'BROW'],
+      '腮红修容': ['腮红', '修容', '修容粉', '高光', '高光粉', '阴影', 'BLUSH', 'BRONZER', 'HIGHLIGHTER', 'CONTOUR', 'CONTOUR POWDER'],
+      '美妆工具': ['化妆刷', '粉底刷', '刷具', '美妆刷', '粉扑', '海绵', '美妆蛋', '化妆棉', 'BRUSH', 'PUFF', 'SPONGE', 'BEAUTY BLENDER'],
       '其他': []
     }
   };
 
+  var FIELD_LABELS = { brand: '品牌', name: '品名', category: '品类', size: '规格', type: '类型', shade: '色号', expiryDate: '到期日' };
+
   function normText(s){
-    return String(s || '').toUpperCase()
+    var t = String(s || '');
+    if (t.normalize) t = t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return t.toUpperCase()
       .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(ch){ return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0); })
       .replace(/[‐‑–—]/g, '-')
       .replace(/\s+/g, '')
@@ -1906,31 +2098,107 @@ textarea{resize:vertical;min-height:56px}
     return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
+  // 编辑距离与相似度：用于品牌 / 说法的模糊匹配
+  function levenshtein(a, b){
+    a = String(a || ''); b = String(b || '');
+    if (a === b) return 0;
+    if (!a.length) return b.length;
+    if (!b.length) return a.length;
+    var prev = [], cur = [], i, j, tmp;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++){
+      cur[0] = i;
+      for (j = 1; j <= b.length; j++){
+        var cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      }
+      tmp = prev; prev = cur; cur = tmp;
+    }
+    return prev[b.length];
+  }
+  function stringSimilarity(a, b){
+    a = String(a || ''); b = String(b || '');
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    if (a.length > 24 || b.length > 24) return 0;
+    return 1 - levenshtein(a, b) / Math.max(a.length, b.length);
+  }
+
+  // 从 OCR 原文提取候选词：英文单词 / 相邻英文词组、中文连续片段
+  function textTokens(text){
+    var src = String(text || '');
+    if (src.normalize) src = src.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    src = src.toUpperCase();
+    var latin = {}, cjk = {}, out = [];
+    var add = function(kind, v){
+      v = String(v || '').replace(/[^A-Z0-9\u4e00-\u9fa5]/g, '');
+      if (!v) return;
+      var bag = kind === 'latin' ? latin : cjk;
+      if (bag[v]) return;
+      bag[v] = true;
+      out.push({ kind: kind, text: v });
+    };
+    var latinWords = src.match(/[A-Z][A-Z0-9&'’.\-:+]*/g) || [];
+    latinWords.forEach(function(w){ add('latin', w); });
+    for (var i = 0; i + 1 < latinWords.length; i++){
+      var pair = latinWords[i] + latinWords[i + 1];
+      if (pair.length <= 22) add('latin', pair);
+    }
+    var cjkRuns = src.match(/[\u4e00-\u9fa5]{2,}/g) || [];
+    cjkRuns.forEach(function(run){
+      var maxLen = Math.min(6, run.length);
+      for (var len = 2; len <= maxLen; len++){
+        for (var p = 0; p + len <= run.length; p++) add('cjk', run.substr(p, len));
+      }
+    });
+    return out;
+  }
+
   function brandCandidates(text){
     var raw = String(text || '').toUpperCase();
     var glued = normText(text);
+    var tokens = textTokens(text);
     var found = {};
     BRANDS.forEach(function(b){
-      var best = 0, hit = '';
+      var best = null;
       b.aliases.forEach(function(a){
         var na = normText(a);
         if (!na) return;
         var latin = /^[A-Z0-9]/.test(na);
-        var matched = false;
+        var exact = false;
         if (latin && na.length <= 3){
-          matched = new RegExp('(^|[^A-Z0-9])' + escapeReg(na) + '([^A-Z0-9]|$)').test(raw);
+          exact = new RegExp('(^|[^A-Z0-9])' + escapeReg(na) + '([^A-Z0-9]|$)').test(raw);
         } else {
-          matched = glued.indexOf(na) >= 0;
+          exact = glued.indexOf(na) >= 0;
         }
-        if (!matched) return;
-        var base = 50 + Math.min(24, na.length * 6);
-        if (!latin) base += 4;
-        if (na.length >= 6) base += 4;
-        if (glued.indexOf(na) >= 0 && glued.indexOf(na) < 40) base += 2;
-        var score = Math.min(95, base);
-        if (score > best){ best = score; hit = a; }
+        if (exact){
+          var base = 60 + Math.min(22, na.length * 6);
+          if (!latin) base += 4;
+          if (na.length >= 6) base += 4;
+          if (glued.indexOf(na) >= 0 && glued.indexOf(na) < 40) base += 3;
+          var exactScore = Math.min(98, base);
+          if (!best || exactScore > best.score){
+            best = { name: b.name, score: exactScore, hit: a, matchScore: 1, fuzzy: false };
+          }
+          return;
+        }
+        // 模糊匹配：仅对足够长的别名与同语种候选词启用，避免误命中
+        if (latin && na.length < 4) return;
+        if (!latin && na.length < 3) return;
+        var threshold = latin ? (na.length >= 6 ? 0.76 : 0.86) : 0.8;
+        var tol = tokens.filter(function(t){ return t.kind === (latin ? 'latin' : 'cjk'); });
+        tol.forEach(function(t){
+          if (Math.abs(t.text.length - na.length) > 3) return;
+          var sim = stringSimilarity(t.text, na);
+          if (sim < threshold) return;
+          if (t.text.length === na.length && t.text.length <= 3) return;
+          var fuzzyScore = Math.round(30 + sim * 45);
+          if (!best || fuzzyScore > best.score){
+            best = { name: b.name, score: Math.min(94, fuzzyScore), hit: a, matchScore: sim, fuzzy: true };
+          }
+        });
       });
-      if (best && !found[b.name]) found[b.name] = { name: b.name, score: best, hit: hit };
+      if (best && !found[b.name]) found[b.name] = best;
     });
     return Object.keys(found).map(function(k){ return found[k]; })
       .sort(function(a, b){ return b.score - a.score; }).slice(0, 3);
@@ -1939,17 +2207,30 @@ textarea{resize:vertical;min-height:56px}
   function categoryCandidates(text){
     var res = { skin: [], makeup: [] };
     var flat = normText(text);
+    var raw = String(text || '').toUpperCase();
     ['skin', 'makeup'].forEach(function(board){
       Object.keys(CAT_WORDS[board]).forEach(function(name){
         var words = CAT_WORDS[board][name];
         if (!words.length) return;
-        var hits = [], score = 45;
+        var hits = [], weight = 0;
         words.forEach(function(kw){
           var nk = normText(kw);
-          if (nk && flat.indexOf(nk) >= 0){ hits.push(kw); score += 10 + Math.min(10, kw.length * 2); }
+          if (!nk) return;
+          var idx = flat.indexOf(nk);
+          if (idx < 0) return;
+          // 短英文关键词要求词边界，避免 "UV" 命中其他单词内部
+          if (/^[A-Z0-9]/.test(nk) && nk.length <= 3){
+            if (!new RegExp('(^|[^A-Z0-9])' + escapeReg(nk) + '([^A-Z0-9]|$)').test(raw)) return;
+          }
+          hits.push(kw);
+          weight += nk.length === 1 ? 1 : Math.min(30, 8 + nk.length * 3);
+          var cnt = 0, p = idx;
+          while ((p = flat.indexOf(nk, p)) >= 0){ cnt++; p += nk.length; }
+          if (cnt > 1) weight += Math.min(6, cnt);
         });
         if (hits.length){
-          res[board].push({ name: name, score: Math.min(95, score), hits: hits.slice(0, 3) });
+          var score = Math.min(99, 42 + weight + (hits.length >= 2 ? 8 : 0));
+          res[board].push({ name: name, score: score, hits: hits.slice(0, 4), confidence: Math.min(95, score) });
         }
       });
       res[board].sort(function(a, b){ return b.score - a.score; });
@@ -1991,25 +2272,53 @@ textarea{resize:vertical;min-height:56px}
   }
 
   function parseSpec(text){
-    var t = String(text || '').replace(/\s+/g, ' ');
-    var re = /(\d{1,4}(?:\.\d+)?)\s*(ml|mL|ML|m1|mI|g|G|克|片|支|枚)/g;
+    var t = String(text || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ');
+    var re = /(\d{1,4}(?:[.,]\d+)?)\s*(毫升|ml|mL|ML|m1|mI|kg|l|g|G|克|片|支|枚|fl\.?\s*oz)/g;
     var m;
     while ((m = re.exec(t))){
-      var n = Number(m[1]);
-      if (!(n > 0 && n <= 2000)) continue;
-      var u = m[2].toLowerCase();
-      u = (u === 'ml' || u === 'm1' || u === 'mi') ? 'ml' : (u === 'g' || u === '克') ? 'g' : (u === '片' ? '片' : '支');
-      return { size: n, unit: u };
+      var n = Number(String(m[1]).replace(',', '.'));
+      if (!(n > 0)) continue;
+      var ru = m[2].toLowerCase().replace(/\s+/g, '').replace(/\./g, '');
+      var unit = 'ml', conf = 0;
+      if (ru === 'ml' || ru === 'm1' || ru === 'mi' || ru === '毫升'){ unit = 'ml'; conf = 82; }
+      else if (ru === 'l'){ n *= 1000; unit = 'ml'; conf = 76; }
+      else if (ru === 'g' || ru === '克'){ unit = 'g'; conf = 82; }
+      else if (ru === 'kg'){ n *= 1000; unit = 'g'; conf = 76; }
+      else if (ru === '片'){ unit = '片'; conf = 70; }
+      else if (ru === '支' || ru === '枚'){ unit = '支'; conf = 70; }
+      else if (ru === 'floz'){ n = n * 29.5735; unit = 'ml'; conf = 74; }
+      else continue;
+      if (n > 2000) continue;
+      var tail = t.slice(m.index + m[0].length, m.index + m[0].length + 9);
+      var cm = tail.match(/^\s*(?:[×xX*·]\s*(\d{1,2})|(\d{1,2})\s*(?:瓶|支|件|个|入))/);
+      var count = cm ? (Number(cm[1] || cm[2]) || 1) : 1;
+      if (!(count >= 1 && count <= 20)) count = 1;
+      if (count > 1) conf += 4;
+      return {
+        size: Math.round(n * 10) / 10, unit: unit, count: count,
+        confidence: Math.min(92, conf), hit: m[0].trim()
+      };
     }
-    return { size: '', unit: 'ml' };
+    return { size: '', unit: 'ml', count: 1, confidence: 0, hit: '' };
   }
 
+  function cleanShade(v){
+    return String(v || '').replace(/^#\s*/, '').replace(/[^\w\-.]/g, '').trim().slice(0, 20);
+  }
   function parseShade(text){
-    var m1 = String(text || '').match(/(?:色号|颜色|shade|color)\s*[:：]?\s*([A-Za-z0-9][A-Za-z0-9\-.]{0,11})/i);
-    if (m1) return m1[1].trim();
-    var m2 = String(text || '').match(/\b(\d{1,2}[A-Z]{1,2})\b/);
-    if (m2) return m2[1];
-    return '';
+    var src = String(text || '');
+    var m = src.match(/(?:色号|颜色|唇色|号色|shade|color|colour)\s*[:：]?\s*([A-Za-z0-9#][A-Za-z0-9#\-./]{0,11})/i);
+    if (m){ var v = cleanShade(m[1]); if (v) return { value: v, confidence: 84, source: '色号标签' }; }
+    var m2 = src.match(/(?:^|\s)(#[0-9]{1,3}[A-Za-z]?)(?=\s|$)/);
+    if (m2) return { value: cleanShade(m2[1]), confidence: 80, source: '# 色号' };
+    var m3 = src.match(/\b([A-Z]{1,2}\d{1,3}[A-Z]?|[A-Z]\d[A-Z]\d|\d[A-Z]{1,2}\d?)\b/);
+    if (m3){
+      var cand = m3[1];
+      if (!/^(SPF|PA|ML|MG|CM|MM|G|L|EXP)$/.test(cand) && !/^20\d{2}$/.test(cand) && !/^\d{1,2}[MLG]$/.test(cand)){
+        return { value: cand, confidence: 66, source: '字母数字组合' };
+      }
+    }
+    return { value: '', confidence: 0, source: '' };
   }
 
   function validISO(y, mo, da){
@@ -2024,29 +2333,59 @@ textarea{resize:vertical;min-height:56px}
     var src = String(text || '');
     var found = [];
     var m, reA = /(20\d{2})\s*[年.\-/]\s*(\d{1,2})\s*[月.\-/]\s*(\d{1,2})\s*日?/g;
-    while ((m = reA.exec(src))){ var d = validISO(m[1], m[2], m[3]); if (d) found.push({ d: d, before: src.slice(Math.max(0, m.index - 18), m.index) }); }
+    while ((m = reA.exec(src))){
+      var d = validISO(m[1], m[2], m[3]);
+      if (d) found.push({ d: d, index: m.index, len: m[0].length, kind: 'ymd' });
+    }
     var reB = /(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])/g;
-    while ((m = reB.exec(src))){ var d2 = validISO(m[1], m[2], m[3]); if (d2) found.push({ d: d2, before: '' }); }
-    if (!found.length) return '';
-    var expiry = '';
+    while ((m = reB.exec(src))){
+      var d2 = validISO(m[1], m[2], m[3]);
+      if (d2) found.push({ d: d2, index: m.index, len: m[0].length, kind: 'ymd8' });
+    }
+    if (!found.length) return { value: '', confidence: 0, source: '' };
+    var labelRe = /(限期使用日期|限期使用|限期|到期日|到期|截止日期|截止|保存至|有效期至|有效期|保质期|使用期限|EXP(?:IRY|IRES)?|BESTBEFORE|BEST BEFORE|USE BY|VALID UNTIL)/i;
+    var prodRe = /(生产日期|生产|制造|MFG|MADE|批号|LOT|PD)/i;
+    var pick = null;
     found.forEach(function(x){
-      if (/生产|制造|MFG|PD/i.test(x.before)) return;
-      if (/到期|保质|有效|限期|EXP/i.test(x.before) && !expiry) expiry = x.d;
+      var before = src.slice(Math.max(0, x.index - 20), x.index);
+      var after = src.slice(x.index + x.len, x.index + x.len + 14);
+      var ctx = before + ' ' + after;
+      if (prodRe.test(before) && !labelRe.test(ctx)) return;
+      var labelled = labelRe.test(ctx);
+      var cand = {
+        d: x.d, conf: labelled ? 88 : (x.kind === 'ymd8' ? 72 : 64),
+        labelled: labelled, source: labelled ? '到期标签' : '独立日期'
+      };
+      if (!pick) pick = cand;
+      else if (labelled && !pick.labelled) pick = cand;
+      else if (labelled === pick.labelled && cand.d > pick.d) pick = cand;
     });
-    if (expiry) return expiry;
-    var future = found.map(function(x){ return x.d; })
-      .filter(function(d){ return daysFromToday(d) >= 0; }).sort();
-    return future.length ? future[future.length - 1] : '';
+    if (pick) return { value: pick.d, confidence: pick.conf, source: pick.source };
+    return { value: '', confidence: 0, source: '' };
   }
 
-  function parseType(text){
-    if (/小样|试用装|体验装|旅行装|sample/i.test(text)) return '小样';
-    if (/中样|deluxe/i.test(text)) return '中样';
-    return '正装';
+  function parseType(text, spec){
+    var src = String(text || '');
+    if (/小样|试用装|体验装|sample|sachet|trial|mini|迷你|片装/i.test(src)){
+      return { value: '小样', confidence: 88, source: '包装文字' };
+    }
+    if (/中样|deluxe|travelsize|travel|旅行装|便携装|便携/i.test(src)){
+      return { value: '中样', confidence: 82, source: '包装文字' };
+    }
+    if (/正装|fullsize|full size/i.test(src)){
+      return { value: '正装', confidence: 84, source: '包装文字' };
+    }
+    var n = Number(spec && spec.size);
+    if (spec && spec.unit !== '片' && n > 0){
+      if (n <= 12) return { value: '小样', confidence: 56, source: '规格推断' };
+      if (n <= 25) return { value: '中样', confidence: 52, source: '规格推断' };
+    }
+    return { value: '正装', confidence: 40, source: '默认' };
   }
 
-  function parseOcrText(text, hintBoard){
+  function parseOcrText(text, hintBoard, ocrConf){
     var raw = String(text || '').replace(/\r/g, '');
+    var ocr = Math.max(0, Math.min(100, Math.round(Number(ocrConf) || 0)));
     var boardHint = hintBoard === 'makeup' ? 'makeup' : 'skin';
     var brands = brandCandidates(raw);
     var catRes = categoryCandidates(raw);
@@ -2058,26 +2397,81 @@ textarea{resize:vertical;min-height:56px}
 
     var cats = catRes[board];
     var bestBrand = brands[0] && brands[0].score >= 58 ? brands[0] : null;
-    var bestCat = cats[0] && cats[0].score >= 55 ? cats[0] : null;
+    var bestCat = cats[0] && cats[0].score >= 52 ? cats[0] : null;
     var category = bestCat ? bestCat.name : state.categories[board][0].name;
     if (!state.categories[board].some(function(c){ return c.name === category; })) category = state.categories[board][0].name;
 
     var spec = parseSpec(raw);
+    var exp = parseExpiry(raw);
+    var typeInfo = parseType(raw, spec);
+    var shadeInfo = board === 'makeup' ? parseShade(raw) : { value: '', confidence: 0, source: '' };
+    var name = extractProductName(raw, bestBrand ? bestBrand.hit : '', board, cats);
+
+    var brandConf = bestBrand
+      ? (ocr ? Math.round(0.65 * bestBrand.score + 0.35 * ocr) : bestBrand.score)
+      : 0;
+    var catConf = bestCat
+      ? (ocr ? Math.round(0.6 * bestCat.score + 0.4 * ocr) : bestCat.score)
+      : 0;
+    var nameConf = name ? (ocr ? Math.round(0.55 * ocr + 28 + (bestBrand ? 4 : 0)) : 58) : 0;
+    var sizeConf = spec.size ? (ocr ? Math.round(0.7 * spec.confidence + 0.3 * ocr) : spec.confidence) : 0;
+    var expConf = exp.value ? (ocr ? Math.round(0.7 * exp.confidence + 0.3 * ocr) : exp.confidence) : 0;
+    var shadeConf = shadeInfo.value ? (ocr ? Math.round(0.7 * shadeInfo.confidence + 0.3 * ocr) : shadeInfo.confidence) : 0;
+    var typeConf = typeInfo.source === '默认' ? typeInfo.confidence
+      : (ocr ? Math.round(0.7 * typeInfo.confidence + 0.3 * ocr) : typeInfo.confidence);
+
     var fields = {
       board: board,
       brand: bestBrand ? bestBrand.name : '',
-      name: extractProductName(raw, bestBrand ? bestBrand.hit : '', board, cats),
+      name: name,
       category: category,
       size: spec.size,
       unit: spec.unit,
-      type: parseType(raw),
-      shade: board === 'makeup' ? parseShade(raw) : '',
-      expiryDate: parseExpiry(raw),
+      packCount: spec.count,
+      type: typeInfo.value,
+      shade: shadeInfo.value,
+      expiryDate: exp.value,
       openMonths: catMonths(board, category)
     };
+
+    var fieldMeta = {
+      brand: {
+        source: bestBrand ? ('词库' + (bestBrand.fuzzy ? '模糊' : '精确') + '匹配「' + bestBrand.hit + '」') : '未识别',
+        confidence: brandConf, low: brandConf < 60
+      },
+      name: {
+        source: name ? '包装主文字行' : '未识别',
+        confidence: nameConf, low: nameConf < 60
+      },
+      category: {
+        source: bestCat ? ('关键词「' + bestCat.hits.join('、') + '」') : '未命中，已用默认品类',
+        confidence: catConf, low: catConf < 60
+      },
+      size: {
+        source: spec.hit ? ('规格「' + spec.hit + '」') : '未识别',
+        confidence: sizeConf, low: sizeConf < 60
+      },
+      type: {
+        source: typeInfo.source,
+        confidence: typeConf, low: typeConf < 60
+      },
+      expiryDate: {
+        source: exp.value ? (exp.source + '「' + exp.value + '」') : '未识别',
+        confidence: expConf, low: expConf < 60
+      }
+    };
+    if (board === 'makeup'){
+      fieldMeta.shade = {
+        source: shadeInfo.value ? (shadeInfo.source + '「' + shadeInfo.value + '」') : '未识别',
+        confidence: shadeConf, low: shadeConf < 60
+      };
+    }
+    var avg = [brandConf, nameConf, catConf].filter(function(x){ return x > 0; });
+    var overall = avg.length ? Math.round(avg.reduce(function(s, x){ return s + x; }, 0) / avg.length) : 0;
+
     return {
-      fields: fields, brandCandidates: brands, catCandidates: cats,
-      text: raw, source: '本地 OCR', confidence: 0, warn: ''
+      fields: fields, brandCandidates: brands, catCandidates: cats, fieldMeta: fieldMeta,
+      text: raw, source: '本地 OCR', confidence: ocr || overall, warn: ''
     };
   }
 
@@ -2113,10 +2507,21 @@ textarea{resize:vertical;min-height:56px}
       ? ocr.catCandidates.slice(0, 3).map(function(c){ return c.name + ' ' + c.score + '%（关键词「' + c.hits.join('、') + '」）'; }).join(' · ')
       : '未识别到品类，已使用当前板块默认品类';
     var conf = ocr.confidence ? ('文字识别置信度约 ' + ocr.confidence + '%。') : '';
+    var metaHTML = '';
+    if (ocr.fieldMeta){
+      var order = ['brand', 'name', 'category', 'size', 'type', 'shade', 'expiryDate'];
+      var cells = order.filter(function(k){ return ocr.fieldMeta[k]; }).map(function(k){
+        var m = ocr.fieldMeta[k];
+        var val = m.confidence ? (m.confidence + '%') : '未识别';
+        return '<span class="' + (m.low ? 'low' : '') + '"><b>' + FIELD_LABELS[k] + ' ' + val + '</b><i>' + esc(m.source) + '</i></span>';
+      });
+      if (cells.length) metaHTML = '<div class="ocr-meta-grid">' + cells.join('') + '</div>';
+    }
     return '<div class="ocr-panel"><div class="ocr-head"><b>拍照识别结果</b><span class="tag">' + esc(ocr.source || '本地 OCR') + '</span></div>' +
       '<div class="cand"><b>品牌候选：</b>' + esc(bc) + '</div>' +
       '<div class="cand"><b>品类候选：</b>' + esc(cc) + '</div>' +
-      '<div class="cand">' + esc(conf) + '识别结果仅供参考，请核对后再保存；识别不到的内容已留空。</div>' +
+      metaHTML +
+      '<div class="cand">' + esc(conf) + '低置信字段已标黄，必须人工核对；识别不到的内容已留空。</div>' +
       (ocr.text ? '<details><summary>查看识别原文（最多 500 字）</summary><pre>' + esc(ocr.text.slice(0, 500)) + '</pre></details>' : '') +
       '</div>';
   }
@@ -2508,12 +2913,15 @@ textarea{resize:vertical;min-height:56px}
   }
 
   /* ---------- 9.4 在线 AI 通道（可选） ---------- */
-  var AI_PROMPT = '请识别这张化妆品包装照片，只输出严格 JSON，不要任何解释。字段：' +
-    '{"board":"skin或makeup","brand":"品牌名，看不到就留空","name":"产品名称","category":"品类",' +
-    '"size":数字或null,"unit":"ml或g或支或片","shade":"色号","type":"正装或中样或小样",' +
-    '"expiryDate":"YYYY-MM-DD或空","confidence":0到1}。' +
+  var AI_PROMPT = '只提取这张化妆品包装照片上清晰可见的信息。严格只输出一个 JSON 对象，不要 markdown 代码块，不要任何解释。' +
+    '看不清、被遮挡、反光或图上不存在的内容必须留空（字符串用空串、数字用 null），绝对禁止猜测、补全或编造。' +
+    '字段：{"board":"skin或makeup","brand":"","name":"","category":"",' +
+    '"size":数字或null,"unit":"ml/g/支/片","shade":"","type":"正装/中样/小样",' +
+    '"expiryDate":"YYYY-MM-DD或空","confidence":0到1,' +
+    '"fieldConfidence":{"board":0到1,"brand":0到1,"name":0到1,"category":0到1,"size":0到1,"shade":0到1,"type":0到1,"expiryDate":0到1}}。' +
+    'fieldConfidence 表示每个字段的可信度，看不清的字段填 0。' +
     '品类参考：护肤=洁面/卸妆/化妆水/爽肤水/乳液/面霜/精华/眼霜/面膜/防晒/身体护理/其他；' +
-    '彩妆=底妆/唇妆/眼妆/腮红修容/美妆工具/其他。不要猜测看不清的内容。';
+    '彩妆=底妆/唇妆/眼妆/腮红修容/美妆工具/其他。';
 
   function aiRecognize(dataUrl){
     var ai = state.settings.ai || {};
@@ -2522,7 +2930,7 @@ textarea{resize:vertical;min-height:56px}
       temperature: 0,
       max_tokens: 400,
       messages: [
-        { role: 'system', content: '你是化妆品包装信息提取助手，只输出 JSON。' },
+        { role: 'system', content: '你是化妆品包装信息提取助手。只输出严格 JSON，不臆造、不解释；只填写图片上可见的信息。' },
         { role: 'user', content: [
           { type: 'text', text: AI_PROMPT },
           { type: 'image_url', image_url: { url: dataUrl, detail: 'high' } }
@@ -2575,7 +2983,31 @@ textarea{resize:vertical;min-height:56px}
       : [];
     p.catCandidates = cats;
     p.source = '在线 AI';
-    p.confidence = Math.round((Number(obj.confidence) || 0.7) * 100);
+    var baseConf = Number(obj.confidence);
+    if (!isFinite(baseConf)) baseConf = 0.7;
+    baseConf = Math.max(0, Math.min(1, baseConf));
+    p.confidence = Math.round(baseConf * 100);
+    var fc = obj.fieldConfidence && typeof obj.fieldConfidence === 'object' ? obj.fieldConfidence : {};
+    var metaOne = function(key, hasValue, source){
+      var c = Number(fc[key]);
+      if (!isFinite(c)) c = hasValue ? baseConf : 0;
+      c = Math.max(0, Math.min(1, c));
+      return {
+        source: hasValue ? (source || '在线 AI 返回') : '未识别',
+        confidence: Math.round(c * 100),
+        low: hasValue && c * 100 < 60
+      };
+    };
+    var catHas = !!exact || !!String(obj.category || '').trim() || !!(cats[0] && cats[0].score >= 52);
+    p.fieldMeta = {
+      brand: metaOne('brand', !!p.fields.brand, '在线 AI · 品牌'),
+      name: metaOne('name', !!p.fields.name, '在线 AI · 品名'),
+      category: metaOne('category', catHas, '在线 AI / 关键词'),
+      size: metaOne('size', p.fields.size !== '' && p.fields.size != null, '在线 AI · 规格'),
+      type: metaOne('type', TYPE_LIST.indexOf(obj.type) >= 0, '在线 AI · 类型'),
+      expiryDate: metaOne('expiryDate', !!p.fields.expiryDate, '在线 AI · 到期日')
+    };
+    if (board === 'makeup') p.fieldMeta.shade = metaOne('shade', !!p.fields.shade, '在线 AI · 色号');
     p.text = rawText || '';
     return p;
   }
@@ -2604,7 +3036,140 @@ textarea{resize:vertical;min-height:56px}
     return tesseractPromise;
   }
 
-  function localRecognize(dataUrl, onProgress){
+  // 预处理：灰度化 + 2%/98% 分位自适应对比度/亮度拉伸
+  function preprocessCanvas(ctx, w, h){
+    var imgData = ctx.getImageData(0, 0, w, h);
+    var d = imgData.data;
+    var hist = [], i;
+    for (i = 0; i < 256; i++) hist[i] = 0;
+    for (i = 0; i < d.length; i += 4){
+      hist[Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2])]++;
+    }
+    var total = w * h, lo = 0, hi = 255, acc = 0, v;
+    var loTarget = total * 0.02, hiTarget = total * 0.98;
+    for (v = 0; v < 256; v++){ acc += hist[v]; if (acc >= loTarget){ lo = v; break; } }
+    acc = 0;
+    for (v = 0; v < 256; v++){ acc += hist[v]; if (acc >= hiTarget){ hi = v; break; } }
+    if (hi - lo < 24){ lo = Math.max(0, lo - 12); hi = Math.min(255, hi + 12); }
+    if (hi - lo < 8) return;
+    var lut = [], span = hi - lo;
+    for (i = 0; i < 256; i++){
+      var y = (i - lo) * 255 / span;
+      lut[i] = Math.max(0, Math.min(255, Math.round(y)));
+    }
+    for (i = 0; i < d.length; i += 4){
+      var g = lut[Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2])];
+      d[i] = g; d[i + 1] = g; d[i + 2] = g;
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  // 生成用于 OCR 的图像：原图长边上限 2400px（不占用压缩预览），可选预处理与小图放大
+  function prepareOcrInput(img, opts){
+    opts = opts || {};
+    var pre = opts.preprocess !== false;
+    var high = opts.high !== false;
+    var maxLong = 2400;
+    var w = img.naturalWidth || img.width || 0;
+    var h = img.naturalHeight || img.height || 0;
+    if (!w || !h) throw new Error('图片尺寸无效');
+    var scale = 1;
+    if (high && Math.max(w, h) < 1000) scale = 2;
+    if (Math.max(w, h) * scale > maxLong) scale = maxLong / Math.max(w, h);
+    var tw = Math.max(1, Math.round(w * scale));
+    var th = Math.max(1, Math.round(h * scale));
+    var c = document.createElement('canvas');
+    c.width = tw; c.height = th;
+    var ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, tw, th);
+    ctx.drawImage(img, 0, 0, tw, th);
+    if (pre){
+      try { preprocessCanvas(ctx, tw, th); } catch (e){ console.warn('图像预处理失败，使用原图', e); }
+    }
+    return {
+      dataUrl: c.toDataURL('image/jpeg', 0.95),
+      width: tw, height: th, scale: scale,
+      preprocessed: pre, upscaled: scale > 1.001, high: high
+    };
+  }
+
+  // 从 tesseract blocks / tsv 提取行级文本框
+  function parseTsvLines(tsv){
+    var rows = String(tsv || '').split(/\r?\n/);
+    var groups = {};
+    rows.forEach(function(row){
+      var cols = row.split('\t');
+      if (cols.length < 12) return;
+      if (Number(cols[0]) !== 5) return;
+      var text = cols.slice(11).join('\t').trim();
+      if (!text) return;
+      var key = cols[1] + '-' + cols[2] + '-' + cols[3] + '-' + cols[4];
+      var g = groups[key];
+      if (!g){ g = { words: [], conf: [], x0: 1e9, y0: 1e9, x1: 0, y1: 0 }; groups[key] = g; }
+      var x = Number(cols[6]), y = Number(cols[7]), w = Number(cols[8]), h = Number(cols[9]);
+      var conf = Number(cols[10]);
+      g.words.push(text);
+      if (isFinite(conf) && conf >= 0) g.conf.push(conf);
+      if (x < g.x0) g.x0 = x;
+      if (y < g.y0) g.y0 = y;
+      if (x + w > g.x1) g.x1 = x + w;
+      if (y + h > g.y1) g.y1 = y + h;
+    });
+    return Object.keys(groups).map(function(k){
+      var g = groups[k];
+      return {
+        text: g.words.join(' '),
+        confidence: g.conf.length ? Math.round(g.conf.reduce(function(s, c){ return s + c; }, 0) / g.conf.length) : 0,
+        bbox: { x0: g.x0, y0: g.y0, x1: g.x1, y1: g.y1 }
+      };
+    }).filter(function(l){ return l.text; });
+  }
+
+  function extractOcrLines(data){
+    var lines = [];
+    if (data && Array.isArray(data.blocks) && data.blocks.length){
+      data.blocks.forEach(function(block){
+        (block.paragraphs || []).forEach(function(para){
+          (para.lines || []).forEach(function(line){
+            var txt = String(line.text || '').trim();
+            var b = line.bbox;
+            if (!txt || !b) return;
+            lines.push({
+              text: txt, confidence: Math.round(Number(line.confidence) || 0),
+              bbox: { x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1 }
+            });
+          });
+        });
+      });
+    }
+    if (!lines.length && data && data.tsv) lines = parseTsvLines(data.tsv);
+    return lines;
+  }
+
+  function passFieldHits(text){
+    var hits = 0;
+    var b = brandCandidates(text);
+    if (b[0] && b[0].score >= 58) hits++;
+    var c = categoryCandidates(text);
+    if ((c.skin[0] && c.skin[0].score >= 52) || (c.makeup[0] && c.makeup[0].score >= 52)) hits++;
+    if (parseSpec(text).size !== '') hits++;
+    if (parseExpiry(text).value) hits++;
+    return hits;
+  }
+
+  function passScore(p){
+    return (Number(p.confidence) || 0) * 0.6 + passFieldHits(p.text) * 10 + Math.min(8, String(p.text || '').length / 60);
+  }
+
+  function localRecognize(prep, onProgress, opts){
+    opts = opts || {};
+    var dataUrl = typeof prep === 'string' ? prep : prep.dataUrl;
+    var ocrW = (prep && prep.width) || opts.width || 0;
+    var ocrH = (prep && prep.height) || opts.height || 0;
+    var high = opts.high !== false;
     return loadTesseract().then(function(T){
       var ready;
       if (!ocrWorker){
@@ -2614,20 +3179,70 @@ textarea{resize:vertical;min-height:56px}
             var p = m && typeof m.progress === 'number' ? m.progress : 0;
             if (m.status === 'loading language traineddata') onProgress('正在下载中英文识别数据（首次约 30MB）…', 60 * p);
             else if (m.status === 'initializing api') onProgress('正在初始化识别引擎…', 62);
-            else if (m.status === 'recognizing text') onProgress('正在识别包装文字…', 64 + 36 * p);
           }
         }).then(function(w){ ocrWorker = w; return w; });
       } else {
         ready = Promise.resolve(ocrWorker);
       }
       return ready.then(function(w){
-        onProgress('正在识别包装文字…', 64);
-        return w.recognize(dataUrl);
-      }).then(function(ret){
-        return {
-          text: String((ret && ret.data && ret.data.text) || '').replace(/\r/g, '').replace(/\n{3,}/g, '\n\n'),
-          confidence: Math.round(Number(ret && ret.data && ret.data.confidence) || 0)
+        var psms = high ? [6, 11] : [6];
+        var results = [];
+        var runPass = function(i){
+          if (i >= psms.length) return Promise.resolve();
+          var psm = psms[i];
+          var base = high ? (64 + i * 14) : 64;
+          onProgress('正在识别包装文字（第 ' + (i + 1) + '/' + psms.length + ' 遍）…', base);
+          return Promise.resolve()
+            .then(function(){
+              return w.setParameters({ tessedit_pageseg_mode: String(psm), preserve_interword_spaces: '1' });
+            })
+            .catch(function(){ return null; })
+            .then(function(){ return w.recognize(dataUrl, {}, { text: true, blocks: true, tsv: true }); })
+            .then(function(ret){
+              var data = (ret && ret.data) || {};
+              results.push({
+                text: String(data.text || '').replace(/\r/g, '').replace(/\n{3,}/g, '\n\n'),
+                confidence: Math.round(Number(data.confidence) || 0),
+                lines: extractOcrLines(data),
+                psm: psm
+              });
+              return runPass(i + 1);
+            });
         };
+        return runPass(0).then(function(){
+          if (!results.length) throw new Error('识别未返回结果');
+          var best = results.slice().sort(function(a, b){ return passScore(b) - passScore(a); })[0];
+          var lines = best.lines.slice();
+          var seen = {};
+          lines.forEach(function(l){ var k = normText(l.text); if (k) seen[k] = true; });
+          var extraTexts = [];
+          if ((best.confidence < 62 || best.lines.length < 3) && results.length > 1){
+            results.forEach(function(p){
+              if (p === best || p.confidence < best.confidence - 12) return;
+              p.lines.forEach(function(l){
+                var k = normText(l.text);
+                if (!k || seen[k] || l.confidence < 78) return;
+                if (!/[A-Za-z\u4e00-\u9fa5]/.test(l.text)) return;
+                seen[k] = true;
+                lines.push(l);
+                extraTexts.push(l.text);
+              });
+            });
+          }
+          var text = best.text;
+          if (extraTexts.length){
+            var bestFlat = normText(text);
+            var extra = extraTexts.filter(function(t){ return bestFlat.indexOf(normText(t)) < 0; });
+            if (extra.length) text = text.replace(/\n+$/, '') + '\n' + extra.join('\n');
+          }
+          onProgress('识别完成，正在整理结果…', 99);
+          return {
+            text: text, confidence: best.confidence, lines: lines,
+            ocrWidth: ocrW, ocrHeight: ocrH,
+            psm: best.psm, passes: results.map(function(r){ return { psm: r.psm, confidence: r.confidence, score: Math.round(passScore(r)) }; }),
+            preprocessed: !!(prep && prep.preprocessed), merged: extraTexts.length > 0
+          };
+        });
       });
     });
   }
@@ -2720,21 +3335,24 @@ textarea{resize:vertical;min-height:56px}
       '</div></div>';
   }
 
-  function recognizePhoto(dataUrl, hint, job){
+  function recognizePhoto(prep, hint, job){
     return new Promise(function(resolve){
       var ai = state.settings.ai || {};
+      var high = state.settings.ocrHighAccuracy !== false;
       var done = function(p){ resolve(p); };
       var toLocal = function(){
         if (job !== photoJob) return;
         if (navigator.onLine === false){ degradePhoto(null); resolve(null); return; }
         setOcrStatus('正在准备本地 OCR…', 12);
-        withTimeout(localRecognize(dataUrl, function(msg, pct){
+        withTimeout(localRecognize(prep, function(msg, pct){
           if (job === photoJob) setOcrStatus(msg, pct);
-        }), 150000, '识别超时，请重试或手动填写').then(function(res){
+        }, { high: high, width: prep.width, height: prep.height }), 150000, '识别超时，请重试或手动填写').then(function(res){
           if (job !== photoJob) return;
-          var parsed = parseOcrText(res.text, hint);
+          var parsed = parseOcrText(res.text, hint, res.confidence);
           parsed.confidence = res.confidence;
-          parsed.source = '本地 OCR';
+          parsed.lines = res.lines;
+          parsed.ocrWidth = res.ocrWidth;
+          parsed.ocrHeight = res.ocrHeight;
           setOcrStatus('识别完成，正在整理结果…', 100);
           done(parsed);
         }).catch(function(e){
@@ -2745,7 +3363,7 @@ textarea{resize:vertical;min-height:56px}
       };
       if (ai.endpoint && ai.key){
         setOcrStatus('正在调用在线 AI 识别…', 15);
-        withTimeout(aiRecognize(dataUrl), 60000, '在线 AI 识别超时').then(function(r){
+        withTimeout(aiRecognize(prep.dataUrl), 60000, '在线 AI 识别超时').then(function(r){
           if (job !== photoJob) return;
           var parsed = aiToPrefill(r.obj, r.text);
           setOcrStatus('在线识别完成，正在整理结果…', 100);
@@ -2783,8 +3401,15 @@ textarea{resize:vertical;min-height:56px}
       pendingPhoto = { full: c.full, thumb: c.thumb };
       var view = document.getElementById('photoPreview');
       if (view) view.src = c.thumb;
-      setOcrStatus('照片已在本地压缩（长边约 1200px）', 10);
-      return recognizePhoto(c.full, photoHint, job);
+      setOcrStatus('照片已压缩用于预览与存档（长边约 1200px）', 8);
+      var high = state.settings.ocrHighAccuracy !== false;
+      var prep = prepareOcrInput(img, {
+        high: high,
+        preprocess: high && state.settings.ocrPreprocess !== false
+      });
+      setOcrStatus('已按原图准备识别图像（长边 ' + Math.max(prep.width, prep.height) + 'px' +
+        (prep.preprocessed ? '，已灰度化与对比度拉伸' : '') + (prep.upscaled ? '，已放大' : '') + '）', 10);
+      return recognizePhoto(prep, photoHint, job);
     }).then(function(parsed){
       if (job !== photoJob || !parsed) return;
       photoBusy = false;
@@ -2793,6 +3418,7 @@ textarea{resize:vertical;min-height:56px}
         brandCandidates: parsed.brandCandidates,
         catCandidates: parsed.catCandidates,
         confidence: parsed.confidence,
+        fieldMeta: parsed.fieldMeta,
         text: parsed.text,
         warn: parsed.warn || ''
       };
@@ -2986,13 +3612,20 @@ textarea{resize:vertical;min-height:56px}
       it.thumb = c.thumb;
       if (!it.imgId) it.imgId = 'img-' + uid();
       it.file = null;
+      var high = state.settings.ocrHighAccuracy !== false;
+      it.ocrImg = prepareOcrInput(img, {
+        high: high,
+        preprocess: high && state.settings.ocrPreprocess !== false
+      });
       it.progress = 10;
-      it.message = '已本地压缩，准备识别';
+      it.message = '已准备识别图像（长边 ' + Math.max(it.ocrImg.width, it.ocrImg.height) + 'px' +
+        (it.ocrImg.preprocessed ? '，已预处理' : '') + '）';
       renderBatch();
       if (navigator.onLine === false) return { offline: true };
       return withTimeout(recognizeBatchImage(it), 150000, '识别超时，可稍后重试或手动填写');
     }).then(function(res){
       if (!batch || !res) return;
+      if (it.ocrImg) it.ocrImg = null;
       if (it.cancelled){ it.status = 'cancelled'; it.message = '已取消，未生成草稿'; renderBatch(); return; }
       if (res.offline){
         addManualDraft(it, '离线状态，识别不可用');
@@ -3019,6 +3652,7 @@ textarea{resize:vertical;min-height:56px}
       renderBatch();
     }).catch(function(e){
       if (!batch) return;
+      if (it.ocrImg) it.ocrImg = null;
       if (it.cancelled){ it.status = 'cancelled'; it.message = '已取消，未生成草稿'; renderBatch(); return; }
       it.status = 'failed';
       it.progress = 100;
@@ -3030,24 +3664,31 @@ textarea{resize:vertical;min-height:56px}
 
   function recognizeBatchImage(it){
     var ai = state.settings.ai || {};
+    var high = state.settings.ocrHighAccuracy !== false;
     var local = function(){
       if (navigator.onLine === false) return Promise.resolve({ offline: true });
-      return withTimeout(localRecognize(it.full, function(msg, pct){
+      return withTimeout(localRecognize(it.ocrImg, function(msg, pct){
         if (batch && !it.cancelled){
           it.progress = Math.max(10, Math.min(99, Math.round(pct)));
           it.message = msg;
           renderBatch();
         }
-      }), 150000, '识别超时').then(function(res){
-        return { mode: 'local', text: res.text, confidence: res.confidence };
+      }, { high: high, width: it.ocrImg.width, height: it.ocrImg.height }), 150000, '识别超时').then(function(res){
+        return {
+          mode: 'local', text: res.text, confidence: res.confidence,
+          lines: res.lines, ocrWidth: res.ocrWidth, ocrHeight: res.ocrHeight
+        };
       });
     };
     if (ai.batchAi && ai.endpoint && ai.key){
       it.message = '在线 AI 识别整图（一图多件）…';
       it.progress = 15;
       renderBatch();
-      return withTimeout(aiBatchRecognize(it.full), 60000, '在线 AI 识别超时').then(function(r){
-        return { mode: 'ai', items: r.items, text: r.text, confidence: 0 };
+      return withTimeout(aiBatchRecognize(it.ocrImg.dataUrl), 60000, '在线 AI 识别超时').then(function(r){
+        return {
+          mode: 'ai', items: r.items, text: r.text, confidence: 0,
+          ocrWidth: it.ocrImg.width, ocrHeight: it.ocrImg.height
+        };
       }).catch(function(e){
         console.warn('批量在线识别失败，回退本地 OCR', e);
         if (batch && !it.cancelled){
@@ -3061,51 +3702,152 @@ textarea{resize:vertical;min-height:56px}
     return local();
   }
 
-  // 按空行、品牌词与品类关键词把整图 OCR 文本切成多个候选产品
-  function splitOcrSegments(text, hint){
-    var lines = String(text || '').replace(/\r/g, '').split('\n');
-    var groups = [], cur = [];
-    lines.forEach(function(line){
-      var t = line.replace(/\s+/g, ' ').trim();
-      if (!t){ if (cur.length){ groups.push(cur); cur = []; } return; }
-      cur.push(t);
-    });
-    if (cur.length) groups.push(cur);
+  function unionBox(a, b){
+    if (!a) return b;
+    if (!b) return a;
+    return {
+      x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0),
+      x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1)
+    };
+  }
+  function linesBox(lines){
+    var box = null;
+    (lines || []).forEach(function(l){ box = unionBox(box, l.bbox); });
+    return box;
+  }
 
+  // 优先按 OCR 文本框的空间位置与行距聚类；无坐标时退回按空行 / 品牌 / 品类切分
+  function splitOcrSegments(text, hint, ocrLines, dims){
     var segs = [];
-    groups.forEach(function(group){
-      var blocks = [], block = [], blockCats = [], lastBrand = '';
-      group.forEach(function(line){
-        if (!/[A-Za-z\u4e00-\u9fa5]/.test(line)){ if (block.length) block.push(line); return; }
-        var bc = brandCandidates(line);
-        var brand = bc[0] && bc[0].score >= 58 ? bc[0].name : '';
-        var cc = categoryCandidates(line);
-        var topCat = (cc.skin[0] && cc.skin[0].score >= 55) ? cc.skin[0] : ((cc.makeup[0] && cc.makeup[0].score >= 55) ? cc.makeup[0] : null);
-        var start = false;
-        if (block.length){
-          if (brand && brand !== lastBrand && lastBrand) start = true;
-          else if (brand && lastBrand && brand === lastBrand && topCat && blockCats.length && blockCats.indexOf(topCat.name) < 0 && block.length >= 2) start = true;
-          else if (!brand && topCat && blockCats.length && blockCats.indexOf(topCat.name) < 0 && block.length >= 3) start = true;
-        }
-        if (start){ blocks.push(block); block = []; blockCats = []; }
-        if (brand) lastBrand = brand;
-        if (topCat && blockCats.indexOf(topCat.name) < 0) blockCats.push(topCat.name);
-        block.push(line);
+    var W = dims && dims.w || 0, H = dims && dims.h || 0;
+    if (ocrLines && ocrLines.length && W > 0 && H > 0){
+      var usable = ocrLines.filter(function(l){
+        return l.bbox && /[A-Za-z\u4e00-\u9fa5]/.test(l.text) && normText(l.text).length >= 2;
       });
-      if (block.length) blocks.push(block);
-      blocks.forEach(function(b){ var t = b.join('\n').trim(); if (t) segs.push(t); });
-    });
+      if (usable.length){
+        var cols = [];
+        usable.slice().sort(function(a, b){ return a.bbox.x0 - b.bbox.x0; }).forEach(function(l){
+          var b = l.bbox, placed = false;
+          for (var i = 0; i < cols.length; i++){
+            var c = cols[i];
+            var ov = Math.min(b.x1, c.x1) - Math.max(b.x0, c.x0);
+            var minW = Math.min(b.x1 - b.x0, c.x1 - c.x0);
+            if (ov > 12 && ov > minW * 0.3){
+              c.lines.push(l);
+              c.x0 = Math.min(c.x0, b.x0); c.x1 = Math.max(c.x1, b.x1);
+              placed = true; break;
+            }
+          }
+          if (!placed) cols.push({ x0: b.x0, x1: b.x1, lines: [l] });
+        });
+        cols.sort(function(a, b){ return a.x0 - b.x0; });
+        var merged = [];
+        cols.forEach(function(c){
+          var last = merged[merged.length - 1];
+          if (last && (c.x1 - c.x0) < W * 0.08 && c.x0 < last.x1 + W * 0.02){
+            last.lines = last.lines.concat(c.lines);
+            last.x0 = Math.min(last.x0, c.x0);
+            last.x1 = Math.max(last.x1, c.x1);
+            return;
+          }
+          merged.push({ x0: c.x0, x1: c.x1, lines: c.lines.slice() });
+        });
+        merged.forEach(function(col){
+          var cl = col.lines.slice().sort(function(a, b){
+            var ay = (a.bbox.y0 + a.bbox.y1) / 2, by = (b.bbox.y0 + b.bbox.y1) / 2;
+            if (Math.abs(ay - by) < 6) return a.bbox.x0 - b.bbox.x0;
+            return ay - by;
+          });
+          var heights = cl.map(function(l){ return l.bbox.y1 - l.bbox.y0; }).sort(function(a, b){ return a - b; });
+          var medianH = heights[Math.floor(heights.length / 2)] || 20;
+          var cur = [], cats = [], lastBrand = '';
+          var flush = function(){
+            if (!cur.length) return;
+            segs.push({ text: cur.map(function(l){ return l.text; }).join('\n'), bbox: linesBox(cur) });
+            cur = []; cats = [];
+          };
+          cl.forEach(function(l){
+            var brand = '';
+            var bc = brandCandidates(l.text);
+            if (bc[0] && bc[0].score >= 58) brand = bc[0].name;
+            var cc = categoryCandidates(l.text);
+            var topCat = (cc.skin[0] && cc.skin[0].score >= 52) ? cc.skin[0].name
+              : ((cc.makeup[0] && cc.makeup[0].score >= 52) ? cc.makeup[0].name : '');
+            if (cur.length){
+              var gap = l.bbox.y0 - cur[cur.length - 1].bbox.y1;
+              var newBrand = brand && lastBrand && brand !== lastBrand;
+              var newCat = topCat && cats.length && cats.indexOf(topCat) < 0 && cur.length >= 2;
+              var bigGap = gap > Math.max(medianH * 2.2, 36);
+              if (newBrand || newCat || bigGap) flush();
+            }
+            if (brand) lastBrand = brand;
+            if (topCat && cats.indexOf(topCat) < 0) cats.push(topCat);
+            cur.push(l);
+          });
+          flush();
+        });
+      }
+    }
+
+    if (!segs.length){
+      var tlines = String(text || '').replace(/\r/g, '').split('\n');
+      var groups = [], curGroup = [];
+      tlines.forEach(function(line){
+        var t = line.replace(/\s+/g, ' ').trim();
+        if (!t){ if (curGroup.length){ groups.push(curGroup); curGroup = []; } return; }
+        curGroup.push(t);
+      });
+      if (curGroup.length) groups.push(curGroup);
+      groups.forEach(function(group){
+        var block = [], blocks = [], blockCats = [], lastBrand = '';
+        group.forEach(function(line){
+          if (!/[A-Za-z\u4e00-\u9fa5]/.test(line)){ if (block.length) block.push(line); return; }
+          var bc = brandCandidates(line);
+          var brand = bc[0] && bc[0].score >= 58 ? bc[0].name : '';
+          var cc = categoryCandidates(line);
+          var topCat = (cc.skin[0] && cc.skin[0].score >= 52) ? cc.skin[0]
+            : ((cc.makeup[0] && cc.makeup[0].score >= 52) ? cc.makeup[0] : null);
+          var start = false;
+          if (block.length){
+            if (brand && brand !== lastBrand && lastBrand) start = true;
+            else if (brand && lastBrand && brand === lastBrand && topCat && blockCats.length && blockCats.indexOf(topCat.name) < 0 && block.length >= 2) start = true;
+            else if (!brand && topCat && blockCats.length && blockCats.indexOf(topCat.name) < 0 && block.length >= 3) start = true;
+          }
+          if (start){ blocks.push(block); block = []; blockCats = []; }
+          if (brand) lastBrand = brand;
+          if (topCat && blockCats.indexOf(topCat.name) < 0) blockCats.push(topCat.name);
+          block.push(line);
+        });
+        if (block.length) blocks.push(block);
+        blocks.forEach(function(b){ var t = b.join('\n').trim(); if (t) segs.push({ text: t, bbox: null }); });
+      });
+    }
 
     if (segs.length > 8){
       var head = segs.slice(0, 7);
-      head.push(segs.slice(7).join('\n'));
+      var rest = segs.slice(7);
+      head.push({
+        text: rest.map(function(s){ return s.text; }).join('\n'),
+        bbox: (function(){ var box = null; rest.forEach(function(s){ box = unionBox(box, s.bbox); }); return box; })()
+      });
       segs = head;
     }
     if (!segs.length){
       var whole = String(text || '').trim();
-      if (/[A-Za-z\u4e00-\u9fa5]/.test(whole)) segs = [whole];
+      if (/[A-Za-z\u4e00-\u9fa5]/.test(whole)) segs = [{ text: whole, bbox: null }];
     }
-    return segs;
+    return segs.map(function(s){
+      var nb = null;
+      if (s.bbox && W && H){
+        nb = {
+          x: Math.max(0, s.bbox.x0) / W,
+          y: Math.max(0, s.bbox.y0) / H,
+          w: Math.min(1, (s.bbox.x1 - s.bbox.x0) / W),
+          h: Math.min(1, (s.bbox.y1 - s.bbox.y0) / H)
+        };
+      }
+      return { text: s.text, bbox: nb };
+    });
   }
 
   function addBatchDraft(it, fields, meta){
@@ -3125,10 +3867,14 @@ textarea{resize:vertical;min-height:56px}
       size: (fields.size === '' || fields.size == null) ? '' : Number(fields.size),
       unit: UNITS.indexOf(fields.unit) >= 0 ? fields.unit : 'ml',
       type: TYPE_LIST.indexOf(fields.type) >= 0 ? fields.type : '正装',
-      qty: meta.aiCount ? clampInt(fields.qty, 1, 999, 1) : 1,
+      qty: meta.aiCount
+        ? clampInt(fields.qty, 1, 999, 1)
+        : (Number(fields.packCount) > 1 ? clampInt(fields.packCount, 1, 999, 1) : 1),
       expiryDate: /^\d{4}-\d{2}-\d{2}$/.test(String(fields.expiryDate || '')) ? fields.expiryDate : '',
       confidence: Math.max(0, Math.min(100, Math.round(Number(meta.confidence) || 0))),
       source: meta.source || '本地 OCR',
+      fieldMeta: meta.fieldMeta || null,
+      bbox: meta.bbox || null,
       aiCount: !!meta.aiCount,
       selected: true, editing: false, invalid: false
     };
@@ -3153,15 +3899,25 @@ textarea{resize:vertical;min-height:56px}
       (res.items || []).forEach(function(o){
         var p = aiToPrefill(o, [o.brand, o.name, o.category].join('\n'));
         p.fields.qty = o.count;
-        made.push(addBatchDraft(it, p.fields, { source: '在线 AI', confidence: p.confidence, aiCount: true }));
+        var bbox = null;
+        if (o.bbox && o.bbox.length === 4 && o.bbox.every(function(v){ return isFinite(Number(v)); })){
+          var bx = Number(o.bbox[0]), by = Number(o.bbox[1]), bw = Number(o.bbox[2]), bh = Number(o.bbox[3]);
+          if (bx <= 1 && by <= 1 && bw <= 1 && bh <= 1) bbox = { x: bx, y: by, w: bw, h: bh };
+          else if (res.ocrWidth && res.ocrHeight) bbox = { x: bx / res.ocrWidth, y: by / res.ocrHeight, w: bw / res.ocrWidth, h: bh / res.ocrHeight };
+        }
+        made.push(addBatchDraft(it, p.fields, {
+          source: '在线 AI', confidence: p.confidence, aiCount: true,
+          fieldMeta: p.fieldMeta, bbox: bbox
+        }));
       });
       return made.filter(Boolean);
     }
-    var segs = splitOcrSegments(res.text, batch.board).slice(0, 8);
+    var segs = splitOcrSegments(res.text, batch.board, res.lines, { w: res.ocrWidth, h: res.ocrHeight }).slice(0, 8);
     segs.forEach(function(seg, i){
-      var p = parseOcrText(seg, batch.board);
+      var p = parseOcrText(seg.text, batch.board, res.confidence);
       made.push(addBatchDraft(it, p.fields, {
-        source: '本地 OCR', confidence: res.confidence, aiCount: false, segIndex: i, segTotal: segs.length
+        source: '本地 OCR', confidence: p.confidence || res.confidence, aiCount: false,
+        fieldMeta: p.fieldMeta, bbox: seg.bbox, segIndex: i, segTotal: segs.length
       }));
     });
     return made.filter(Boolean);
@@ -3169,11 +3925,14 @@ textarea{resize:vertical;min-height:56px}
 
   function aiBatchRecognize(dataUrl){
     var ai = state.settings.ai || {};
-    var prompt = '你是化妆品包装信息提取助手。请识别这张照片里的所有独立产品，只输出严格 JSON 数组，不要解释，不要 markdown 代码块。格式：' +
-      '[{"board":"skin或makeup","brand":"品牌名，看不清留空","name":"产品名称","category":"品类",' +
-      '"size":数字或null,"unit":"ml/g/支/片","type":"正装/中样/小样","count":件数整数,' +
-      '"expiryDate":"YYYY-MM-DD或空","confidence":0到1,"bbox":[x,y,w,h]可省略}]。' +
-      '规则：一张图最多返回 8 件；看不清的内容留空，不要编造；count 仅根据画面中可辨识的重复瓶数估计，不确定时填 1。' +
+    var prompt = '只识别这张照片里清晰可见的独立产品。严格只输出一个 JSON 数组，不要解释，不要 markdown 代码块。格式：' +
+      '[{"board":"skin或makeup","brand":"","name":"","category":"",' +
+      '"size":数字或null,"unit":"ml/g/支/片","shade":"","type":"正装/中样/小样","count":件数整数,' +
+      '"expiryDate":"YYYY-MM-DD或空","confidence":0到1,' +
+      '"fieldConfidence":{"board":0到1,"brand":0到1,"name":0到1,"category":0到1,"size":0到1,"shade":0到1,"type":0到1,"expiryDate":0到1},' +
+      '"bbox":[x,y,w,h]可省略，归一化到0-1}]。' +
+      '规则：看不清、被遮挡或反光的内容一律留空（字符串空串、数字 null），绝对禁止猜测、补全或编造；' +
+      '一张图最多返回 8 件；count 仅根据画面中可辨识的重复瓶数估计，不确定时填 1。' +
       '品类参考：护肤=洁面/卸妆/化妆水/爽肤水/乳液/面霜/精华/眼霜/面膜/防晒/身体护理/其他；' +
       '彩妆=底妆/唇妆/眼妆/腮红修容/美妆工具/其他。';
     var body = {
@@ -3181,7 +3940,7 @@ textarea{resize:vertical;min-height:56px}
       temperature: 0,
       max_tokens: 1200,
       messages: [
-        { role: 'system', content: '你是化妆品包装多品识别助手，只输出 JSON 数组。' },
+        { role: 'system', content: '你是化妆品包装多品识别助手。只输出严格 JSON 数组，不臆造、不解释；只填写图片上可见的信息。' },
         { role: 'user', content: [
           { type: 'text', text: prompt },
           { type: 'image_url', image_url: { url: dataUrl, detail: 'high' } }
@@ -3229,9 +3988,12 @@ textarea{resize:vertical;min-height:56px}
           category: String(o.category || '').trim(),
           size: size, unit: UNITS.indexOf(o.unit) >= 0 ? o.unit : 'ml',
           type: TYPE_LIST.indexOf(o.type) >= 0 ? o.type : '正装',
+          shade: board === 'makeup' ? String(o.shade || '').trim().slice(0, 20) : '',
           count: clampInt(o.count, 1, 999, 1),
           expiryDate: /^\d{4}-\d{2}-\d{2}$/.test(String(o.expiryDate || '')) ? String(o.expiryDate) : '',
-          confidence: conf
+          confidence: conf,
+          fieldConfidence: o.fieldConfidence && typeof o.fieldConfidence === 'object' ? o.fieldConfidence : null,
+          bbox: Array.isArray(o.bbox) && o.bbox.length === 4 ? o.bbox.slice(0, 4) : null
         });
       });
       if (!items.length) throw new Error('模型返回的产品都缺少品牌与品名');
@@ -3345,7 +4107,8 @@ textarea{resize:vertical;min-height:56px}
       key: 'bd-' + uid(), itemKey: d.itemKey, imgId: d.imgId, board: d.board,
       brand: d.brand, name: d.name, category: d.category, size: d.size, unit: d.unit,
       type: d.type, qty: d.qty, expiryDate: d.expiryDate, confidence: d.confidence,
-      source: d.source, aiCount: d.aiCount, selected: true, editing: false, invalid: false
+      source: d.source, aiCount: d.aiCount, selected: true, editing: false, invalid: false,
+      fieldMeta: d.fieldMeta, bbox: d.bbox
     };
     batch.drafts.splice(idx + 1, 0, d2);
     renderBatch();
@@ -3370,6 +4133,8 @@ textarea{resize:vertical;min-height:56px}
     prev.qty = Math.max(Number(prev.qty) || 1, Number(d.qty) || 1);
     prev.confidence = Math.max(prev.confidence || 0, d.confidence || 0);
     prev.aiCount = prev.aiCount || d.aiCount;
+    prev.fieldMeta = prev.fieldMeta || d.fieldMeta;
+    prev.bbox = prev.bbox || d.bbox;
     prev.invalid = false;
     batch.drafts = batch.drafts.filter(function(x){ return x.key !== d.key; });
     renderBatch();
@@ -3425,8 +4190,27 @@ textarea{resize:vertical;min-height:56px}
           '<button type="button" class="btn mini ghost" data-bact="dcancel" data-key="' + esc(d.key) + '">取消编辑</button></div>' +
       '</div>';
     }
+    var confChips = '';
+    if (d.fieldMeta){
+      var keys = ['brand', 'category', 'size', 'type', 'expiryDate'].filter(function(k){ return d.fieldMeta[k]; });
+      var chips = keys.map(function(k){
+        var m = d.fieldMeta[k];
+        var v = m.confidence ? (m.confidence + '%') : '未识别';
+        return '<span class="' + (m.low ? 'low' : '') + '" title="' + esc(m.source) + '">' + FIELD_LABELS[k] + ':' + v + '</span>';
+      });
+      if (chips.length) confChips = '<div class="draft-fieldconf">' + chips.join('') + '</div>';
+    }
+    var bboxHTML = '';
+    if (d.bbox && isFinite(d.bbox.x) && isFinite(d.bbox.y) && isFinite(d.bbox.w) && isFinite(d.bbox.h)){
+      var bx = Math.max(0, Math.min(1, d.bbox.x)) * 100;
+      var by = Math.max(0, Math.min(1, d.bbox.y)) * 100;
+      var bw = Math.max(0, Math.min(1, d.bbox.w)) * 100;
+      var bh = Math.max(0, Math.min(1, d.bbox.h)) * 100;
+      bboxHTML = '<span class="bbox-hint" style="left:' + bx.toFixed(1) + '%;top:' + by.toFixed(1) +
+        '%;width:' + bw.toFixed(1) + '%;height:' + bh.toFixed(1) + '%"></span>';
+    }
     var thumb = it && it.thumb
-      ? '<button type="button" class="draft-thumb" data-bact="dview" data-key="' + esc(d.key) + '" aria-label="查看原图"><img src="' + it.thumb + '" alt=""></button>'
+      ? '<button type="button" class="draft-thumb" data-bact="dview" data-key="' + esc(d.key) + '" aria-label="查看原图"><img src="' + it.thumb + '" alt="">' + bboxHTML + '</button>'
       : '<div class="draft-thumb"></div>';
     return '<div class="draft' + (d.invalid ? ' invalid' : '') + '">' +
       '<input type="checkbox" class="draft-check" data-bact="dsel" data-key="' + esc(d.key) + '"' + (d.selected ? ' checked' : '') + ' aria-label="选择草稿">' +
@@ -3434,6 +4218,7 @@ textarea{resize:vertical;min-height:56px}
       '<div class="draft-main"><div class="draft-title">' + esc(title) + '</div>' +
         '<div class="draft-meta">' + esc(meta) + '</div>' +
         '<div class="draft-badges">' + badges + '</div>' +
+        confChips +
         (d.invalid ? '<div class="draft-meta" style="color:var(--danger)">请补全必需字段后再入库</div>' : '') +
         ops + edit +
       '</div></div>';
@@ -4131,6 +4916,13 @@ textarea{resize:vertical;min-height:56px}
     }
   });
   document.addEventListener('change', function(ev){
+    if (ev.target.id === 'ocrHighAccuracy' || ev.target.id === 'ocrPreprocess'){
+      state.settings.ocrHighAccuracy = !!document.getElementById('ocrHighAccuracy').checked;
+      state.settings.ocrPreprocess = !!document.getElementById('ocrPreprocess').checked;
+      persist();
+      toast('识别精度设置已保存');
+      return;
+    }
     var board = ev.target.getAttribute && ev.target.getAttribute('data-board');
     var field = ev.target.getAttribute && ev.target.getAttribute('data-f');
     if (field && board && field !== 'q'){
@@ -4244,6 +5036,14 @@ textarea{resize:vertical;min-height:56px}
   window.addEventListener('online', function(){
     toast('网络已恢复：本地 OCR 可继续使用');
   });
+  // 仅用于离线字段级评测与回归调试，不影响界面
+  window.__skOcrEval = {
+    parseOcrText: parseOcrText, parseSpec: parseSpec, parseExpiry: parseExpiry,
+    parseShade: parseShade, parseType: parseType, brandCandidates: brandCandidates,
+    categoryCandidates: categoryCandidates, splitOcrSegments: splitOcrSegments,
+    stringSimilarity: stringSimilarity, prepareOcrInput: prepareOcrInput,
+    localRecognize: localRecognize
+  };
 })();
 </script>
 </body>
