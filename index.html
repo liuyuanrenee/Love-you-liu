@@ -310,6 +310,56 @@ textarea{resize:vertical;min-height:56px}
 .pg-add small{font-size:11px;color:var(--muted)}
 .pg-add-btns{display:flex;gap:6px}
 .gallery-note{font-size:11px;color:var(--muted);line-height:1.6}
+
+/* 批量入库 */
+.batch-host{position:fixed;inset:0;z-index:45;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+.batch-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;border-bottom:1px solid var(--border);background:var(--surface);flex:none}
+.batch-top b{font-size:16px}
+.batch-body{flex:1;overflow:auto;padding:12px 14px calc(80px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:9px;max-width:900px;width:100%;margin:0 auto}
+.batch-add{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pbar.big{height:10px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.pbar.big i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+.batch-msg{font-size:12px;color:var(--muted);min-height:16px}
+.bqueue{display:flex;flex-direction:column;gap:6px}
+.bq-row{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;background:var(--card);padding:6px}
+.bq-thumb{width:44px;height:44px;flex:none;border-radius:8px;object-fit:cover;background:var(--surface-2)}
+.bq-ph{width:44px;height:44px;flex:none;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;font-size:11px;color:var(--muted)}
+.bq-main{flex:1;min-width:0}
+.bq-main b{display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bq-main small{display:block;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bq-status{font-size:10.5px;padding:1px 7px;border-radius:6px;background:var(--surface-2);color:var(--muted);flex:none;white-space:nowrap}
+.bq-status.running{background:var(--accent-soft);color:var(--accent)}
+.bq-status.done{background:var(--ok-bg);color:var(--ok)}
+.bq-status.failed{background:var(--danger-bg);color:var(--danger)}
+.bq-status.manual{background:var(--near-bg);color:var(--near)}
+.bq-status.cancelled{background:var(--done-bg);color:var(--done)}
+.bq-row .btn{padding:3px 7px;font-size:11px;border-radius:7px;flex:none}
+.batch-actions{display:flex;gap:8px;flex-wrap:wrap}
+.draft-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:10px;border-top:1px solid var(--border)}
+.draft-head b{font-size:14px}
+.draft-head .btn{margin-left:auto}
+.drafts{display:flex;flex-direction:column;gap:8px}
+.draft{border:1px solid var(--border);border-radius:12px;background:var(--card);padding:8px;display:flex;gap:8px;align-items:flex-start}
+.draft.invalid{border-color:var(--danger);background:var(--danger-bg)}
+.draft-check{flex:0 0 auto;width:auto;height:auto;margin-top:4px}
+.draft-thumb{width:56px;height:56px;flex:none;border-radius:8px;object-fit:cover;background:var(--surface-2);border:0;padding:0;overflow:hidden}
+.draft-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.draft-main{flex:1;min-width:0}
+.draft-title{font-size:13px;font-weight:650;line-height:1.35}
+.draft-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.draft-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.draft-badges .tag.hot{background:var(--near-bg);color:var(--near)}
+.draft-badges .tag.ai{background:var(--accent-soft);color:var(--accent)}
+.draft-ops{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.draft-ops .btn{padding:2px 6px;font-size:10.5px;border-radius:6px}
+.draft-edit{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
+.draft-edit .field{margin:0}
+.draft-edit label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
+.draft-edit input,.draft-edit select{width:100%;padding:5px 7px;border-radius:7px;font-size:12px}
+.draft-edit .full{grid-column:1/-1}
+.draft-edit-actions{grid-column:1/-1;display:flex;gap:6px}
+.draft-empty{padding:14px;text-align:center;font-size:12.5px;color:var(--muted);border:1px dashed var(--border);border-radius:10px}
+@media(max-width:560px){.draft-edit{grid-template-columns:1fr}}
 .photo-sheet{max-width:560px}
 .photo-choices{display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:560px){.photo-choices{grid-template-columns:1fr 1fr}}
@@ -549,7 +599,7 @@ textarea{resize:vertical;min-height:56px}
         skin: DEFAULT_CATS.skin.map(function(c){ return { name: c.name, months: c.months }; }),
         makeup: DEFAULT_CATS.makeup.map(function(c){ return { name: c.name, months: c.months }; })
       },
-      settings: { reminderDismissedOn: null, ai: { endpoint: '', key: '', model: '' } }
+      settings: { reminderDismissedOn: null, ai: { endpoint: '', key: '', model: '', batchAi: false } }
     };
   }
 
@@ -624,7 +674,8 @@ textarea{resize:vertical;min-height:56px}
         ai: {
           endpoint: String((s.settings && s.settings.ai && s.settings.ai.endpoint) || ''),
           key: String((s.settings && s.settings.ai && s.settings.ai.key) || ''),
-          model: String((s.settings && s.settings.ai && s.settings.ai.model) || '')
+          model: String((s.settings && s.settings.ai && s.settings.ai.model) || ''),
+          batchAi: !!(s.settings && s.settings.ai && s.settings.ai.batchAi)
         }
       }
     };
@@ -852,6 +903,7 @@ textarea{resize:vertical;min-height:56px}
     return '<section class="panel">' +
       '<div class="panel-head"><div><h2>库存概览</h2><p>护肤与彩妆分开统计，品牌按在用数量排序</p></div>' +
         '<div class="head-actions"><button class="btn" data-act="photo" data-board="skin">拍照入库</button>' +
+        '<button class="btn" data-act="batch" data-board="skin">批量入库</button>' +
         '<button class="btn primary" data-act="add" data-board="skin">+ 添加记录</button></div></div>' +
       '<div style="margin-top:14px">' + statHTML(active) + '</div>' +
       '</section>' +
@@ -914,6 +966,16 @@ textarea{resize:vertical;min-height:56px}
     var arr = r.photos || [];
     if (r.cover && arr.indexOf(r.cover) >= 0) return r.cover;
     return arr[0] || '';
+  }
+  // 同一张图可能被多条记录共用（一图多件），删除前检查引用数
+  function imgRefCount(id, excludeRecId){
+    if (!id) return 0;
+    var n = 0;
+    state.records.forEach(function(r){
+      if (excludeRecId && r.id === excludeRecId) return;
+      if ((r.photos || []).indexOf(id) >= 0) n++;
+    });
+    return n;
   }
   function imgThumb(id){
     return id && imgCache.meta[id] ? imgCache.meta[id].thumb : '';
@@ -993,6 +1055,7 @@ textarea{resize:vertical;min-height:56px}
       '<div class="panel-head"><div><h2>' + BOARD_LABEL[board] + '清单</h2>' +
         '<p>在用 ' + qsum(active) + ' 件 · ' + active.length + ' 条；已用完的记录保留在列表中</p></div>' +
         '<div class="head-actions"><button class="btn" data-act="photo" data-board="' + board + '">拍照入库</button>' +
+        '<button class="btn" data-act="batch" data-board="' + board + '">批量入库</button>' +
         '<button class="btn primary" data-act="add" data-board="' + board + '">+ 添加</button></div></div>' +
       toolbarHTML(board) +
       '<div id="boardList">' + boardListHTML(board) + '</div>' +
@@ -1038,6 +1101,7 @@ textarea{resize:vertical;min-height:56px}
           '<button class="btn danger" data-act="delallimgs">删除全部图片</button>' +
         '</div>' +
         '<p class="hint" style="margin-top:8px">删除单张：点开护肤 / 彩妆卡片上的缩略图进入查看器，点两次「删除这张照片」确认；也可在编辑表单里删除。删除图片不会影响记录的其他字段。</p>' +
+        '<p class="hint" style="margin-top:6px">批量入库 / 一图多件生成的同图多条记录会共用同一张原图；删除其中一条记录时，只要还有其他记录在用这张图，图片就不会被真正删除。</p>' +
         '<p class="hint" style="margin-top:6px">识别说明：本地 OCR 使用 tesseract.js，联网时从 CDN 加载（首次需下载约 30MB 中英文语言包），离线时自动降级为手动填写。包装反光、字体过小、曲面或角度倾斜都会降低识别准确率，预填结果仅供参考，请务必核对。</p>' +
       '</div>' +
       '<div class="block"><h3>在线 AI 识别（可选）</h3><p class="hint">开启后会优先用你配置的视觉模型识别，失败自动回退本地 OCR。API Key 只保存在本机 localStorage，不会内置或上传到其他位置；任何能打开本页面的人都能读到该 Key，请自行评估风险。</p>' +
@@ -1046,10 +1110,12 @@ textarea{resize:vertical;min-height:56px}
           '<div class="field"><label for="aiModel">模型名称</label><input id="aiModel" placeholder="gpt-4o-mini" value="' + esc((state.settings.ai && state.settings.ai.model) || '') + '"></div>' +
           '<div class="field"><label for="aiKey">API Key</label><input id="aiKey" type="password" autocomplete="off" placeholder="sk-..." value="' + esc((state.settings.ai && state.settings.ai.key) || '') + '"></div>' +
         '</div>' +
+        '<div class="field" style="margin-top:10px"><label class="check"><input type="checkbox" id="aiBatch"' + (state.settings.ai && state.settings.ai.batchAi ? ' checked' : '') + '> 批量入库时使用在线视觉识别（一图多件）</label></div>' +
+        '<p class="hint" style="margin-top:6px">勾选后，批量入库会把整张图 base64 交给上方模型，要求返回多件产品 JSON；未配置、返回结构不合法或调用失败时自动回退本地 OCR。模型返回的「数量」只是估算，入库前必须核对。</p>' +
         '<div class="btn-grid"><button class="btn" data-act="saveai">保存 AI 设置</button>' +
           '<button class="btn ghost" data-act="clearai">清除 AI 设置</button>' +
-          '<span class="ai-state">' + (state.settings.ai && state.settings.ai.key ? '当前已配置，识别时优先使用' : '当前未配置') + '</span></div>' +
-        '<p class="hint" style="margin-top:6px">接口需允许浏览器跨域请求（CORS）；若调用失败会自动回退本地 OCR。</p>' +
+          '<span class="ai-state">' + (state.settings.ai && state.settings.ai.key ? ('当前已配置，识别时优先使用' + (state.settings.ai.batchAi ? ' · 批量在线模式已开启' : ' · 批量使用本地 OCR')) : '当前未配置') + '</span></div>' +
+        '<p class="hint" style="margin-top:6px">接口需允许浏览器跨域请求（CORS）；若调用失败会自动回退本地 OCR。在线视觉模式依赖网络和你自备的 API Key，可能产生服务商费用，图片会发送到你填写的接口地址。</p>' +
       '</div>' +
       '<div class="block"><h3>数据起点</h3><p class="hint">当前共 ' + state.records.length + ' 条记录。示例记录可随时清除，不影响你后来新增的内容。</p>' +
         '<div class="btn-grid">' +
@@ -1382,6 +1448,7 @@ textarea{resize:vertical;min-height:56px}
     // 已从记录中移除的照片，保存后删除以释放空间
     oldIds.forEach(function(id){
       if (ids.indexOf(id) < 0){
+        if (imgRefCount(id, rec.id) > 0) return;
         imgDelete(id).catch(function(){});
         delete imgCache.meta[id];
       }
@@ -2743,12 +2810,827 @@ textarea{resize:vertical;min-height:56px}
     });
   }
 
+  /* ---------- 9.7 批量入库 / 一图多件 ---------- */
+  var batch = null;
+  var BATCH_STATUS = { waiting: '等待', running: '识别中', done: '完成', failed: '失败', manual: '需人工确认', cancelled: '已取消' };
+
+  function batchItemByKey(key){
+    return batch ? batch.items.filter(function(it){ return it.key === key; })[0] : null;
+  }
+  function batchDraftByKey(key){
+    return batch ? batch.drafts.filter(function(d){ return d.key === key; })[0] : null;
+  }
+  function batchItemOfDraft(d){
+    return d ? batchItemByKey(d.itemKey) : null;
+  }
+
+  function openBatch(boardHint){
+    if (!batch){
+      batch = {
+        board: boardHint === 'makeup' ? 'makeup' : 'skin',
+        items: [], drafts: [], running: false, paused: false, aborted: false,
+        saving: false, closeArm: false, abortArm: false,
+        msg: '可以拍照、从相册多选，或把多张图片拖进来。'
+      };
+    }
+    var host = document.getElementById('batchHost');
+    if (!host){
+      host = document.createElement('div');
+      host.id = 'batchHost';
+      host.className = 'batch-host';
+      document.body.appendChild(host);
+      bindBatch(host);
+    }
+    renderBatch();
+  }
+
+  function closeBatchNow(){
+    var host = document.getElementById('batchHost');
+    if (host) host.remove();
+    if (batch && batch.running && ocrWorker){
+      try { ocrWorker.terminate(); } catch (e) {}
+      ocrWorker = null;
+    }
+    batch = null;
+    toast('已关闭批量入库');
+  }
+
+  function requestCloseBatch(){
+    if (!batch) return;
+    if (batch.saving){ toast('正在保存草稿，请稍候'); return; }
+    var busy = batch.running || batch.paused;
+    var pending = batch.drafts.length;
+    if ((busy || pending) && !batch.closeArm){
+      batch.closeArm = true;
+      batch.msg = (busy ? '识别仍在进行；' : '') + (pending ? '还有 ' + pending + ' 条草稿未入库；' : '') + '再点一次关闭会中止并丢弃本次批量内容。';
+      renderBatch();
+      setTimeout(function(){ if (batch){ batch.closeArm = false; renderBatch(); } }, 3000);
+      return;
+    }
+    closeBatchNow();
+  }
+
+  function batchProgress(){
+    if (!batch || !batch.items.length) return 0;
+    var sum = 0;
+    batch.items.forEach(function(it){
+      if (it.status === 'done' || it.status === 'failed' || it.status === 'manual' || it.status === 'cancelled') sum += 100;
+      else if (it.status === 'running') sum += Math.min(99, Number(it.progress) || 0);
+    });
+    return Math.round(sum / batch.items.length);
+  }
+
+  function batchAddFiles(files){
+    if (!batch) return;
+    var list = Array.prototype.slice.call(files || []).filter(function(f){ return f && /^image\//.test(f.type); });
+    if (!list.length){ toast('请选择图片文件'); return; }
+    if (list.some(function(f){ return f.size > 40 * 1024 * 1024; })){ toast('单张图片不能超过 40MB'); return; }
+    list.forEach(function(f){
+      batch.items.push({
+        key: 'bi-' + uid(), imgId: '', name: String(f.name || '未命名图片').slice(0, 40),
+        file: f, thumb: '', full: '', status: 'waiting', progress: 0, message: '等待识别',
+        cancelled: false, saved: false
+      });
+    });
+    batch.aborted = false;
+    batch.abortArm = false;
+    batch.paused = false;
+    batch.msg = '已加入 ' + list.length + ' 张图片，开始识别…';
+    renderBatch();
+    batchPump();
+  }
+
+  function batchPump(){
+    if (!batch || batch.running || batch.saving || batch.aborted) return;
+    batch.running = true;
+    if (batch.paused) batch.paused = false;
+    renderBatch();
+    var next = function(){
+      if (!batch) return;
+      if (batch.aborted || batch.paused){
+        batch.running = false;
+        renderBatch();
+        return;
+      }
+      var it = batch.items.filter(function(x){ return x.status === 'waiting' && !x.cancelled; })[0];
+      if (!it){
+        batch.running = false;
+        batch.msg = '队列处理完毕，请在草稿区核对后确认入库。';
+        renderBatch();
+        return;
+      }
+      processBatchItem(it).then(next, function(e){ console.warn('批量队列异常', e); next(); });
+    };
+    next();
+  }
+
+  function batchCancelItem(it){
+    if (!it) return;
+    if (it.status === 'waiting'){
+      it.cancelled = true;
+      it.status = 'cancelled';
+      it.message = '已取消，未识别';
+      renderBatch();
+      return;
+    }
+    if (it.status === 'running'){
+      it.cancelled = true;
+      it.message = '取消中（当前图片识别完成后丢弃结果）';
+      renderBatch();
+      return;
+    }
+    if (it.status === 'failed' || it.status === 'cancelled'){
+      if (batch && batch.drafts.some(function(d){ return d.itemKey === it.key; })){
+        toast('这张图还有草稿，请先处理草稿'); return;
+      }
+      batch.items = batch.items.filter(function(x){ return x.key !== it.key; });
+      renderBatch();
+    }
+  }
+
+  function batchAbort(){
+    if (!batch) return;
+    if (!batch.abortArm){
+      batch.abortArm = true;
+      renderBatch();
+      toast('再点一次「确认中止」将停止整批');
+      setTimeout(function(){ if (batch){ batch.abortArm = false; renderBatch(); } }, 3000);
+      return;
+    }
+    batch.aborted = true;
+    batch.paused = false;
+    batch.abortArm = false;
+    batch.items.forEach(function(it){
+      if (it.status === 'waiting' || it.status === 'running'){
+        it.cancelled = true;
+        if (it.status === 'waiting'){ it.status = 'cancelled'; it.message = '已中止，未识别'; }
+        else it.message = '中止中（当前图片完成后丢弃结果）';
+      }
+    });
+    batch.msg = '已中止整批；已生成的草稿保留，可继续核对入库。';
+    renderBatch();
+    toast('已中止批量识别');
+  }
+
+  function processBatchItem(it){
+    if (!batch || !it || it.status !== 'waiting' || it.cancelled) return Promise.resolve();
+    it.status = 'running';
+    it.progress = 3;
+    it.message = '正在读取并压缩图片…';
+    renderBatch();
+    return decodeImage(it.file).then(function(img){
+      if (!batch){ return null; }
+      if (it.cancelled){ it.status = 'cancelled'; it.message = '已取消，未识别'; renderBatch(); return null; }
+      var c = compressPhoto(img);
+      it.full = c.full;
+      it.thumb = c.thumb;
+      if (!it.imgId) it.imgId = 'img-' + uid();
+      it.file = null;
+      it.progress = 10;
+      it.message = '已本地压缩，准备识别';
+      renderBatch();
+      if (navigator.onLine === false) return { offline: true };
+      return withTimeout(recognizeBatchImage(it), 150000, '识别超时，可稍后重试或手动填写');
+    }).then(function(res){
+      if (!batch || !res) return;
+      if (it.cancelled){ it.status = 'cancelled'; it.message = '已取消，未生成草稿'; renderBatch(); return; }
+      if (res.offline){
+        addManualDraft(it, '离线状态，识别不可用');
+        it.status = 'manual';
+        it.progress = 100;
+        it.message = '离线状态，识别不可用；已生成手动填写草稿';
+        renderBatch();
+        return;
+      }
+      var made = addDraftsFromResult(it, res);
+      it.progress = 100;
+      if (made.length){
+        var goodCount = made.filter(function(d){ return d.brand && d.name; }).length;
+        it.status = goodCount === made.length ? 'done' : 'manual';
+        var needText = goodCount === made.length ? '' : ('，其中 ' + (made.length - goodCount) + ' 条需补全品牌 / 品名');
+        it.message = res.mode === 'ai'
+          ? ('在线 AI 识别完成，生成 ' + made.length + ' 条草稿（数量为 AI 估算' + needText + '）')
+          : ('识别完成，生成 ' + made.length + ' 条草稿' + needText);
+      } else {
+        addManualDraft(it, '未识别到有效文字');
+        it.status = 'manual';
+        it.message = '未识别到有效文字，已生成手动填写草稿';
+      }
+      renderBatch();
+    }).catch(function(e){
+      if (!batch) return;
+      if (it.cancelled){ it.status = 'cancelled'; it.message = '已取消，未生成草稿'; renderBatch(); return; }
+      it.status = 'failed';
+      it.progress = 100;
+      it.message = '识别失败：' + String((e && e.message) || '无法读取图片');
+      console.warn('批量识别失败', e);
+      renderBatch();
+    });
+  }
+
+  function recognizeBatchImage(it){
+    var ai = state.settings.ai || {};
+    var local = function(){
+      if (navigator.onLine === false) return Promise.resolve({ offline: true });
+      return withTimeout(localRecognize(it.full, function(msg, pct){
+        if (batch && !it.cancelled){
+          it.progress = Math.max(10, Math.min(99, Math.round(pct)));
+          it.message = msg;
+          renderBatch();
+        }
+      }), 150000, '识别超时').then(function(res){
+        return { mode: 'local', text: res.text, confidence: res.confidence };
+      });
+    };
+    if (ai.batchAi && ai.endpoint && ai.key){
+      it.message = '在线 AI 识别整图（一图多件）…';
+      it.progress = 15;
+      renderBatch();
+      return withTimeout(aiBatchRecognize(it.full), 60000, '在线 AI 识别超时').then(function(r){
+        return { mode: 'ai', items: r.items, text: r.text, confidence: 0 };
+      }).catch(function(e){
+        console.warn('批量在线识别失败，回退本地 OCR', e);
+        if (batch && !it.cancelled){
+          it.message = '在线识别失败，改用本地 OCR…';
+          it.progress = 14;
+          renderBatch();
+        }
+        return local();
+      });
+    }
+    return local();
+  }
+
+  // 按空行、品牌词与品类关键词把整图 OCR 文本切成多个候选产品
+  function splitOcrSegments(text, hint){
+    var lines = String(text || '').replace(/\r/g, '').split('\n');
+    var groups = [], cur = [];
+    lines.forEach(function(line){
+      var t = line.replace(/\s+/g, ' ').trim();
+      if (!t){ if (cur.length){ groups.push(cur); cur = []; } return; }
+      cur.push(t);
+    });
+    if (cur.length) groups.push(cur);
+
+    var segs = [];
+    groups.forEach(function(group){
+      var blocks = [], block = [], blockCats = [], lastBrand = '';
+      group.forEach(function(line){
+        if (!/[A-Za-z\u4e00-\u9fa5]/.test(line)){ if (block.length) block.push(line); return; }
+        var bc = brandCandidates(line);
+        var brand = bc[0] && bc[0].score >= 58 ? bc[0].name : '';
+        var cc = categoryCandidates(line);
+        var topCat = (cc.skin[0] && cc.skin[0].score >= 55) ? cc.skin[0] : ((cc.makeup[0] && cc.makeup[0].score >= 55) ? cc.makeup[0] : null);
+        var start = false;
+        if (block.length){
+          if (brand && brand !== lastBrand && lastBrand) start = true;
+          else if (brand && lastBrand && brand === lastBrand && topCat && blockCats.length && blockCats.indexOf(topCat.name) < 0 && block.length >= 2) start = true;
+          else if (!brand && topCat && blockCats.length && blockCats.indexOf(topCat.name) < 0 && block.length >= 3) start = true;
+        }
+        if (start){ blocks.push(block); block = []; blockCats = []; }
+        if (brand) lastBrand = brand;
+        if (topCat && blockCats.indexOf(topCat.name) < 0) blockCats.push(topCat.name);
+        block.push(line);
+      });
+      if (block.length) blocks.push(block);
+      blocks.forEach(function(b){ var t = b.join('\n').trim(); if (t) segs.push(t); });
+    });
+
+    if (segs.length > 8){
+      var head = segs.slice(0, 7);
+      head.push(segs.slice(7).join('\n'));
+      segs = head;
+    }
+    if (!segs.length){
+      var whole = String(text || '').trim();
+      if (/[A-Za-z\u4e00-\u9fa5]/.test(whole)) segs = [whole];
+    }
+    return segs;
+  }
+
+  function addBatchDraft(it, fields, meta){
+    if (!batch || !it) return null;
+    meta = meta || {};
+    var board = fields.board === 'makeup' ? 'makeup' : 'skin';
+    var cat = fields.category;
+    if (!state.categories[board].some(function(c){ return c.name === cat; })) cat = state.categories[board][0].name;
+    var d = {
+      key: 'bd-' + uid(),
+      itemKey: it.key,
+      imgId: it.imgId,
+      board: board,
+      brand: String(fields.brand || '').trim(),
+      name: String(fields.name || '').trim(),
+      category: cat,
+      size: (fields.size === '' || fields.size == null) ? '' : Number(fields.size),
+      unit: UNITS.indexOf(fields.unit) >= 0 ? fields.unit : 'ml',
+      type: TYPE_LIST.indexOf(fields.type) >= 0 ? fields.type : '正装',
+      qty: meta.aiCount ? clampInt(fields.qty, 1, 999, 1) : 1,
+      expiryDate: /^\d{4}-\d{2}-\d{2}$/.test(String(fields.expiryDate || '')) ? fields.expiryDate : '',
+      confidence: Math.max(0, Math.min(100, Math.round(Number(meta.confidence) || 0))),
+      source: meta.source || '本地 OCR',
+      aiCount: !!meta.aiCount,
+      selected: true, editing: false, invalid: false
+    };
+    batch.drafts.push(d);
+    return d;
+  }
+
+  function addManualDraft(it, reason){
+    if (!batch) return;
+    if (batch.drafts.some(function(d){ return d.itemKey === it.key; })) return;
+    addBatchDraft(it, {
+      board: batch.board, brand: '', name: '',
+      category: state.categories[batch.board][0].name,
+      size: '', unit: 'ml', type: '正装', expiryDate: ''
+    }, { source: '手动填写（' + String(reason || '未识别') + '）', confidence: 0, aiCount: false });
+  }
+
+  function addDraftsFromResult(it, res){
+    if (!batch) return [];
+    var made = [];
+    if (res.mode === 'ai'){
+      (res.items || []).forEach(function(o){
+        var p = aiToPrefill(o, [o.brand, o.name, o.category].join('\n'));
+        p.fields.qty = o.count;
+        made.push(addBatchDraft(it, p.fields, { source: '在线 AI', confidence: p.confidence, aiCount: true }));
+      });
+      return made.filter(Boolean);
+    }
+    var segs = splitOcrSegments(res.text, batch.board).slice(0, 8);
+    segs.forEach(function(seg, i){
+      var p = parseOcrText(seg, batch.board);
+      made.push(addBatchDraft(it, p.fields, {
+        source: '本地 OCR', confidence: res.confidence, aiCount: false, segIndex: i, segTotal: segs.length
+      }));
+    });
+    return made.filter(Boolean);
+  }
+
+  function aiBatchRecognize(dataUrl){
+    var ai = state.settings.ai || {};
+    var prompt = '你是化妆品包装信息提取助手。请识别这张照片里的所有独立产品，只输出严格 JSON 数组，不要解释，不要 markdown 代码块。格式：' +
+      '[{"board":"skin或makeup","brand":"品牌名，看不清留空","name":"产品名称","category":"品类",' +
+      '"size":数字或null,"unit":"ml/g/支/片","type":"正装/中样/小样","count":件数整数,' +
+      '"expiryDate":"YYYY-MM-DD或空","confidence":0到1,"bbox":[x,y,w,h]可省略}]。' +
+      '规则：一张图最多返回 8 件；看不清的内容留空，不要编造；count 仅根据画面中可辨识的重复瓶数估计，不确定时填 1。' +
+      '品类参考：护肤=洁面/卸妆/化妆水/爽肤水/乳液/面霜/精华/眼霜/面膜/防晒/身体护理/其他；' +
+      '彩妆=底妆/唇妆/眼妆/腮红修容/美妆工具/其他。';
+    var body = {
+      model: ai.model || 'gpt-4o-mini',
+      temperature: 0,
+      max_tokens: 1200,
+      messages: [
+        { role: 'system', content: '你是化妆品包装多品识别助手，只输出 JSON 数组。' },
+        { role: 'user', content: [
+          { type: 'text', text: prompt },
+          { type: 'image_url', image_url: { url: dataUrl, detail: 'high' } }
+        ] }
+      ]
+    };
+    return fetch(ai.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ai.key },
+      body: JSON.stringify(body)
+    }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).then(function(json){
+      var msg = json && json.choices && json.choices[0] && json.choices[0].message;
+      var content = msg && msg.content;
+      var text = '';
+      if (typeof content === 'string') text = content;
+      else if (Array.isArray(content)) text = content.map(function(p){ return (p && p.text) || ''; }).join('');
+      var m = text.match(/\[[\s\S]*\]/);
+      if (!m) throw new Error('返回内容不是 JSON 数组');
+      var arr;
+      try { arr = JSON.parse(m[0]); } catch (e){ throw new Error('JSON 解析失败'); }
+      if (!Array.isArray(arr) || !arr.length) throw new Error('模型未返回产品数组');
+      var items = [];
+      arr.slice(0, 8).forEach(function(o){
+        if (!o || typeof o !== 'object') return;
+        var brand = String(o.brand || '').trim().slice(0, 30);
+        var name = String(o.name || '').trim().slice(0, 50);
+        if (!brand && !name) return;
+        var board = o.board === 'makeup' ? 'makeup' : o.board === 'skin' ? 'skin' : '';
+        if (!board){
+          var cc = categoryCandidates([brand, name, o.category].join(' '));
+          var ms = cc.makeup.reduce(function(s, c){ return s + c.score; }, 0);
+          var ss = cc.skin.reduce(function(s, c){ return s + c.score; }, 0);
+          board = ms > ss + 10 ? 'makeup' : 'skin';
+        }
+        var size = (o.size == null || o.size === '') ? '' : Number(o.size);
+        if (!(size === '' || (isFinite(size) && size > 0 && size <= 2000))) size = '';
+        var conf = Number(o.confidence);
+        if (!isFinite(conf)) conf = 0.7;
+        conf = Math.max(0, Math.min(1, conf));
+        items.push({
+          board: board, brand: brand, name: name,
+          category: String(o.category || '').trim(),
+          size: size, unit: UNITS.indexOf(o.unit) >= 0 ? o.unit : 'ml',
+          type: TYPE_LIST.indexOf(o.type) >= 0 ? o.type : '正装',
+          count: clampInt(o.count, 1, 999, 1),
+          expiryDate: /^\d{4}-\d{2}-\d{2}$/.test(String(o.expiryDate || '')) ? String(o.expiryDate) : '',
+          confidence: conf
+        });
+      });
+      if (!items.length) throw new Error('模型返回的产品都缺少品牌与品名');
+      return { items: items, text: text };
+    });
+  }
+
+  function validateDraft(d){
+    var errs = [];
+    if (!String(d.brand || '').trim()) errs.push('品牌');
+    if (!String(d.name || '').trim()) errs.push('品名');
+    var q = Number(d.qty);
+    if (!isFinite(q) || Math.floor(q) !== q || q < 1 || q > 999) errs.push('数量（1-999 的整数）');
+    if (d.size !== '' && d.size != null && (!isFinite(Number(d.size)) || Number(d.size) <= 0)) errs.push('规格（需为正数）');
+    return errs;
+  }
+
+  function draftToRecord(d){
+    var board = d.board === 'makeup' ? 'makeup' : 'skin';
+    var cat = d.category;
+    if (!state.categories[board].some(function(c){ return c.name === cat; })) cat = state.categories[board][0].name;
+    return {
+      id: uid(), board: board,
+      brand: String(d.brand || '').trim(), name: String(d.name || '').trim(),
+      category: cat,
+      size: (d.size === '' || d.size == null) ? '' : Number(d.size),
+      unit: UNITS.indexOf(d.unit) >= 0 ? d.unit : 'ml',
+      type: TYPE_LIST.indexOf(d.type) >= 0 ? d.type : '正装',
+      qty: clampInt(d.qty, 1, 999, 1),
+      opened: false, openDate: '', openMonths: catMonths(board, cat),
+      expiryDate: d.expiryDate || '', prodDate: '', shelfMonths: '',
+      location: '', note: '', shade: '', frequent: false,
+      finished: false, snoozeUntil: '', sample: d.type === '小样',
+      photos: d.imgId ? [d.imgId] : [], cover: d.imgId || '', imgId: d.imgId || ''
+    };
+  }
+
+  function saveDrafts(list){
+    if (!batch || batch.saving) return;
+    list = (list || []).filter(function(d){ return batch && batch.drafts.some(function(x){ return x.key === d.key; }); });
+    if (!list.length){ toast('没有可入库的草稿'); return; }
+    var bad = [];
+    list.forEach(function(d){
+      var errs = validateDraft(d);
+      d.invalid = errs.length > 0;
+      if (errs.length) bad.push(d);
+    });
+    if (bad.length){
+      bad.forEach(function(d){ d.editing = true; });
+      renderBatch();
+      toast('有 ' + bad.length + ' 条草稿需要补全品牌 / 品名 / 数量，已展开编辑');
+      return;
+    }
+    batch.saving = true;
+    batch.msg = '正在保存草稿…';
+    renderBatch();
+
+    var unique = {};
+    list.forEach(function(d){
+      var it = batchItemOfDraft(d);
+      if (it && it.full && !it.saved && !unique[it.imgId]) unique[it.imgId] = it;
+    });
+    var fails = {};
+    var chain = Promise.resolve();
+    Object.keys(unique).forEach(function(id){
+      chain = chain.then(function(){
+        var it = unique[id];
+        return imgPut(it.imgId, it.thumb, it.full).then(function(){
+          imgCache.meta[it.imgId] = {
+            id: it.imgId, thumb: it.thumb,
+            bytes: (it.thumb || '').length + (it.full || '').length, createdAt: Date.now()
+          };
+          it.saved = true;
+        }).catch(function(e){
+          console.warn('批量照片保存失败', e);
+          fails[id] = true;
+        });
+      });
+    });
+    chain.then(function(){
+      if (!batch) return;
+      var added = 0, noPhoto = 0;
+      list.forEach(function(d){
+        if (!batch || !batch.drafts.some(function(x){ return x.key === d.key; })) return;
+        var rec = draftToRecord(d);
+        if (fails[d.imgId] || !d.imgId || !imgCache.meta[d.imgId]){
+          rec.photos = []; rec.cover = ''; rec.imgId = '';
+          noPhoto++;
+        }
+        state.records.push(rec);
+        batch.drafts = batch.drafts.filter(function(x){ return x.key !== d.key; });
+        added++;
+        var it = batchItemOfDraft(d);
+        if (it && it.saved && !batch.drafts.some(function(x){ return x.itemKey === it.key; })) it.full = '';
+      });
+      persist();
+      batch.saving = false;
+      batch.msg = '已入库 ' + added + ' 条草稿' + (noPhoto ? ('，' + noPhoto + ' 条照片保存失败，记录字段已保留') : '') + '。';
+      renderApp(true);
+      renderBatch();
+      toast('已入库 ' + added + ' 条记录');
+    });
+  }
+
+  function splitDraft(key){
+    if (!batch) return;
+    var d = batchDraftByKey(key);
+    if (!d) return;
+    var idx = batch.drafts.indexOf(d);
+    var d2 = {
+      key: 'bd-' + uid(), itemKey: d.itemKey, imgId: d.imgId, board: d.board,
+      brand: d.brand, name: d.name, category: d.category, size: d.size, unit: d.unit,
+      type: d.type, qty: d.qty, expiryDate: d.expiryDate, confidence: d.confidence,
+      source: d.source, aiCount: d.aiCount, selected: true, editing: false, invalid: false
+    };
+    batch.drafts.splice(idx + 1, 0, d2);
+    renderBatch();
+    toast('已拆分为两条，请分别核对品牌 / 品名 / 数量');
+  }
+
+  function mergeDraft(key){
+    if (!batch) return;
+    var d = batchDraftByKey(key);
+    if (!d) return;
+    var idx = batch.drafts.indexOf(d), prev = null;
+    for (var i = idx - 1; i >= 0; i--){
+      if (batch.drafts[i].itemKey === d.itemKey){ prev = batch.drafts[i]; break; }
+    }
+    if (!prev){ toast('这条已经是该图的第一条，无法与上一条合并'); return; }
+    prev.brand = prev.brand || d.brand;
+    prev.name = prev.name || d.name;
+    prev.size = prev.size || d.size;
+    prev.unit = prev.size ? prev.unit : d.unit;
+    prev.type = prev.type === '正装' && d.type !== '正装' ? d.type : prev.type;
+    prev.expiryDate = prev.expiryDate || d.expiryDate;
+    prev.qty = Math.max(Number(prev.qty) || 1, Number(d.qty) || 1);
+    prev.confidence = Math.max(prev.confidence || 0, d.confidence || 0);
+    prev.aiCount = prev.aiCount || d.aiCount;
+    prev.invalid = false;
+    batch.drafts = batch.drafts.filter(function(x){ return x.key !== d.key; });
+    renderBatch();
+    toast('已与上一条合并，数量与内容请再核对');
+  }
+
+  function draftHTML(d){
+    var it = batchItemOfDraft(d);
+    var same = batch ? batch.drafts.filter(function(x){ return x.itemKey === d.itemKey; }) : [];
+    var n = same.indexOf(d) + 1;
+    var title = (d.brand || '未识别品牌') + ' ' + (d.name || '未识别品名');
+    var meta = [
+      d.category,
+      d.size ? d.size + d.unit : '',
+      d.type,
+      '数量 ' + d.qty,
+      d.expiryDate ? '到期 ' + d.expiryDate : '到期未识别'
+    ].filter(Boolean).join(' · ');
+    var badges = '<span class="tag">来自同一张图 · 第 ' + n + ' 件</span>' +
+      '<span class="tag">' + esc(d.source) + '</span>' +
+      (d.aiCount ? '<span class="tag ai">AI 估算，请核对</span>' : '') +
+      '<span class="tag' + (d.confidence ? '' : ' hot') + '">' + (d.confidence ? '置信度 ' + d.confidence + '%' : (d.source.indexOf('手动') >= 0 ? '手动填写' : '置信度低')) + '</span>' +
+      ((!d.brand || !d.name) ? '<span class="tag hot">需补全品牌 / 品名</span>' : '');
+    var ops = '';
+    if (!d.editing){
+      var prevSame = n > 1;
+      ops = '<div class="draft-ops">' +
+        '<button type="button" class="btn mini ghost" data-bact="dedit" data-key="' + esc(d.key) + '">编辑</button>' +
+        '<button type="button" class="btn mini ghost" data-bact="dsplit" data-key="' + esc(d.key) + '">拆分为两条</button>' +
+        (prevSame ? '<button type="button" class="btn mini ghost" data-bact="dmerge" data-key="' + esc(d.key) + '">与上一条合并</button>' : '') +
+        '<button type="button" class="btn mini ghost" data-bact="ddel" data-key="' + esc(d.key) + '">删除</button>' +
+        '<button type="button" class="btn mini primary" data-bact="dconfone" data-key="' + esc(d.key) + '">入库这条</button>' +
+      '</div>';
+    }
+    var edit = '';
+    if (d.editing){
+      var cats = state.categories[d.board].map(function(c){
+        return '<option value="' + esc(c.name) + '"' + (c.name === d.category ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+      }).join('');
+      var units = UNITS.map(function(u){ return '<option value="' + u + '"' + (u === d.unit ? ' selected' : '') + '>' + u + '</option>'; }).join('');
+      var types = TYPE_LIST.map(function(t){ return '<option value="' + t + '"' + (t === d.type ? ' selected' : '') + '>' + t + '</option>'; }).join('');
+      edit = '<div class="draft-edit" data-editkey="' + esc(d.key) + '">' +
+        '<div class="field full"><label>品牌 *</label><input data-df="brand" maxlength="30" value="' + esc(d.brand) + '"></div>' +
+        '<div class="field full"><label>品名 *</label><input data-df="name" maxlength="50" value="' + esc(d.name) + '"></div>' +
+        '<div class="field"><label>品类</label><select data-df="category">' + cats + '</select></div>' +
+        '<div class="field"><label>正装 / 小样</label><select data-df="type">' + types + '</select></div>' +
+        '<div class="field"><label>规格</label><div style="display:flex;gap:4px">' +
+          '<input data-df="size" type="number" min="0" step="0.1" placeholder="50" value="' + esc(d.size) + '" style="min-width:0">' +
+          '<select data-df="unit" style="width:64px;flex:none">' + units + '</select></div></div>' +
+        '<div class="field"><label>数量 *</label><input data-df="qty" type="number" min="1" max="999" step="1" value="' + esc(d.qty) + '"></div>' +
+        '<div class="field full"><label>到期日</label><input data-df="expiryDate" type="date" value="' + esc(d.expiryDate) + '"></div>' +
+        '<div class="draft-edit-actions"><button type="button" class="btn mini primary" data-bact="dsave" data-key="' + esc(d.key) + '">保存</button>' +
+          '<button type="button" class="btn mini ghost" data-bact="dcancel" data-key="' + esc(d.key) + '">取消编辑</button></div>' +
+      '</div>';
+    }
+    var thumb = it && it.thumb
+      ? '<button type="button" class="draft-thumb" data-bact="dview" data-key="' + esc(d.key) + '" aria-label="查看原图"><img src="' + it.thumb + '" alt=""></button>'
+      : '<div class="draft-thumb"></div>';
+    return '<div class="draft' + (d.invalid ? ' invalid' : '') + '">' +
+      '<input type="checkbox" class="draft-check" data-bact="dsel" data-key="' + esc(d.key) + '"' + (d.selected ? ' checked' : '') + ' aria-label="选择草稿">' +
+      thumb +
+      '<div class="draft-main"><div class="draft-title">' + esc(title) + '</div>' +
+        '<div class="draft-meta">' + esc(meta) + '</div>' +
+        '<div class="draft-badges">' + badges + '</div>' +
+        (d.invalid ? '<div class="draft-meta" style="color:var(--danger)">请补全必需字段后再入库</div>' : '') +
+        ops + edit +
+      '</div></div>';
+  }
+
+  function renderBatch(){
+    var host = document.getElementById('batchHost');
+    if (!host || !batch) return;
+    var pct = batchProgress();
+    var active = batch.items.filter(function(it){ return it.status === 'waiting' || it.status === 'running'; }).length;
+    var finished = batch.items.filter(function(it){ return ['done', 'failed', 'manual', 'cancelled'].indexOf(it.status) >= 0; }).length;
+    var rows = batch.items.map(function(it){
+      var statusText = it.cancelled && it.status === 'running' ? '取消中' : (BATCH_STATUS[it.status] || it.status);
+      var cls = it.status === 'running' && !it.cancelled ? 'running' : it.status;
+      var op = '';
+      if (it.status === 'waiting' || it.status === 'running'){
+        if (!it.cancelled) op = '<button type="button" class="btn mini ghost" data-bact="bcancel" data-key="' + esc(it.key) + '">取消</button>';
+      } else if (it.status === 'failed' || it.status === 'cancelled'){
+        op = '<button type="button" class="btn mini ghost" data-bact="bcancel" data-key="' + esc(it.key) + '">移除</button>';
+      }
+      var thumb = it.thumb
+        ? '<button type="button" class="bq-thumb" data-bact="bview" data-key="' + esc(it.key) + '" aria-label="查看原图" style="padding:0;border:0;overflow:hidden"><img src="' + it.thumb + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px"></button>'
+        : '<div class="bq-ph">图</div>';
+      return '<div class="bq-row">' + thumb +
+        '<div class="bq-main"><b>' + esc(it.name) + '</b><small>' + esc(it.message || '') + '</small></div>' +
+        '<span class="bq-status ' + cls + '">' + statusText + (it.status === 'running' && !it.cancelled ? ' ' + Math.round(it.progress) + '%' : '') + '</span>' +
+        op + '</div>';
+    }).join('');
+
+    var actionBtns = '<div class="batch-actions">' +
+      '<button type="button" class="btn mini" data-bact="baddcam">拍照追加</button>' +
+      '<button type="button" class="btn mini" data-bact="baddalbum">相册 / 文件多选</button>';
+    if (batch.running && !batch.paused){
+      actionBtns += '<button type="button" class="btn mini" data-bact="bpause">暂停</button>';
+    } else if (batch.paused){
+      actionBtns += '<button type="button" class="btn mini primary" data-bact="bresume">继续识别</button>';
+    } else if (batch.items.some(function(it){ return it.status === 'waiting'; })){
+      actionBtns += '<button type="button" class="btn mini primary" data-bact="bstart">开始识别</button>';
+    }
+    if (active || batch.paused){
+      actionBtns += '<button type="button" class="btn mini danger" data-bact="babort">' + (batch.abortArm ? '再点一次确认中止' : '中止整批') + '</button>';
+    }
+    actionBtns += '</div>';
+
+    var allSelected = batch.drafts.length && batch.drafts.every(function(d){ return d.selected; });
+    var draftsHtml = batch.drafts.length
+      ? batch.drafts.map(draftHTML).join('')
+      : '<div class="draft-empty">还没有草稿。加入图片并识别后，这里会按图片生成 1 条或多条待确认草稿。</div>';
+
+    host.innerHTML =
+      '<div class="batch-top"><b>批量入库 · ' + BOARD_LABEL[batch.board] + '</b>' +
+        '<button type="button" class="icon-btn" data-bclose="1" aria-label="关闭">×</button></div>' +
+      '<div class="batch-body">' +
+        '<p class="hint">支持一次多选照片、桌面多选拖入，也可以先拍照再继续追加。每张图串行识别，单张失败不会影响其他图片。</p>' +
+        actionBtns +
+        '<div class="pbar big"><i style="width:' + pct + '%"></i></div>' +
+        '<div class="batch-msg">' + esc(batch.msg || '') + '<br>已处理 ' + finished + ' / ' + batch.items.length + ' 张 · 草稿 ' + batch.drafts.length + ' 条</div>' +
+        (batch.items.length ? '<div class="bqueue">' + rows + '</div>' : '<div class="draft-empty">还没有加入图片。</div>') +
+        '<div class="draft-head"><b>待确认草稿（' + batch.drafts.length + '）</b>' +
+          '<label class="check" style="font-size:12px"><input type="checkbox" data-bact="dselall"' + (allSelected ? ' checked' : '') + '> 全选</label>' +
+          '<button type="button" class="btn primary mini" data-bact="dconfirmall"' + (batch.saving ? ' disabled' : '') + '>全部确认入库</button></div>' +
+        '<p class="hint">本地 OCR 无法判断画面中实际有几瓶，数量默认 1，必须逐条核对后手动调整；不得仅凭识别结果编造件数。同一张图的多条草稿共用同一张主图，入库后仍可继续增删改照片。</p>' +
+        '<div class="drafts">' + draftsHtml + '</div>' +
+        '<input type="file" id="batchCamera" accept="image/*" capture="environment" multiple hidden>' +
+        '<input type="file" id="batchAlbum" accept="image/*" multiple hidden>' +
+      '</div>';
+  }
+
+  function bindBatch(host){
+    host.addEventListener('click', function(ev){
+      if (ev.target.closest('[data-bclose]')){ requestCloseBatch(); return; }
+      var el = ev.target.closest('[data-bact]');
+      if (!el) return;
+      var act = el.getAttribute('data-bact');
+      var key = el.getAttribute('data-key');
+      if (act === 'baddcam'){ var bc = document.getElementById('batchCamera'); if (bc){ bc.value = ''; bc.click(); } return; }
+      if (act === 'baddalbum'){ var ba = document.getElementById('batchAlbum'); if (ba){ ba.value = ''; ba.click(); } return; }
+      if (act === 'bstart' || act === 'bresume'){
+        if (!batch) return;
+        batch.paused = false;
+        batch.aborted = false;
+        batch.msg = '继续识别…';
+        batchPump();
+        return;
+      }
+      if (act === 'bpause'){
+        if (!batch) return;
+        batch.paused = true;
+        batch.msg = '已暂停，当前图片识别完成后停止。';
+        renderBatch();
+        toast('将在当前图片完成后暂停');
+        return;
+      }
+      if (act === 'babort'){ batchAbort(); return; }
+      if (act === 'bcancel'){ batchCancelItem(batchItemByKey(key)); return; }
+      if (act === 'bview'){
+        var it = batchItemByKey(key);
+        if (!it){ return; }
+        if (it.full) openPhotoViewer(null, [it.imgId], 0, { readOnly: true, title: it.name });
+        else if (it.imgId) openPhotoViewer(null, [it.imgId], 0, { readOnly: true, title: it.name });
+        else toast('这张图还没有生成预览');
+        return;
+      }
+      if (act === 'dsel'){
+        var d0 = batchDraftByKey(key);
+        if (d0) d0.selected = !d0.selected;
+        renderBatch();
+        return;
+      }
+      if (act === 'dselall'){
+        if (!batch) return;
+        var all = batch.drafts.every(function(d){ return d.selected; });
+        batch.drafts.forEach(function(d){ d.selected = !all; });
+        renderBatch();
+        return;
+      }
+      if (act === 'dconfirmall'){
+        if (!batch) return;
+        var sel = batch.drafts.filter(function(d){ return d.selected; });
+        if (!sel.length){ toast('请先勾选要入库的草稿'); return; }
+        saveDrafts(sel);
+        return;
+      }
+      if (act === 'dconfone'){
+        var dc = batchDraftByKey(key);
+        if (dc) saveDrafts([dc]);
+        return;
+      }
+      if (act === 'dedit'){
+        var de = batchDraftByKey(key);
+        if (de){ de.editing = true; renderBatch(); }
+        return;
+      }
+      if (act === 'dcancel'){
+        var dcn = batchDraftByKey(key);
+        if (dcn){ dcn.editing = false; dcn.invalid = false; renderBatch(); }
+        return;
+      }
+      if (act === 'dsave'){
+        var ds = batchDraftByKey(key);
+        if (ds){
+          ds.editing = false;
+          var errs = validateDraft(ds);
+          ds.invalid = errs.length > 0;
+          renderBatch();
+          if (errs.length) toast('请补全：' + errs.join('、'));
+        }
+        return;
+      }
+      if (act === 'dsplit'){ splitDraft(key); return; }
+      if (act === 'dmerge'){ mergeDraft(key); return; }
+      if (act === 'ddel'){
+        if (!batch) return;
+        batch.drafts = batch.drafts.filter(function(d){ return d.key !== key; });
+        renderBatch();
+        toast('草稿已删除');
+        return;
+      }
+      if (act === 'dview'){
+        var dv = batchDraftByKey(key);
+        if (!dv) return;
+        var itv = batchItemOfDraft(dv);
+        if (!itv || !itv.imgId){ toast('原图不可用'); return; }
+        openPhotoViewer(null, [itv.imgId], 0, { readOnly: true, title: (dv.brand || '') + ' ' + (dv.name || '草稿原图') });
+        return;
+      }
+    });
+    var sync = function(ev){
+      var box = ev.target.closest('[data-editkey]');
+      if (!box || !batch) return;
+      var d = batchDraftByKey(box.getAttribute('data-editkey'));
+      if (!d) return;
+      var f = ev.target.getAttribute('data-df');
+      if (!f) return;
+      d[f] = ev.target.value;
+      d.invalid = false;
+    };
+    host.addEventListener('input', sync);
+    host.addEventListener('change', sync);
+  }
+
   var viewerState = null;
 
   function viewerGetUrl(id){
     var it = draftItem(id);
     if (it && it.full) return Promise.resolve(it.full);
+    if (batch){
+      var bi = batch.items.filter(function(x){ return x.imgId === id && x.full; })[0];
+      if (bi) return Promise.resolve(bi.full);
+    }
     return imgGetFull(id);
+  }
+
+  function batchThumbOf(id){
+    if (!batch) return '';
+    var bi = batch.items.filter(function(x){ return x.imgId === id; })[0];
+    return bi ? bi.thumb : '';
   }
 
   function openImageViewer(rec){
@@ -2765,23 +3647,24 @@ textarea{resize:vertical;min-height:56px}
     openPhotoViewer(null, ids, idx);
   }
 
-  function openPhotoViewer(rec, ids, index){
+  function openPhotoViewer(rec, ids, index, opts){
+    opts = opts || {};
     closePhotoViewer();
     var host = document.createElement('div');
     host.id = 'photoViewer';
     host.className = 'viewer-host';
     host.innerHTML =
-      '<div class="vhead"><span>' + (rec ? esc(rec.brand + ' ' + rec.name) : '照片预览（尚未保存）') + '</span>' +
+      '<div class="vhead"><span>' + (opts.title ? esc(opts.title) : (rec ? esc(rec.brand + ' ' + rec.name) : '照片预览（尚未保存）')) + '</span>' +
         '<button type="button" data-vclose="1" aria-label="关闭">×</button></div>' +
       '<div class="vstage" id="vStage"><img id="vImg" alt="产品照片"></div>' +
       '<div class="vnav"><button type="button" data-vprev="1" aria-label="上一张">‹</button>' +
         '<span id="vCount"></span><button type="button" data-vnext="1" aria-label="下一张">›</button></div>' +
       '<div class="vstrip" id="vStrip"></div>' +
-      '<div class="vfoot"><button type="button" class="btn danger" id="vDel" data-vdel="1">删除这张照片</button>' +
+      '<div class="vfoot">' + (opts.readOnly ? '' : '<button type="button" class="btn danger" id="vDel" data-vdel="1">删除这张照片</button>') +
         '<button type="button" class="btn" data-vclose="1">关闭</button></div>' +
       '<div class="zoom-hint">双指缩放 · 滚轮缩放 · 放大后可拖动</div>';
     document.body.appendChild(host);
-    viewerState = { rec: rec, ids: ids, idx: 0, scale: 1, tx: 0, ty: 0, delPending: 0 };
+    viewerState = { rec: rec, ids: ids, idx: 0, scale: 1, tx: 0, ty: 0, delPending: 0, readOnly: !!opts.readOnly };
     bindViewer(host);
     viewerShow(index);
   }
@@ -2820,7 +3703,7 @@ textarea{resize:vertical;min-height:56px}
     var strip = document.getElementById('vStrip');
     if (strip){
       strip.innerHTML = st.ids.map(function(pid, k){
-        var th = (draftItem(pid) && draftItem(pid).thumb) || imgThumb(pid);
+        var th = (draftItem(pid) && draftItem(pid).thumb) || batchThumbOf(pid) || imgThumb(pid);
         return '<button type="button" data-vthumb="' + k + '" class="' + (k === st.idx ? 'on' : '') + '" aria-label="第 ' + (k + 1) + ' 张">' +
           (th ? '<img src="' + th + '" alt="">' : '<span style="display:block;width:46px;height:46px"></span>') + '</button>';
       }).join('');
@@ -2837,6 +3720,7 @@ textarea{resize:vertical;min-height:56px}
   function viewerAskDelete(){
     var st = viewerState;
     if (!st) return;
+    if (st.readOnly){ toast('预览模式不能删除照片'); return; }
     var btn = document.getElementById('vDel');
     if (!st.delPending){
       st.delPending = 1;
@@ -2850,8 +3734,11 @@ textarea{resize:vertical;min-height:56px}
       return;
     }
     var id = st.ids[st.idx];
-    imgDelete(id).catch(function(){});
-    delete imgCache.meta[id];
+    var shared = st.rec ? imgRefCount(id, st.rec.id) > 0 : false;
+    if (!shared){
+      imgDelete(id).catch(function(){});
+      delete imgCache.meta[id];
+    }
     if (st.rec){
       var rec = findRecord(st.rec.id);
       if (rec){
@@ -2871,7 +3758,7 @@ textarea{resize:vertical;min-height:56px}
     if (!st.ids.length){ closePhotoViewer(); toast('照片已删除'); return; }
     if (st.idx >= st.ids.length) st.idx = st.ids.length - 1;
     viewerShow(st.idx);
-    toast('照片已删除');
+    toast(shared ? '已从当前记录移除；其他记录仍在用这张图' : '照片已删除');
   }
 
   function bindViewer(host){
@@ -3039,6 +3926,7 @@ textarea{resize:vertical;min-height:56px}
     if (act === 'tab'){ switchTab(el.getAttribute('data-tab')); return; }
     if (act === 'add'){ openForm(null, board || (ui.tab === 'makeup' ? 'makeup' : 'skin')); return; }
     if (act === 'photo'){ openPhotoModal(board || (ui.tab === 'makeup' ? 'makeup' : 'skin')); return; }
+    if (act === 'batch'){ openBatch(board || (ui.tab === 'makeup' ? 'makeup' : 'skin')); return; }
     if (act === 'picCamera'){ var cam = document.getElementById('photoCamera'); if (cam) cam.click(); return; }
     if (act === 'picAlbum'){ var album = document.getElementById('photoAlbum'); if (album) album.click(); return; }
     if (act === 'picCancel'){ closeModal(); return; }
@@ -3106,14 +3994,14 @@ textarea{resize:vertical;min-height:56px}
       var model = (document.getElementById('aiModel').value || '').trim();
       if (!endpoint || !key){ toast('请填写接口地址和 API Key'); return; }
       if (!/^https?:\/\//i.test(endpoint)){ toast('接口地址需以 http:// 或 https:// 开头'); return; }
-      state.settings.ai = { endpoint: endpoint, key: key, model: model || 'gpt-4o-mini' };
+      state.settings.ai = { endpoint: endpoint, key: key, model: model || 'gpt-4o-mini', batchAi: !!(document.getElementById('aiBatch') && document.getElementById('aiBatch').checked) };
       persist();
       toast('AI 设置已保存（仅存本机）');
       renderApp(true);
       return;
     }
     if (act === 'clearai'){
-      state.settings.ai = { endpoint: '', key: '', model: '' };
+      state.settings.ai = { endpoint: '', key: '', model: '', batchAi: false };
       persist();
       toast('已清除 AI 设置');
       renderApp(true);
@@ -3130,6 +4018,7 @@ textarea{resize:vertical;min-height:56px}
       if (!target) return;
       confirmDialog('删除「' + target.brand + ' ' + target.name + '」这条记录？此操作不可撤销。', function(){
         (target.photos || []).forEach(function(pid){
+          if (imgRefCount(pid, id) > 0) return;
           imgDelete(pid).catch(function(e){ console.warn(e); });
           delete imgCache.meta[pid];
         });
@@ -3273,21 +4162,28 @@ textarea{resize:vertical;min-height:56px}
       ev.target.value = '';
       replaceTarget = '';
       addDraftFiles([rf], rk);
+      return;
+    }
+    if (ev.target.id === 'batchCamera' || ev.target.id === 'batchAlbum'){
+      var bfiles = Array.prototype.slice.call(ev.target.files || []);
+      ev.target.value = '';
+      if (bfiles.length) batchAddFiles(bfiles);
     }
   });
 
-  // ESC 关闭弹层（编辑 > 查看器 > 表单）
+  // ESC 关闭弹层（编辑 > 查看器 > 批量 > 表单）
   document.addEventListener('keydown', function(ev){
     if (ev.key !== 'Escape') return;
     if (photoEdit){ closePhotoEditor(); return; }
     if (viewerState){ closePhotoViewer(); return; }
+    if (document.getElementById('batchHost')){ requestCloseBatch(); return; }
     if (modalHost.innerHTML) closeModal();
   });
 
   function initDropZone(){
     var overlay = document.createElement('div');
     overlay.className = 'drop-overlay';
-    overlay.innerHTML = '<div>松开即可拍照入库</div>';
+    overlay.innerHTML = '<div>松开即可入库（支持多张，照片会进入批量队列）</div>';
     document.body.appendChild(overlay);
     var depth = 0;
     function hasFiles(e){
@@ -3315,6 +4211,8 @@ textarea{resize:vertical;min-height:56px}
       overlay.classList.remove('show');
       var files = Array.prototype.slice.call(e.dataTransfer.files || []);
       if (!files.length) return;
+      // 批量面板已打开：继续追加到当前批次
+      if (document.getElementById('batchHost')){ batchAddFiles(files); return; }
       // 表单已打开时：拖入的照片直接加入当前记录，不再进入拍照识别流程
       if (photoDraft && document.getElementById('itemForm')){
         addDraftFiles(files);
@@ -3322,6 +4220,11 @@ textarea{resize:vertical;min-height:56px}
       }
       var file = files[0];
       if (!/^image\//.test(file.type)){ toast('请拖入图片文件'); return; }
+      if (files.length > 1){
+        openBatch(ui.tab === 'makeup' ? 'makeup' : 'skin');
+        batchAddFiles(files);
+        return;
+      }
       if (ui.tab === 'data'){ toast('请先切换到概览或护肤 / 彩妆页面'); return; }
       runPhotoFlow(file, ui.tab === 'makeup' ? 'makeup' : 'skin');
     });
