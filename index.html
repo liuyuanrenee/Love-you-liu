@@ -137,13 +137,17 @@ p{margin:0}
    ========================================================= */
 .stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 @media(min-width:560px){.stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(min-width:900px){.stat-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(min-width:900px){.stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(min-width:1100px){.stat-grid{grid-template-columns:repeat(7,minmax(0,1fr))}}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:12px}
 .stat .stat-label{font-size:11.5px;color:var(--muted);display:block}
 .stat strong{display:block;font-size:25px;line-height:1.25;letter-spacing:-.5px}
 .stat .stat-sub{display:block;font-size:11px;color:var(--muted);margin-top:1px}
 .stat.warn strong{color:var(--near)}
 .stat.bad strong{color:var(--danger)}
+.stat.clickable{cursor:pointer;transition:.15s}
+.stat.clickable:hover{background:var(--surface-2);border-color:var(--accent)}
+.stat.clickable:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .section{margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .section-head h3{font-size:15px}
@@ -275,6 +279,13 @@ textarea{resize:vertical;min-height:56px}
 .dialog p{font-size:13px;color:var(--muted);line-height:1.6}
 .dialog .drow{display:flex;gap:9px;margin-top:16px}
 .dialog .drow .btn{flex:1}
+.dialog.wide{max-width:560px;max-height:82vh;overflow:auto}
+.due-group{margin-top:12px}
+.due-group h4{font-size:12.5px;color:var(--muted);margin:0 0 6px;display:flex;justify-content:space-between}
+.due-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1px solid var(--border);background:var(--card);border-radius:9px;padding:7px 9px;margin-bottom:5px}
+.due-row:hover{background:var(--surface-2)}
+.due-row .dn{flex:1;min-width:0;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.due-row .dd{font-size:11.5px;color:var(--muted);flex:none}
 .board-skin .makeup-only{display:none!important}
 
 /* =========================================================
@@ -284,6 +295,8 @@ textarea{resize:vertical;min-height:56px}
 .fab:active{transform:scale(.97)}
 #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,14px);background:rgba(20,24,32,.92);color:#fff;font-size:12.5px;padding:9px 15px;border-radius:999px;z-index:50;opacity:0;pointer-events:none;transition:.22s;max-width:86vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.with-action{pointer-events:auto;display:flex;align-items:center;gap:10px;padding-right:6px}
+#toast .toast-act{border:0;background:rgba(255,255,255,.18);color:#fff;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:650;flex:none}
 
 /* =========================================================
    拍照入库 / 图片存档
@@ -327,6 +340,8 @@ textarea{resize:vertical;min-height:56px}
 .bq-main{flex:1;min-width:0}
 .bq-main b{display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bq-main small{display:block;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bq-split{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:4px;font-size:10.5px;color:var(--muted)}
+.bq-split select{width:auto;padding:2px 6px;border-radius:6px;font-size:11px}
 .bq-status{font-size:10.5px;padding:1px 7px;border-radius:6px;background:var(--surface-2);color:var(--muted);flex:none;white-space:nowrap}
 .bq-status.running{background:var(--accent-soft);color:var(--accent)}
 .bq-status.done{background:var(--ok-bg);color:var(--ok)}
@@ -337,7 +352,8 @@ textarea{resize:vertical;min-height:56px}
 .batch-actions{display:flex;gap:8px;flex-wrap:wrap}
 .draft-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:10px;border-top:1px solid var(--border)}
 .draft-head b{font-size:14px}
-.draft-head .btn{margin-left:auto}
+.dhead-ops{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}
+.dhead-ops .btn{padding:3px 8px;font-size:11px}
 .drafts{display:flex;flex-direction:column;gap:8px}
 .draft{border:1px solid var(--border);border-radius:12px;background:var(--card);padding:8px;display:flex;gap:8px;align-items:flex-start}
 .draft.invalid{border-color:var(--danger);background:var(--danger-bg)}
@@ -347,6 +363,7 @@ textarea{resize:vertical;min-height:56px}
 .draft-main{flex:1;min-width:0}
 .draft-title{font-size:13px;font-weight:650;line-height:1.35}
 .draft-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.draft-note{font-size:11px;color:var(--near);line-height:1.45}
 .draft-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .draft-badges .tag.hot{background:var(--near-bg);color:var(--near)}
 .draft-badges .tag.ai{background:var(--accent-soft);color:var(--accent)}
@@ -464,6 +481,7 @@ textarea{resize:vertical;min-height:56px}
       { name: '眼霜', months: 6 },
       { name: '面膜', months: 12 },
       { name: '防晒', months: 6 },
+      { name: '香水', months: 36 },
       { name: '身体护理', months: 12 },
       { name: '其他', months: 12 }
     ],
@@ -477,12 +495,23 @@ textarea{resize:vertical;min-height:56px}
     ]
   };
   var BOARD_LABEL = { skin: '护肤', makeup: '彩妆' };
+  // 在线视觉服务商预设：地址与模型按各家 2026 年公开文档整理，模型名可能随服务商调整，可在界面自行改
+  var AI_PRESETS = {
+    custom: { label: '自定义（手动填地址与模型）', endpoint: '', model: '', note: '需自行填写完整 /chat/completions 地址与模型名，并按服务商文档核对。' },
+    dashscope: { label: '阿里云百炼 / 通义千问', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen3-vl-plus', note: 'OpenAI 兼容（北京地域）；也可改用 qwen2.5-vl-72b-instruct。' },
+    zhipu: { label: '智谱 GLM（GLM-4V 系列）', endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4.6v', note: 'OpenAI 兼容；若账号未开通 glm-4.6v，可改 glm-4.5v，请按服务商文档核对。' },
+    ark: { label: '火山方舟 / 豆包', endpoint: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions', model: 'doubao-seed-2-1-pro-260628', note: '需在方舟控制台创建接入点；也可直接填 ep- 开头的接入点 ID，请按服务商文档核对。' },
+    moonshot: { label: 'Moonshot Kimi（视觉模型）', endpoint: 'https://api.moonshot.cn/v1/chat/completions', model: 'kimi-k3', note: '视觉模型名随版本变化，请按 Kimi 平台文档核对。' },
+    siliconflow: { label: '硅基流动 SiliconFlow（Qwen-VL 等）', endpoint: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-VL-72B-Instruct', note: 'OpenAI 兼容；也可改用 Qwen3-VL 系列。' },
+    openai: { label: 'OpenAI 官方', endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o', note: '也可用 gpt-4.1 / gpt-4o-mini（后两者视觉能力较弱）。' }
+  };
   var STATUS_META = {
     safe: { label: '安全' },
     near: { label: '临近到期' },
     expired: { label: '已过期' },
     finished: { label: '已用完' }
   };
+  var aiTestInfo = { text: '' };
 
   function esc(v){
     return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
@@ -613,15 +642,14 @@ textarea{resize:vertical;min-height:56px}
         skin: DEFAULT_CATS.skin.map(function(c){ return { name: c.name, months: c.months }; }),
         makeup: DEFAULT_CATS.makeup.map(function(c){ return { name: c.name, months: c.months }; })
       },
-      settings: { reminderDismissedOn: null, ocrHighAccuracy: true, ocrPreprocess: true, ai: { endpoint: '', key: '', model: '', batchAi: false } }
+      settings: { reminderDismissedOn: null, ocrHighAccuracy: false, ocrPreprocess: true, ocrAutoSplit: false, ai: { provider: 'custom', endpoint: '', key: '', model: '', batchAi: false } }
     };
   }
 
   function normalizeRecord(r, cats){
     r = r || {};
     var board = r.board === 'makeup' ? 'makeup' : 'skin';
-    var fallbackCat = board === 'skin' ? '洁面' : '底妆';
-    var category = String(r.category || fallbackCat);
+    var category = String(r.category == null ? '' : r.category).trim();
     var list = cats[board] || [];
     var found = list.filter(function(c){ return c.name === category; })[0];
 
@@ -676,6 +704,10 @@ textarea{resize:vertical;min-height:56px}
         return { name: String(c.name), months: clampInt(c.months, 1, 120, 12) };
       }) : [];
       if (!arr.length) arr = DEFAULT_CATS[b].map(function(c){ return { name: c.name, months: c.months }; });
+      // 内置「香水」品类为后续新增：老数据如缺失则补上，保证香水识别有归属
+      if (b === 'skin' && !arr.some(function(c){ return c.name === '香水'; })){
+        arr.push({ name: '香水', months: 36 });
+      }
       cats[b] = arr;
     });
     var records = (Array.isArray(s.records) ? s.records : []).map(function(r){ return normalizeRecord(r, cats); });
@@ -685,9 +717,11 @@ textarea{resize:vertical;min-height:56px}
       categories: cats,
       settings: {
         reminderDismissedOn: (s.settings && s.settings.reminderDismissedOn) || null,
-        ocrHighAccuracy: !(s.settings && s.settings.ocrHighAccuracy === false),
+        ocrHighAccuracy: !!(s.settings && s.settings.ocrHighAccuracy === true),
         ocrPreprocess: !(s.settings && s.settings.ocrPreprocess === false),
+        ocrAutoSplit: !!(s.settings && s.settings.ocrAutoSplit === true),
         ai: {
+          provider: String((s.settings && s.settings.ai && s.settings.ai.provider) || 'custom'),
           endpoint: String((s.settings && s.settings.ai && s.settings.ai.endpoint) || ''),
           key: String((s.settings && s.settings.ai && s.settings.ai.key) || ''),
           model: String((s.settings && s.settings.ai && s.settings.ai.model) || ''),
@@ -741,6 +775,14 @@ textarea{resize:vertical;min-height:56px}
     return { key: 'safe', label: '安全', days: d, due: info.due, basis: info.basis };
   }
 
+  function dueWithin91(r){
+    if (!r || r.finished) return false;
+    var info = dueInfo(r);
+    if (!info.due) return false;
+    var d = daysFromToday(info.due);
+    return d >= 0 && d <= 91;
+  }
+
   function byDue(a, b){
     var da = dueInfo(a).due, db = dueInfo(b).due;
     if (!da && !db) return cmpZh(a.brand, b.brand);
@@ -771,7 +813,10 @@ textarea{resize:vertical;min-height:56px}
     if (f.brand) list = list.filter(function(r){ return r.brand === f.brand; });
     if (f.cat) list = list.filter(function(r){ return r.category === f.cat; });
     if (f.type) list = list.filter(function(r){ return r.type === f.type; });
-    if (f.status) list = list.filter(function(r){ return recordStatus(r).key === f.status; });
+    if (f.status) list = list.filter(function(r){
+      if (f.status === 'due91') return dueWithin91(r);
+      return recordStatus(r).key === f.status;
+    });
     if (q){
       list = list.filter(function(r){
         return [r.brand, r.name, r.category, r.note, r.location, r.shade, r.type].join(' ').toLowerCase().indexOf(q) >= 0;
@@ -836,7 +881,7 @@ textarea{resize:vertical;min-height:56px}
         '<span>' + nearN + ' 项 30 天内临期 · ' + expN + ' 项已过期。这是页面内提醒，不是系统推送。</span></div>' +
         '<button class="icon-btn" data-act="dismissReminder" aria-label="关闭提醒">×</button></div>' +
       '<div class="reminder-list">' + rows + '</div>' +
-      '<div class="reminder-foot"><button class="btn ghost mini" data-act="ics">导出临期 .ics</button>' +
+      '<div class="reminder-foot"><button class="btn ghost mini" data-act="ics">导出 91 天内到期 .ics</button>' +
         '<span>「稍后提醒」的项目 7 天内不再弹出</span></div>' +
       '</div></div>';
   }
@@ -859,6 +904,7 @@ textarea{resize:vertical;min-height:56px}
     var makeup = active.filter(function(r){ return r.board === 'makeup'; });
     var near = active.filter(function(r){ return recordStatus(r).key === 'near'; });
     var expired = active.filter(function(r){ return recordStatus(r).key === 'expired'; });
+    var due91 = active.filter(dueWithin91);
     var samples = active.filter(function(r){ return r.type === '小样' && !r.opened; });
     return '<div class="stat-grid">' +
       '<div class="stat"><span class="stat-label">总件数</span><strong>' + qsum(active) + '</strong><span class="stat-sub">不含已用完</span></div>' +
@@ -866,6 +912,7 @@ textarea{resize:vertical;min-height:56px}
       '<div class="stat"><span class="stat-label">彩妆</span><strong>' + qsum(makeup) + '</strong><span class="stat-sub">' + makeup.length + ' 条记录</span></div>' +
       '<div class="stat"><span class="stat-label">未开封小样</span><strong>' + qsum(samples) + '</strong><span class="stat-sub">' + samples.length + ' 条记录</span></div>' +
       '<div class="stat warn"><span class="stat-label">30 天内临期</span><strong>' + near.length + '</strong><span class="stat-sub">共 ' + qsum(near) + ' 件</span></div>' +
+      '<div class="stat warn clickable" data-act="due91filter" role="button" tabindex="0" aria-label="筛选近 3 个月到期的记录"><span class="stat-label">近 3 个月到期</span><strong>' + due91.length + '</strong><span class="stat-sub">护肤 ' + due91.filter(function(r){ return r.board === 'skin'; }).length + ' · 彩妆 ' + due91.filter(function(r){ return r.board === 'makeup'; }).length + ' 条 · 点击筛选</span></div>' +
       '<div class="stat bad"><span class="stat-label">已过期</span><strong>' + expired.length + '</strong><span class="stat-sub">共 ' + qsum(expired) + ' 件</span></div>' +
       '</div>';
   }
@@ -896,9 +943,10 @@ textarea{resize:vertical;min-height:56px}
       .sort(function(a, b){ return (b.qty - a.qty) || cmpZh(a.brand, b.brand); });
   }
 
-  function ovList(items, emptyText){
+  function ovList(items, emptyText, limit){
     if (!items.length) return '<p class="hint">' + emptyText + '</p>';
-    var shown = items.slice(0, 8);
+    var max = Number(limit) > 0 ? Number(limit) : 8;
+    var shown = items.slice(0, max);
     return '<div class="ov-list">' + shown.map(function(r){
       var st = recordStatus(r);
       var due = dueInfo(r).due;
@@ -907,13 +955,41 @@ textarea{resize:vertical;min-height:56px}
         '<span class="tag">' + BOARD_LABEL[r.board] + '</span>' +
         '<span class="oname">' + esc(r.brand) + ' · ' + esc(r.name) + '</span>' +
         '<span class="odate">' + esc(due) + (tail ? ' · ' + tail : '') + '</span></button>';
-    }).join('') + (items.length > 8 ? '<p class="hint">还有 ' + (items.length - 8) + ' 项，可在对应板块筛选查看</p>' : '') + '</div>';
+    }).join('') + (items.length > max ? '<p class="hint">还有 ' + (items.length - max) + ' 项，可在对应板块筛选查看</p>' : '') + '</div>';
+  }
+
+  function dueRowHTML(r){
+    var st = recordStatus(r);
+    var due = dueInfo(r).due || '';
+    return '<button type="button" class="due-row" data-act="edit" data-id="' + esc(r.id) + '">' +
+      '<span class="tag">' + BOARD_LABEL[r.board] + '</span>' +
+      '<span class="dn">' + esc(r.brand) + ' · ' + esc(r.name) + '</span>' +
+      '<span class="dd">' + esc(due) + (st.days == null ? '' : ' · 剩 ' + st.days + ' 天') + '</span></button>';
+  }
+
+  function openDue91List(){
+    var list = state.records.filter(dueWithin91).sort(byDue);
+    var skin = list.filter(function(r){ return r.board === 'skin'; });
+    var makeup = list.filter(function(r){ return r.board === 'makeup'; });
+    modalHost.innerHTML =
+      '<div class="backdrop" data-close="1"></div>' +
+      '<div class="dialog wide"><h3>近 3 个月到期</h3>' +
+        '<p>口径：今天起 91 天内（含今天）且未用完，已过期不计入。合计 ' + list.length + ' 条，护肤 ' + skin.length + ' / 彩妆 ' + makeup.length + '。</p>' +
+        '<div class="due-group"><h4>护肤<span>' + skin.length + ' 条</span></h4>' +
+          (skin.length ? skin.map(dueRowHTML).join('') : '<p class="hint">暂无</p>') + '</div>' +
+        '<div class="due-group"><h4>彩妆<span>' + makeup.length + ' 条</span></h4>' +
+          (makeup.length ? makeup.map(dueRowHTML).join('') : '<p class="hint">暂无</p>') + '</div>' +
+        '<div class="drow"><button type="button" class="btn" data-close="1">关闭</button></div>' +
+      '</div>';
   }
 
   function overviewHTML(){
     var active = state.records.filter(function(r){ return !r.finished; });
     var near = active.filter(function(r){ return recordStatus(r).key === 'near'; }).sort(byDue);
     var expired = active.filter(function(r){ return recordStatus(r).key === 'expired'; }).sort(byDue);
+    var due91 = active.filter(dueWithin91).sort(byDue);
+    var due91Skin = due91.filter(function(r){ return r.board === 'skin'; }).length;
+    var due91Makeup = due91.filter(function(r){ return r.board === 'makeup'; }).length;
     var brands = brandStats();
 
     return '<section class="panel">' +
@@ -937,11 +1013,17 @@ textarea{resize:vertical;min-height:56px}
           return '<div class="brand-row"><div class="brand-line"><b>' + esc(b.brand) + '</b><span class="bq">' + boardTags + ' · ' + b.qty + ' 件</span></div><div class="brand-cats">' + cats + '</div></div>';
         }).join('') : '<p class="hint">还没有品牌数据</p>') + '</div></section>' +
       '<section class="section"><div class="section-head"><h3>临期 / 过期清单</h3>' +
-        '<button class="btn ghost mini" data-act="ics">导出临期 .ics</button></div>' +
+        '<button class="btn ghost mini" data-act="ics">导出 91 天内到期 .ics</button></div>' +
         '<div class="two-col">' +
           '<div><h4 class="hint" style="margin-bottom:8px;color:var(--near);font-size:12.5px">30 天内临期（' + near.length + '）</h4>' + ovList(near, '暂无临期项目') + '</div>' +
           '<div><h4 class="hint" style="margin-bottom:8px;color:var(--danger);font-size:12.5px">已过期（' + expired.length + '）</h4>' + ovList(expired, '暂无过期项目') + '</div>' +
-        '</div></section>';
+        '</div></section>' +
+      '<section class="section"><div class="section-head"><h3>近 3 个月到期（91 天内）</h3>' +
+        '<span class="hint">合计 ' + due91.length + ' 条 · 护肤 ' + due91Skin + ' / 彩妆 ' + due91Makeup + '，按到期日升序</span>' +
+        '<button class="btn ghost mini" data-act="due91list">查看全部</button></div>' +
+        '<p class="hint" style="margin-bottom:8px">按各自的到期日计算（开封后按开封日期 + 期限，未开封按填写的到期日），落在今天起 91 天内（含今天）且未用完的记录；已过期仍归「已过期」，不重复计入。</p>' +
+        ovList(due91, '暂无近 3 个月到期的项目', 5) +
+      '</section>';
   }
 
   function toolbarHTML(board){
@@ -965,7 +1047,8 @@ textarea{resize:vertical;min-height:56px}
         '<select data-f="status" data-board="' + board + '" aria-label="状态"><option value="">全部状态</option>' +
           ['safe', 'near', 'expired', 'finished'].map(function(k){
             return '<option value="' + k + '"' + (f.status === k ? ' selected' : '') + '>' + STATUS_META[k].label + '</option>';
-          }).join('') + '</select>' +
+          }).join('') +
+          '<option value="due91"' + (f.status === 'due91' ? ' selected' : '') + '>近 3 个月到期（91 天内）</option></select>' +
         '<select data-f="sort" data-board="' + board + '" aria-label="排序"><option value="due"' + (f.sort === 'due' ? ' selected' : '') + '>按到期日</option>' +
           '<option value="brand"' + (f.sort === 'brand' ? ' selected' : '') + '>按品牌</option>' +
           '<option value="qty"' + (f.sort === 'qty' ? ' selected' : '') + '>按数量</option></select>' +
@@ -1109,7 +1192,7 @@ textarea{resize:vertical;min-height:56px}
           '<button class="btn" data-act="exportjsonimg">导出 JSON（含图片）</button>' +
           '<button class="btn" data-act="exportcsv">导出 CSV</button>' +
           '<button class="btn" data-act="chooseimport">导入 JSON</button>' +
-          '<button class="btn" data-act="ics">导出临期 .ics</button>' +
+          '<button class="btn" data-act="ics">导出 91 天内到期 .ics</button>' +
           '<input type="file" id="importFile" accept="application/json,.json" hidden>' +
         '</div></div>' +
       '<div class="block"><h3>照片存档</h3><p class="hint">每条记录最多 9 张照片，保存在本机 IndexedDB（localStorage 容量不足）；普通 JSON 备份不含照片，需要迁移照片时用「导出 JSON（含图片）」。' + imgStatsText() + '</p>' +
@@ -1121,21 +1204,30 @@ textarea{resize:vertical;min-height:56px}
         '<p class="hint" style="margin-top:6px">识别说明：本地 OCR 使用 tesseract.js，联网时从 CDN 加载（首次需下载约 30MB 中英文语言包），离线时自动降级为手动填写。默认用原图（长边上限 2400px）识别，支持高精度多遍识别与图像预处理；包装反光、字体过小、曲面或角度倾斜仍会降低准确率，低置信字段必须人工核对。</p>' +
       '</div>' +
       '<div class="block"><h3>识别精度</h3><p class="hint">本地 OCR 默认使用原图（长边上限 2400px，超出才缩），预览和照片存档仍用压缩图。高精度模式会做灰度化、对比度/亮度自适应拉伸、必要时 2 倍放大，并用多种页面分割模式多遍识别后择优，速度更慢。</p>' +
-        '<div class="field"><label class="check"><input type="checkbox" id="ocrHighAccuracy"' + (state.settings.ocrHighAccuracy ? ' checked' : '') + '> 高精度识别（更慢，推荐开启）</label></div>' +
+        '<div class="field"><label class="check"><input type="checkbox" id="ocrHighAccuracy"' + (state.settings.ocrHighAccuracy ? ' checked' : '') + '> 高精度识别（更慢；当前版本对本地 OCR 提升有限，默认关闭）</label></div>' +
         '<div class="field" style="margin-top:8px"><label class="check"><input type="checkbox" id="ocrPreprocess"' + (state.settings.ocrPreprocess ? ' checked' : '') + '> 图像预处理（灰度化 + 对比度拉伸 + 必要时 2 倍放大）</label></div>' +
+        '<div class="field" style="margin-top:8px"><label class="check"><input type="checkbox" id="ocrAutoSplit"' + (state.settings.ocrAutoSplit ? ' checked' : '') + '> 多件自动拆分（默认关闭；开启后最多自动切 2 条，仍可在图片旁手动指定件数）</label></div>' +
         '<p class="hint" style="margin-top:6px">关闭高精度后只跑单遍快速 OCR；关闭预处理后直接识别原图。反光、曲面、字体过小仍会影响结果，低置信字段会高亮提示人工核对。</p></div>' +
-      '<div class="block"><h3>在线 AI 识别（可选）</h3><p class="hint">开启后会优先用你配置的视觉模型识别，失败自动回退本地 OCR。API Key 只保存在本机 localStorage，不会内置或上传到其他位置；任何能打开本页面的人都能读到该 Key，请自行评估风险。</p>' +
-        '<div class="field"><label for="aiEndpoint">接口地址（OpenAI 兼容 /chat/completions）</label><input id="aiEndpoint" placeholder="https://api.openai.com/v1/chat/completions" value="' + esc((state.settings.ai && state.settings.ai.endpoint) || '') + '"></div>' +
+      '<div class="block"><h3>在线 AI 识别（可选）</h3><p class="hint">开启后批量入库优先用你配置的视觉模型识别，失败自动回退本地 OCR。API Key 只保存在本机 localStorage 明文；任何能打开本页面的人都能读到该 Key，请自行评估风险。</p>' +
+        '<p class="hint">请求由浏览器直连服务商，可能因服务商不允许跨域（CORS）而被拦截，也会按服务商计费产生费用。若被 CORS 拦截，只能改用支持浏览器直连的服务商、自建代理转发（如 Cloudflare Worker），或把页面部署到与接口同域；纯前端无法绕过浏览器跨域限制。</p>' +
+        '<div class="field"><label for="aiProvider">服务商预设（选好后自动填地址与模型）</label><select id="aiProvider">' +
+          Object.keys(AI_PRESETS).map(function(k){
+            return '<option value="' + k + '"' + (((state.settings.ai && state.settings.ai.provider) || 'custom') === k ? ' selected' : '') + '>' + esc(AI_PRESETS[k].label) + '</option>';
+          }).join('') +
+        '</select></div>' +
+        '<p class="hint" id="aiProviderNote" style="margin-top:6px">' + esc((AI_PRESETS[(state.settings.ai && state.settings.ai.provider) || 'custom'] || AI_PRESETS.custom).note) + '</p>' +
+        '<div class="field"><label for="aiEndpoint">接口地址（完整 /chat/completions）</label><input id="aiEndpoint" placeholder="https://api.openai.com/v1/chat/completions" value="' + esc((state.settings.ai && state.settings.ai.endpoint) || '') + '"></div>' +
         '<div class="field-row" style="margin-top:10px">' +
-          '<div class="field"><label for="aiModel">模型名称</label><input id="aiModel" placeholder="gpt-4o-mini" value="' + esc((state.settings.ai && state.settings.ai.model) || '') + '"></div>' +
+          '<div class="field"><label for="aiModel">模型名称</label><input id="aiModel" placeholder="gpt-4o" value="' + esc((state.settings.ai && state.settings.ai.model) || '') + '"></div>' +
           '<div class="field"><label for="aiKey">API Key</label><input id="aiKey" type="password" autocomplete="off" placeholder="sk-..." value="' + esc((state.settings.ai && state.settings.ai.key) || '') + '"></div>' +
         '</div>' +
         '<div class="field" style="margin-top:10px"><label class="check"><input type="checkbox" id="aiBatch"' + (state.settings.ai && state.settings.ai.batchAi ? ' checked' : '') + '> 批量入库时使用在线视觉识别（一图多件）</label></div>' +
-        '<p class="hint" style="margin-top:6px">勾选后，批量入库会把整张图 base64 交给上方模型，要求返回多件产品 JSON；未配置、返回结构不合法或调用失败时自动回退本地 OCR。模型返回的「数量」只是估算，入库前必须核对。</p>' +
-        '<div class="btn-grid"><button class="btn" data-act="saveai">保存 AI 设置</button>' +
-          '<button class="btn ghost" data-act="clearai">清除 AI 设置</button>' +
-          '<span class="ai-state">' + (state.settings.ai && state.settings.ai.key ? ('当前已配置，识别时优先使用' + (state.settings.ai.batchAi ? ' · 批量在线模式已开启' : ' · 批量使用本地 OCR')) : '当前未配置') + '</span></div>' +
-        '<p class="hint" style="margin-top:6px">接口需允许浏览器跨域请求（CORS）；若调用失败会自动回退本地 OCR。在线视觉模式依赖网络和你自备的 API Key，可能产生服务商费用，图片会发送到你填写的接口地址。</p>' +
+        '<div class="btn-grid" style="margin-top:10px"><button class="btn" data-act="saveai">保存 AI 设置</button>' +
+          '<button class="btn ghost" data-act="testai">测试连接</button>' +
+          '<button class="btn ghost" data-act="clearai">清除 AI 设置</button></div>' +
+        '<p class="hint" id="aiTestState" style="margin-top:6px">' + esc(aiTestInfo.text || '「测试连接」会用一张内置小图发一次请求，验证 Key、地址、模型和 CORS 是否可用（会产生一次极小费用）。') + '</p>' +
+        '<p class="hint" style="margin-top:6px">在线模式会把图片按长边 1568px、JPEG 压缩后 base64 发送，图片会离开本机到你填写的接口地址；模型返回的数量只是估算，入库前必须核对。</p>' +
+        '<p class="hint" style="margin-top:6px">当前状态：' + (state.settings.ai && state.settings.ai.key ? ('已配置' + (state.settings.ai.batchAi ? ' · 批量在线模式已开启' : ' · 批量仍使用本地 OCR')) : '未配置') + '</p>' +
       '</div>' +
       '<div class="block"><h3>数据起点</h3><p class="hint">当前共 ' + state.records.length + ' 条记录。示例记录可随时清除，不影响你后来新增的内容。</p>' +
         '<div class="btn-grid">' +
@@ -1183,9 +1275,11 @@ textarea{resize:vertical;min-height:56px}
      6. 表单：新增 / 编辑
      ========================================================= */
   function catOptionsHTML(board, selected){
-    return state.categories[board].map(function(c){
-      return '<option value="' + esc(c.name) + '"' + (c.name === selected ? ' selected' : '') + '>' + esc(c.name) + '</option>';
-    }).join('');
+    var valid = state.categories[board].some(function(c){ return c.name === selected; });
+    return (valid ? '' : '<option value="">请选择品类（可留空待确认）</option>') +
+      state.categories[board].map(function(c){
+        return '<option value="' + esc(c.name) + '"' + (c.name === selected ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+      }).join('');
   }
 
   function segHTML(name, values, selected, labels){
@@ -1649,16 +1743,15 @@ textarea{resize:vertical;min-height:56px}
       .replace(/\r/g, '').replace(/\n/g, '\\n');
   }
   function exportICS(){
-    var near = state.records.filter(function(r){
-      return !r.finished && recordStatus(r).key === 'near';
-    });
-    if (!near.length){ toast('当前没有 30 天内临期的项目'); return; }
+    var items = state.records.filter(dueWithin91).sort(byDue);
+    if (!items.length){ toast('当前没有 91 天内到期的项目'); return; }
     var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
     var lines = [
       'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SkincareInventory//CN',
-      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:护肤彩妆临期提醒'
+      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:护肤彩妆 91 天内到期提醒',
+      'X-WR-CALDESC:今天起 91 天内到期且未用完的项目（含 30 天内临期；已过期不包含）'
     ];
-    near.forEach(function(r){
+    items.forEach(function(r){
       var due = dueInfo(r).due;
       var spec = r.size ? r.size + r.unit : '';
       var desc = '品牌：' + r.brand + '\n产品：' + r.name + '\n品类：' + r.category +
@@ -1675,8 +1768,8 @@ textarea{resize:vertical;min-height:56px}
       lines.push('END:VEVENT');
     });
     lines.push('END:VCALENDAR');
-    download(lines.join('\r\n') + '\r\n', '临期提醒-' + todayISO() + '.ics', 'text/calendar;charset=utf-8');
-    toast('已导出 ' + near.length + ' 条临期日程');
+    download(lines.join('\r\n') + '\r\n', '临期提醒91天-' + todayISO() + '.ics', 'text/calendar;charset=utf-8');
+    toast('已导出 ' + items.length + ' 条（范围：今天起 91 天内到期，含 30 天内临期）', { ms: 3600 });
   }
 
   function importJSON(file){
@@ -1909,7 +2002,7 @@ textarea{resize:vertical;min-height:56px}
     { name: '碧欧泉', aliases: ['BIOTHERM', '碧欧泉'] },
     { name: '伊丽莎白雅顿', aliases: ['ELIZABETH ARDEN', '雅顿'] },
     { name: '馥蕾诗', aliases: ['FRESH', '馥蕾诗'] },
-    { name: '祖玛珑', aliases: ['JO MALONE', '祖玛珑'] },
+    { name: '祖玛珑', aliases: ['JO MALONE LONDON', 'JO MALONE', 'JO MALON', 'JOMALONE', '祖玛珑'] },
     { name: '希思黎', aliases: ['SISLEY', '希思黎'] },
     { name: '宝拉珍选', aliases: ["PAULA'S CHOICE", '宝拉珍选'] },
     { name: '城野医生', aliases: ['DR.CI:LABO', 'DRCI LABO', '城野医生'] },
@@ -1995,7 +2088,7 @@ textarea{resize:vertical;min-height:56px}
     { name: '海飞丝', aliases: ['HEAD SHOULDERS', 'HEAD & SHOULDERS', '海飞丝'] },
     { name: '沙宣', aliases: ['VIDAL SASSOON', '沙宣'] },
     { name: '馥绿德雅', aliases: ['RENE FURTERER', '馥绿德雅'] },
-    { name: '吕', aliases: ['RYO', '吕'] },
+    { name: '吕', aliases: ['RYO'] },
     { name: '阿蒂仙', aliases: ["L'ARTISAN PARFUMEUR", 'L ARTISAN', '阿蒂仙'] },
     { name: '蒂普提克', aliases: ['DIPTYQUE', '蒂普提克'] },
     { name: '拜里朵', aliases: ['BYREDO', '拜里朵'] },
@@ -2055,22 +2148,31 @@ textarea{resize:vertical;min-height:56px}
     { name: '3CE', aliases: ['3CE', 'THREE CONCEPT EYES'] },
     { name: '衰败城市', aliases: ['URBAN DECAY', '衰败城市'] },
     { name: '贝玲妃', aliases: ['BENEFIT', '贝玲妃'] },
-    { name: '罗拉玛斯亚', aliases: ['LAURA MERCIER', '罗拉玛斯亚'] }
+    { name: '罗拉玛斯亚', aliases: ['LAURA MERCIER', '罗拉玛斯亚'] },
+    { name: '泊缇诗', aliases: ['泊缇诗', 'BEAUTYANSWERS', 'BEAUTY ANSWER', 'BEAUTYANSWER'] }
   );
+
+  // 品牌形近字 / 常见漏字纠错表：仅用于品牌匹配，避免误读直接丢品牌
+  function fixBrandText(s){
+    return String(s || '')
+      .replace(/外玛天/g, '祖玛珑')
+      .replace(/JO\s*MALON(?!E)/gi, 'JO MALONE');
+  }
 
   // 品类同义词表：中英文、常见叫法与缩写，按命中数量加权
   var CAT_WORDS = {
     skin: {
       '洁面': ['洁面', '洗面奶', '洗面乳', '洁面乳', '洁颜', '洁肤', '洗颜', '洗面', '洁颜蜜', 'CLEANSER', 'CLEANSING FOAM', 'CLEANSING GEL', 'FACE WASH', 'FOAMING'],
       '卸妆': ['卸妆', '洁颜油', '卸妆水', '卸妆油', '卸妆膏', '卸妆巾', 'MAKEUP REMOVER', 'CLEANSING OIL', 'CLEANSING BALM', 'CLEANSING WATER'],
-      '化妆水/爽肤水': ['化妆水', '爽肤水', '柔肤水', '保湿水', '收敛水', '精华水', '精粹水', '二次清洁水', '神仙水', '健康水', '流金水', '菌菇水', '紫苏水', '水', 'TONER', 'TONER WATER', 'LOTION TONER'],
+      '化妆水/爽肤水': ['化妆水', '爽肤水', '柔肤水', '保湿水', '收敛水', '精华水', '精粹水', '二次清洁水', '神仙水', '健康水', '流金水', '菌菇水', '紫苏水', '喷雾', '水', 'TONER', 'TONER WATER', 'LOTION TONER', 'SPRAY', 'MIST'],
       '乳液': ['乳液', '润肤乳', '保湿乳', '润肤露', '保湿露', 'EMULSION', 'LOTION', 'MILK'],
       '面霜': ['面霜', '乳霜', '精华霜', '晚霜', '日霜', '保湿霜', '修护霜', '修复霜', '特护霜', '舒缓霜', '抗皱霜', 'CREAM', 'MOISTURIZER', 'MOISTURISER', 'BAUME', 'BALM', 'SALVE'],
       '精华': ['精华', '精华液', '精华露', '肌底液', '原液', '安瓶', 'SERUM', 'ESSENCE', 'AMPOULE', 'CONCENTRATE'],
       '眼霜': ['眼霜', '眼部精华', '眼胶', '眼部凝胶', 'EYE CREAM', 'EYE SERUM', 'EYE GEL'],
       '面膜': ['面膜', '面贴膜', '泥膜', '睡眠面膜', '涂抹面膜', 'MASK', 'SHEET MASK'],
       '防晒': ['防晒', '防晒霜', '防晒乳', '防晒喷雾', '隔离', '隔离霜', 'SPF', 'SUNSCREEN', 'SUNBLOCK', 'UV'],
-      '身体护理': ['身体乳', '身体霜', '身体油', '沐浴', '润体', '护手', '护手霜', 'BODY LOTION', 'BODY CREAM', 'BODY WASH'],
+      '香水': ['香水', '香氛', '古龙水', '淡香水', 'EDT', 'EDP', 'PERFUME', 'EAU DE TOILETTE', 'EAU DE PARFUM', 'COLOGNE', 'FRAGRANCE'],
+      '身体护理': ['身体乳', '身体霜', '身体油', '沐浴', '沐浴露', '润体', '护手', '护手霜', '洗发', '护发', 'SHAMPOO', 'CONDITIONER', 'BODY LOTION', 'BODY CREAM', 'BODY WASH', 'SHOWER GEL'],
       '其他': []
     },
     makeup: {
@@ -2155,15 +2257,18 @@ textarea{resize:vertical;min-height:56px}
   }
 
   function brandCandidates(text){
-    var raw = String(text || '').toUpperCase();
-    var glued = normText(text);
-    var tokens = textTokens(text);
+    var fixed = fixBrandText(String(text || ''));
+    var raw = fixed.toUpperCase();
+    var glued = normText(fixed);
+    var tokens = textTokens(fixed);
     var found = {};
     BRANDS.forEach(function(b){
       var best = null;
       b.aliases.forEach(function(a){
         var na = normText(a);
         if (!na) return;
+        // 单字中文别名一律不参与命中（如「吕」），只允许通过 RYO 这类编码命中，杜绝单字假阳性
+        if (!/^[A-Z0-9]/.test(na) && na.length < 2) return;
         var latin = /^[A-Z0-9]/.test(na);
         var exact = false;
         if (latin && na.length <= 3){
@@ -2238,34 +2343,65 @@ textarea{resize:vertical;min-height:56px}
     return res;
   }
 
+  var BRAND_ONLY_FLATS = null;
+  function isBrandOnlyLine(flat){
+    if (!BRAND_ONLY_FLATS){
+      BRAND_ONLY_FLATS = {};
+      BRANDS.forEach(function(b){
+        b.aliases.forEach(function(a){
+          var n = normText(a);
+          if (n && n.length >= 2) BRAND_ONLY_FLATS[n] = 1;
+        });
+      });
+    }
+    return !!BRAND_ONLY_FLATS[flat];
+  }
+
   function extractProductName(text, brandHit, board, candidates){
-    var lines = text.split(/\n/).map(function(l){ return l.replace(/\s+/g, ' ').trim(); })
-      .filter(function(l){ return l.length >= 3 && l.length <= 40; });
+    var rawLines = String(text || '').split(/\n/).map(function(l){ return l.replace(/\s+/g, ' ').trim(); })
+      .filter(function(l){ return l.length >= 2 && l.length <= 60; });
+    var brandFlat = brandHit ? normText(brandHit) : '';
+    var brandIdx = -1;
+    if (brandFlat){
+      rawLines.forEach(function(l, i){ if (brandIdx < 0 && normText(l).indexOf(brandFlat) >= 0) brandIdx = i; });
+    }
     var catWords = [];
-    candidates.forEach(function(c){
+    (candidates || []).forEach(function(c){
+      if (c.score < 52) return;
       (CAT_WORDS[board][c.name] || []).forEach(function(k){ catWords.push(k); });
     });
-    var bad = /(成分|用法|注意|生产|保质|批号|地址|电话|网址|官网|净含量|执行标准|许可证|合格|客服|微信|扫码|使用说明|过敏|避免|置于|儿童)/;
+    // 标签行 / 背标字段行 / 水印与设备信息行，一律不参与品名候选
+    var labelRe = /(限期使用日期|限期使用|净含量|成分|原产国|产地|批准文号|执行标准|许可证|生产日期|生产批号|生产|开封后|开封|建议.{0,8}个月内|保质期|有效期|地址|电话|网址|客服|微信|扫码|用法|使用说明|注意事项|过敏|置于|儿童|HUAWEI|HONOR|XIAOMI|SHOT ON|WATERMARK|COPYRIGHT|HTTP|WWW)/i;
+    // 广告语 / 功效描述行降权，避免把「全新升级 修护精华液」当成品名
+    var sloganRe = /(全新升级|全新|升级版|淡化|紧致|抗皱|美白|提亮|舒缓|控油|深层|长效|屏障|细纹|毛孔|补水|滋润|清爽|温和|敏感肌|适用)/;
     var best = { score: 0, name: '' };
-    lines.forEach(function(line){
-      var flatLine = normText(line), s = 0;
-      if (brandHit && flatLine.indexOf(normText(brandHit)) >= 0) s += 2;
-      if (catWords.some(function(k){ return normText(k) && flatLine.indexOf(normText(k)) >= 0; })) s += 2;
-      if (/[水乳霜精华液膏粉油露膜洗眼唇盘笔刷]/.test(line)) s += 1;
-      if (line.length >= 5) s += 1;
-      if (line.replace(/[^A-Za-z\u4e00-\u9fa5]/g, '').length < 2) s -= 6;
-      if (/^[\d\sA-Za-z.\-/]+$/.test(line)) s -= 4;
-      if (bad.test(line)) s -= 4;
-      if (s > best.score){ best = { score: s, name: line }; }
+    rawLines.forEach(function(line, i){
+      var flat = normText(line), s = 0;
+      var catHit = catWords.some(function(k){ return normText(k) && flat.indexOf(normText(k)) >= 0; });
+      var prodHit = /[水乳霜精华液膏粉油露膜洗眼唇盘笔刷喷雾香水]/.test(line);
+      if (flat === brandFlat || isBrandOnlyLine(flat)) return; // 整行只是品牌，不能当品名
+      // 品牌相邻行若没有品类/产品词且很短，通常是品牌中文译名或噪声，跳过
+      if (brandIdx >= 0 && Math.abs(i - brandIdx) <= 1 && !catHit && !prodHit && flat.length <= 6) return;
+      if (labelRe.test(line)) s -= 10;
+      if (flat.length < 2) s -= 8;
+      if (/^[\d\sA-Za-z.\-/%×*?+]+$/.test(line)) s -= 6;
+      if (sloganRe.test(line)) s -= 2;
+      if (brandFlat && flat.indexOf(brandFlat) >= 0) s += 2;
+      if (brandIdx >= 0 && Math.abs(i - brandIdx) <= 1) s += 3;
+      if (catHit) s += 2;
+      if (prodHit) s += 1;
+      if (line.length >= 6) s += 1;
+      if (i <= 2) s += 1;
+      if (s >= 3 && s > best.score) best = { score: s, name: line };
     });
     if (best.score < 3) return '';
     var name = best.name;
     if (brandHit){
       name = name.replace(new RegExp(escapeReg(brandHit), 'ig'), ' ');
     }
-    name = name.replace(/\d+(?:\.\d+)?\s*(ml|mL|g|克)/ig, ' ')
-      .replace(/净含量|规格|产品名称|品名/g, ' ')
-      .replace(/([\u4e00-\u9fa5])\s+(?=[\u4e00-\u9fa5])/g, '$1')
+    name = name.replace(/限期使用日期|限期使用|净含量|规格|产品名称|品名|原产国|成分|开封后|建议.{0,8}个月内用完/g, ' ')
+      .replace(/\d+(?:\.\d+)?\s*(ml|mL|ML|g|G|克|片|支|枚)/g, ' ')
+      .replace(/[|｜]+/g, ' ')
       .replace(/^[\s\-*/·:：=%|]+|[\s\-*/·:：=%|]+$/g, '')
       .replace(/\s{2,}/g, ' ');
     return name.length >= 2 ? name.slice(0, 30) : '';
@@ -2398,14 +2534,14 @@ textarea{resize:vertical;min-height:56px}
     var cats = catRes[board];
     var bestBrand = brands[0] && brands[0].score >= 58 ? brands[0] : null;
     var bestCat = cats[0] && cats[0].score >= 52 ? cats[0] : null;
-    var category = bestCat ? bestCat.name : state.categories[board][0].name;
-    if (!state.categories[board].some(function(c){ return c.name === category; })) category = state.categories[board][0].name;
+    // 品类未命中一律留空待确认，不再兜底成默认品类
+    var category = bestCat ? bestCat.name : '';
 
     var spec = parseSpec(raw);
     var exp = parseExpiry(raw);
     var typeInfo = parseType(raw, spec);
     var shadeInfo = board === 'makeup' ? parseShade(raw) : { value: '', confidence: 0, source: '' };
-    var name = extractProductName(raw, bestBrand ? bestBrand.hit : '', board, cats);
+    var name = extractProductName(raw, bestBrand ? bestBrand.hit : '', board, cats.filter(function(c){ return c.score >= 52; }));
 
     var brandConf = bestBrand
       ? (ocr ? Math.round(0.65 * bestBrand.score + 0.35 * ocr) : bestBrand.score)
@@ -2444,7 +2580,7 @@ textarea{resize:vertical;min-height:56px}
         confidence: nameConf, low: nameConf < 60
       },
       category: {
-        source: bestCat ? ('关键词「' + bestCat.hits.join('、') + '」') : '未命中，已用默认品类',
+        source: bestCat ? ('关键词「' + bestCat.hits.join('、') + '」') : '未命中，已留空待确认',
         confidence: catConf, low: catConf < 60
       },
       size: {
@@ -2479,8 +2615,8 @@ textarea{resize:vertical;min-height:56px}
     var board = prefill && prefill.board === 'makeup' ? 'makeup' : (prefill && prefill.board === 'skin' ? 'skin' : boardHint);
     var data = defaultRecord(board);
     if (!prefill) return data;
-    var cat = prefill.category;
-    if (!state.categories[board].some(function(c){ return c.name === cat; })) cat = state.categories[board][0].name;
+    var cat = String((prefill && prefill.category) || '').trim();
+    if (cat && !state.categories[board].some(function(c){ return c.name === cat; })) cat = '';
     data.board = board;
     data.brand = prefill.brand || '';
     data.name = prefill.name || '';
@@ -2505,7 +2641,7 @@ textarea{resize:vertical;min-height:56px}
       : '未识别到品牌，请手动填写';
     var cc = (ocr.catCandidates && ocr.catCandidates.length)
       ? ocr.catCandidates.slice(0, 3).map(function(c){ return c.name + ' ' + c.score + '%（关键词「' + c.hits.join('、') + '」）'; }).join(' · ')
-      : '未识别到品类，已使用当前板块默认品类';
+      : '未识别到品类，已留空待人工确认';
     var conf = ocr.confidence ? ('文字识别置信度约 ' + ocr.confidence + '%。') : '';
     var metaHTML = '';
     if (ocr.fieldMeta){
@@ -2920,13 +3056,15 @@ textarea{resize:vertical;min-height:56px}
     '"expiryDate":"YYYY-MM-DD或空","confidence":0到1,' +
     '"fieldConfidence":{"board":0到1,"brand":0到1,"name":0到1,"category":0到1,"size":0到1,"shade":0到1,"type":0到1,"expiryDate":0到1}}。' +
     'fieldConfidence 表示每个字段的可信度，看不清的字段填 0。' +
-    '品类参考：护肤=洁面/卸妆/化妆水/爽肤水/乳液/面霜/精华/眼霜/面膜/防晒/身体护理/其他；' +
+    '必须区分护肤 skin 与彩妆 makeup；彩妆有可见色号时填 shade；type 结合包装文字判断正装/中样/小样；' +
+    '品名优先使用包装上可见的中文名称，只有英文可见时才用英文名，不要翻译或自造。' +
+    '品类参考：护肤=洁面/卸妆/化妆水/爽肤水/乳液/面霜/精华/眼霜/面膜/防晒/香水/身体护理/其他；' +
     '彩妆=底妆/唇妆/眼妆/腮红修容/美妆工具/其他。';
 
   function aiRecognize(dataUrl){
     var ai = state.settings.ai || {};
     var body = {
-      model: ai.model || 'gpt-4o-mini',
+      model: ai.model || 'gpt-4o',
       temperature: 0,
       max_tokens: 400,
       messages: [
@@ -2964,7 +3102,6 @@ textarea{resize:vertical;min-height:56px}
     var category = cats[0] && cats[0].score >= 55 ? cats[0].name : '';
     var exact = state.categories[board].filter(function(c){ return String(obj.category || '').indexOf(c.name) >= 0; })[0];
     if (exact) category = exact.name;
-    if (!category) category = state.categories[board][0].name;
 
     var p = parseOcrText(readText, board);
     p.fields.board = board;
@@ -3363,7 +3500,7 @@ textarea{resize:vertical;min-height:56px}
       };
       if (ai.endpoint && ai.key){
         setOcrStatus('正在调用在线 AI 识别…', 15);
-        withTimeout(aiRecognize(prep.dataUrl), 60000, '在线 AI 识别超时').then(function(r){
+        withTimeout(aiCompressImage(prep.dataUrl, 1568).then(aiRecognize), 30000, '在线 AI 识别超时').then(function(r){
           if (job !== photoJob) return;
           var parsed = aiToPrefill(r.obj, r.text);
           setOcrStatus('在线识别完成，正在整理结果…', 100);
@@ -3371,7 +3508,7 @@ textarea{resize:vertical;min-height:56px}
         }).catch(function(e){
           if (job !== photoJob) return;
           console.warn('在线 AI 识别失败，回退本地 OCR', e);
-          setOcrStatus('在线识别失败，改用本地 OCR…', 12);
+          setOcrStatus('在线失败，已回退本地 OCR…', 12);
           toLocal();
         });
       } else {
@@ -3455,7 +3592,7 @@ textarea{resize:vertical;min-height:56px}
       batch = {
         board: boardHint === 'makeup' ? 'makeup' : 'skin',
         items: [], drafts: [], running: false, paused: false, aborted: false,
-        saving: false, closeArm: false, abortArm: false,
+        saving: false, closeArm: false, abortArm: false, clearArm: false,
         msg: '可以拍照、从相册多选，或把多张图片拖进来。'
       };
     }
@@ -3515,7 +3652,8 @@ textarea{resize:vertical;min-height:56px}
       batch.items.push({
         key: 'bi-' + uid(), imgId: '', name: String(f.name || '未命名图片').slice(0, 40),
         file: f, thumb: '', full: '', status: 'waiting', progress: 0, message: '等待识别',
-        cancelled: false, saved: false
+        cancelled: false, saved: false,
+        splitN: 1, splitUser: false, res: null
       });
     });
     batch.aborted = false;
@@ -3639,12 +3777,16 @@ textarea{resize:vertical;min-height:56px}
       it.progress = 100;
       if (made.length){
         var goodCount = made.filter(function(d){ return d.brand && d.name; }).length;
-        it.status = goodCount === made.length ? 'done' : 'manual';
+        var over4 = res.mode === 'ai' && made.length > 4;
+        it.status = (goodCount === made.length && !over4) ? 'done' : 'manual';
         var needText = goodCount === made.length ? '' : ('，其中 ' + (made.length - goodCount) + ' 条需补全品牌 / 品名');
+        var warnText = over4 ? ('，AI 返回 ' + made.length + ' 件（超过 4 件），请确认是否真实') : '';
         it.message = res.mode === 'ai'
-          ? ('在线 AI 识别完成，生成 ' + made.length + ' 条草稿（数量为 AI 估算' + needText + '）')
-          : ('识别完成，生成 ' + made.length + ' 条草稿' + needText);
+          ? ('AI 判断 ' + made.length + ' 件，请核对：已生成 ' + made.length + ' 条草稿' + needText + warnText)
+          : ('识别完成，生成 ' + made.length + ' 条草稿' + needText + (it.aiFallback ? '（在线失败，已回退本地）' : ''));
+        if (over4) toast('AI 返回 ' + made.length + ' 件，已超过 4 件，请逐条确认');
       } else {
+        it.res = null;
         addManualDraft(it, '未识别到有效文字');
         it.status = 'manual';
         it.message = '未识别到有效文字，已生成手动填写草稿';
@@ -3684,13 +3826,16 @@ textarea{resize:vertical;min-height:56px}
       it.message = '在线 AI 识别整图（一图多件）…';
       it.progress = 15;
       renderBatch();
-      return withTimeout(aiBatchRecognize(it.ocrImg.dataUrl), 60000, '在线 AI 识别超时').then(function(r){
+      return withTimeout(aiCompressImage(it.ocrImg.dataUrl, 1568).then(function(small){
+        return aiBatchRecognize(small);
+      }), 30000, '在线 AI 识别超时').then(function(r){
         return {
           mode: 'ai', items: r.items, text: r.text, confidence: 0,
           ocrWidth: it.ocrImg.width, ocrHeight: it.ocrImg.height
         };
       }).catch(function(e){
         console.warn('批量在线识别失败，回退本地 OCR', e);
+        it.aiFallback = true;
         if (batch && !it.cancelled){
           it.message = '在线识别失败，改用本地 OCR…';
           it.progress = 14;
@@ -3854,8 +3999,8 @@ textarea{resize:vertical;min-height:56px}
     if (!batch || !it) return null;
     meta = meta || {};
     var board = fields.board === 'makeup' ? 'makeup' : 'skin';
-    var cat = fields.category;
-    if (!state.categories[board].some(function(c){ return c.name === cat; })) cat = state.categories[board][0].name;
+    var cat = String(fields.category || '').trim();
+    if (cat && !state.categories[board].some(function(c){ return c.name === cat; })) cat = '';
     var d = {
       key: 'bd-' + uid(),
       itemKey: it.key,
@@ -3867,6 +4012,7 @@ textarea{resize:vertical;min-height:56px}
       size: (fields.size === '' || fields.size == null) ? '' : Number(fields.size),
       unit: UNITS.indexOf(fields.unit) >= 0 ? fields.unit : 'ml',
       type: TYPE_LIST.indexOf(fields.type) >= 0 ? fields.type : '正装',
+      shade: board === 'makeup' ? String(fields.shade || '').trim().slice(0, 20) : '',
       qty: meta.aiCount
         ? clampInt(fields.qty, 1, 999, 1)
         : (Number(fields.packCount) > 1 ? clampInt(fields.packCount, 1, 999, 1) : 1),
@@ -3875,6 +4021,7 @@ textarea{resize:vertical;min-height:56px}
       source: meta.source || '本地 OCR',
       fieldMeta: meta.fieldMeta || null,
       bbox: meta.bbox || null,
+      note: String(fields.note || ''),
       aiCount: !!meta.aiCount,
       selected: true, editing: false, invalid: false
     };
@@ -3888,39 +4035,298 @@ textarea{resize:vertical;min-height:56px}
     addBatchDraft(it, {
       board: batch.board, brand: '', name: '',
       category: state.categories[batch.board][0].name,
-      size: '', unit: 'ml', type: '正装', expiryDate: ''
+      size: '', unit: 'ml', type: '正装', shade: '', expiryDate: ''
     }, { source: '手动填写（' + String(reason || '未识别') + '）', confidence: 0, aiCount: false });
   }
 
+  function effectiveSplitN(it){
+    if (!it) return 1;
+    if (it.splitUser) return clampInt(it.splitN, 1, 5, 1);
+    return state.settings.ocrAutoSplit ? 2 : 1;
+  }
+
+  function bboxUnionSegs(list){
+    var x0 = 1, y0 = 1, x1 = 0, y1 = 0, any = false;
+    (list || []).forEach(function(s){
+      var b = s && s.bbox;
+      if (!b) return;
+      any = true;
+      x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y);
+      x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h);
+    });
+    if (!any) return null;
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  }
+
+  // 按用户指定件数切分：n<=1 时整段只保留一条；n>1 时最多切 n 条，多出的并入最后一条
+  function segmentsForCount(res, n){
+    var text = String(res.text || '');
+    if (n <= 1) return text ? [{ text: text, bbox: null }] : [];
+    var segs = splitOcrSegments(text, batch.board, res.lines, { w: res.ocrWidth, h: res.ocrHeight });
+    if (!segs.length) return text ? [{ text: text, bbox: null }] : [];
+    if (segs.length > n){
+      var head = segs.slice(0, n - 1);
+      var tail = segs.slice(n - 1);
+      head.push({
+        text: tail.map(function(s){ return s.text; }).join('\n'),
+        bbox: bboxUnionSegs(tail)
+      });
+      segs = head;
+    }
+    return segs;
+  }
+
+  function draftFieldConf(d, k){
+    var m = d.fieldMeta && d.fieldMeta[k];
+    if (m && isFinite(Number(m.confidence))) return Number(m.confidence);
+    return isFinite(Number(d.confidence)) ? Number(d.confidence) : 0;
+  }
+
+  function pickDraftByField(list, k){
+    var best = null, bs = -1;
+    list.forEach(function(d){
+      if (!String(d[k] || '').trim()) return;
+      var s = draftFieldConf(d, k);
+      if (s > bs){ best = d; bs = s; }
+    });
+    return best;
+  }
+
+  function pickSizeDraft(list){
+    var best = null, bs = -99, bz = -1;
+    list.forEach(function(d){
+      if (d.size === '' || d.size == null) return;
+      var s = draftFieldConf(d, 'size') + (d.unit ? 1 : 0);
+      var z = Number(d.size) || 0;
+      if (s > bs || (s === bs && z > bz)){ best = d; bs = s; bz = z; }
+    });
+    return best;
+  }
+
+  // 合并规则：品牌/品类取最高分，规格取最完整，数量相加不超过 9，日期取最近有效值，图片共用主图
+  function mergeDraftsIntoOne(list){
+    var group = (list || []).filter(Boolean);
+    if (group.length < 2) return group[0] || null;
+    if (!batch) return null;
+    var base = group[0];
+    var meta = {};
+    var brandD = pickDraftByField(group, 'brand');
+    var brand = brandD ? String(brandD.brand || '').trim() : String(base.brand || '').trim();
+    if (brandD && brandD.fieldMeta && brandD.fieldMeta.brand) meta.brand = brandD.fieldMeta.brand;
+    var catD = pickDraftByField(group, 'category');
+    var category = catD ? catD.category : base.category;
+    if (catD && catD.fieldMeta && catD.fieldMeta.category) meta.category = catD.fieldMeta.category;
+    var sizeD = pickSizeDraft(group);
+    var size = sizeD ? sizeD.size : base.size;
+    var unit = sizeD ? sizeD.unit : base.unit;
+    if (sizeD && sizeD.fieldMeta && sizeD.fieldMeta.size) meta.size = sizeD.fieldMeta.size;
+    var typeD = pickDraftByField(group, 'type');
+    var type = typeD ? typeD.type : base.type;
+    if (typeD && typeD.fieldMeta && typeD.fieldMeta.type) meta.type = typeD.fieldMeta.type;
+    var shadeD = pickDraftByField(group, 'shade');
+    var shade = shadeD ? (shadeD.shade || '') : (base.shade || '');
+    if (shadeD && shadeD.fieldMeta && shadeD.fieldMeta.shade) meta.shade = shadeD.fieldMeta.shade;
+
+    var names = [];
+    group.forEach(function(d){
+      var v = String(d.name || '').trim();
+      if (v && names.indexOf(v) < 0) names.push(v);
+    });
+    var name = names.join(' / ').slice(0, 50);
+
+    var dates = [];
+    group.forEach(function(d){
+      var v = String(d.expiryDate || '');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(v) && dates.indexOf(v) < 0) dates.push(v);
+    });
+    dates.sort();
+    var today = todayISO();
+    var future = dates.filter(function(v){ return v >= today; });
+    var expiryDate = future.length ? future[0] : (dates.length ? dates[dates.length - 1] : '');
+    if (expiryDate){
+      var expD = group.filter(function(d){ return d.expiryDate === expiryDate; })[0];
+      if (expD && expD.fieldMeta && expD.fieldMeta.expiryDate) meta.expiryDate = expD.fieldMeta.expiryDate;
+    }
+
+    var qty = Math.min(9, group.reduce(function(s, d){ return s + (Number(d.qty) || 1); }, 0));
+    var titles = [];
+    group.forEach(function(d){
+      var t = ((d.brand || '未识别品牌') + ' ' + (d.name || '未识别品名')).trim();
+      if (titles.indexOf(t) < 0) titles.push(t);
+    });
+    var noteTxt = '由同图 ' + group.length + ' 条草稿合并：' + titles.join('、');
+    if (base.note && base.note.indexOf('由同图') !== 0) noteTxt = base.note + '；' + noteTxt;
+
+    base.brand = brand;
+    base.name = name;
+    base.category = category;
+    base.size = size;
+    base.unit = unit;
+    base.type = type;
+    base.shade = shade;
+    base.expiryDate = expiryDate;
+    base.qty = qty;
+    base.note = noteTxt.slice(0, 240);
+    base.confidence = Math.max.apply(Math, group.map(function(d){ return Number(d.confidence) || 0; }));
+    base.fieldMeta = Object.keys(meta).length ? meta : (base.fieldMeta || null);
+    base.aiCount = group.some(function(d){ return d.aiCount; });
+    base.bbox = group.map(function(d){ return d.bbox; }).filter(Boolean)[0] || null;
+    base.invalid = false;
+    base.editing = false;
+    var drop = {};
+    group.forEach(function(d){ if (d.key !== base.key) drop[d.key] = 1; });
+    batch.drafts = batch.drafts.filter(function(d){ return !drop[d.key]; });
+    return base;
+  }
+
   function addDraftsFromResult(it, res){
-    if (!batch) return [];
+    if (!batch || !it) return [];
+    it.res = res || null;
+    batch.drafts = batch.drafts.filter(function(d){ return d.itemKey !== it.key; });
     var made = [];
+    if (!res) return made;
     if (res.mode === 'ai'){
-      (res.items || []).forEach(function(o){
-        var p = aiToPrefill(o, [o.brand, o.name, o.category].join('\n'));
-        p.fields.qty = o.count;
-        var bbox = null;
-        if (o.bbox && o.bbox.length === 4 && o.bbox.every(function(v){ return isFinite(Number(v)); })){
-          var bx = Number(o.bbox[0]), by = Number(o.bbox[1]), bw = Number(o.bbox[2]), bh = Number(o.bbox[3]);
-          if (bx <= 1 && by <= 1 && bw <= 1 && bh <= 1) bbox = { x: bx, y: by, w: bw, h: bh };
-          else if (res.ocrWidth && res.ocrHeight) bbox = { x: bx / res.ocrWidth, y: by / res.ocrHeight, w: bw / res.ocrWidth, h: bh / res.ocrHeight };
-        }
+      var items = (res.items || []).slice(0, 8);
+      var n = it.splitUser ? effectiveSplitN(it) : Math.max(1, items.length);
+      var groups = [];
+      if (n <= 1) groups.push(items);
+      else if (items.length <= n) groups = items.map(function(o){ return [o]; });
+      else {
+        for (var gi = 0; gi < n - 1; gi++) groups.push([items[gi]]);
+        groups.push(items.slice(n - 1));
+      }
+      groups.forEach(function(group){
+        if (!group.length) return;
+        var gDrafts = [];
+        group.forEach(function(o){
+          var p = aiToPrefill(o, [o.brand, o.name, o.category].join('\n'));
+          p.fields.qty = o.count;
+          var bbox = null;
+          if (o.bbox && o.bbox.length === 4 && o.bbox.every(function(v){ return isFinite(Number(v)); })){
+            var bx = Number(o.bbox[0]), by = Number(o.bbox[1]), bw = Number(o.bbox[2]), bh = Number(o.bbox[3]);
+            if (bx <= 1 && by <= 1 && bw <= 1 && bh <= 1) bbox = { x: bx, y: by, w: bw, h: bh };
+            else if (res.ocrWidth && res.ocrHeight) bbox = { x: bx / res.ocrWidth, y: by / res.ocrHeight, w: bw / res.ocrWidth, h: bh / res.ocrHeight };
+          }
+          var d = addBatchDraft(it, p.fields, {
+            source: '在线 AI', confidence: p.confidence, aiCount: true,
+            fieldMeta: p.fieldMeta, bbox: bbox
+          });
+          if (d) gDrafts.push(d);
+        });
+        if (gDrafts.length > 1) made.push(mergeDraftsIntoOne(gDrafts));
+        else if (gDrafts.length) made.push(gDrafts[0]);
+      });
+    } else {
+      var segs = segmentsForCount(res, effectiveSplitN(it));
+      segs.forEach(function(seg, i){
+        var p = parseOcrText(seg.text, batch.board, res.confidence);
         made.push(addBatchDraft(it, p.fields, {
-          source: '在线 AI', confidence: p.confidence, aiCount: true,
-          fieldMeta: p.fieldMeta, bbox: bbox
+          source: '本地 OCR', confidence: p.confidence || res.confidence, aiCount: false,
+          fieldMeta: p.fieldMeta, bbox: seg.bbox, segIndex: i, segTotal: segs.length
         }));
       });
-      return made.filter(Boolean);
     }
-    var segs = splitOcrSegments(res.text, batch.board, res.lines, { w: res.ocrWidth, h: res.ocrHeight }).slice(0, 8);
-    segs.forEach(function(seg, i){
-      var p = parseOcrText(seg.text, batch.board, res.confidence);
-      made.push(addBatchDraft(it, p.fields, {
-        source: '本地 OCR', confidence: p.confidence || res.confidence, aiCount: false,
-        fieldMeta: p.fieldMeta, bbox: seg.bbox, segIndex: i, segTotal: segs.length
-      }));
+    made = made.filter(Boolean);
+    if (!it.splitUser) it.splitActual = made.length || 1;
+    return made;
+  }
+
+  function rebuildDraftsForItem(it){
+    if (!batch || !it || !it.res) return [];
+    var made = addDraftsFromResult(it, it.res);
+    it.status = made.length ? 'done' : 'manual';
+    it.progress = 100;
+    it.message = '已按选定的 ' + (made.length || 0) + ' 件重新生成草稿，请核对';
+    renderBatch();
+    return made;
+  }
+
+  function aiCompressImage(dataUrl, maxLong){
+    return new Promise(function(resolve){
+      var img = new Image();
+      img.onload = function(){
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        if (!w || !h) return resolve(dataUrl);
+        var scale = Math.min(1, (maxLong || 1568) / Math.max(w, h));
+        if (scale >= 1 && dataUrl.length < 1200000) return resolve(dataUrl);
+        var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+        var cv = document.createElement('canvas');
+        cv.width = cw; cv.height = ch;
+        var ctx = cv.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.drawImage(img, 0, 0, cw, ch);
+        resolve(cv.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = function(){ resolve(dataUrl); };
+      img.src = dataUrl;
     });
-    return made.filter(Boolean);
+  }
+
+  function buildAiTestImage(){
+    var cv = document.createElement('canvas');
+    cv.width = 360; cv.height = 170;
+    var ctx = cv.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 360, 170);
+    ctx.fillStyle = '#111111';
+    ctx.font = 'bold 38px sans-serif';
+    ctx.fillText('CONNECTION TEST', 22, 66);
+    ctx.font = '22px sans-serif';
+    ctx.fillText('SAMPLE 30ml', 22, 108);
+    ctx.fillStyle = '#555555'; ctx.font = '16px sans-serif';
+    ctx.fillText('AI VISION PROBE', 22, 140);
+    return cv.toDataURL('image/jpeg', 0.8);
+  }
+
+  function aiTestConnection(){
+    var endpoint = (document.getElementById('aiEndpoint') || {}).value || '';
+    var key = (document.getElementById('aiKey') || {}).value || '';
+    var model = (document.getElementById('aiModel') || {}).value || '';
+    endpoint = endpoint.trim(); key = key.trim(); model = model.trim();
+    var el = document.getElementById('aiTestState');
+    function show(msg, kind){
+      aiTestInfo.text = msg;
+      if (!el) return;
+      el.textContent = msg;
+      el.style.color = kind === 'ok' ? 'var(--ok)' : kind === 'bad' ? 'var(--danger)' : 'var(--muted)';
+    }
+    if (!endpoint || !key){ show('✗ 请先填写接口地址和 API Key', 'bad'); return; }
+    if (!/^https?:\/\//i.test(endpoint)){ show('✗ 接口地址需以 http:// 或 https:// 开头', 'bad'); return; }
+    if (!model){ show('✗ 请先填写模型名称', 'bad'); return; }
+    show('测试中：正在请求 ' + endpoint + ' …');
+    var body = {
+      model: model, temperature: 0, max_tokens: 60,
+      messages: [{ role: 'user', content: [
+        { type: 'text', text: '这是连接测试。只输出 {"ok":true} 这个 JSON，不要任何解释。' },
+        { type: 'image_url', image_url: { url: buildAiTestImage(), detail: 'low' } }
+      ] }]
+    };
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 30000);
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify(body),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function(res){
+      return res.text().then(function(t){
+        clearTimeout(timer);
+        if (!res.ok) throw new Error('HTTP ' + res.status + (t ? ('：' + t.slice(0, 180)) : ''));
+        var okJson = false;
+        try { var j = JSON.parse(t); okJson = !!(j && j.choices && j.choices.length); } catch (e){}
+        if (!okJson) throw new Error('HTTP ' + res.status + '，但返回不是 OpenAI 兼容结构：' + t.slice(0, 160));
+        show('✓ 连接成功（HTTP ' + res.status + '，模型返回正常，CORS 可用）', 'ok');
+        toast('在线 AI 连接测试成功');
+      });
+    }).catch(function(e){
+      clearTimeout(timer);
+      var m = String((e && e.message) || e);
+      if (/abort/i.test(m)) show('✗ 超时（30 秒未返回），请检查网络或接口地址', 'bad');
+      else if (/Failed to fetch|NetworkError|Load failed/i.test(m)) show('✗ 请求未到达或响应被浏览器拦截：疑似 CORS / 网络不可达（浏览器不返回具体原因）', 'bad');
+      else if (/HTTP 401|HTTP 403/i.test(m)) show('✗ ' + m + '（Key 无效或无权限）', 'bad');
+      else if (/HTTP 404/i.test(m)) show('✗ ' + m + '（接口地址或路径错误）', 'bad');
+      else show('✗ ' + m, 'bad');
+    });
   }
 
   function aiBatchRecognize(dataUrl){
@@ -3932,11 +4338,14 @@ textarea{resize:vertical;min-height:56px}
       '"fieldConfidence":{"board":0到1,"brand":0到1,"name":0到1,"category":0到1,"size":0到1,"shade":0到1,"type":0到1,"expiryDate":0到1},' +
       '"bbox":[x,y,w,h]可省略，归一化到0-1}]。' +
       '规则：看不清、被遮挡或反光的内容一律留空（字符串空串、数字 null），绝对禁止猜测、补全或编造；' +
+      '必须区分护肤 skin 与彩妆 makeup，彩妆有可见色号时填 shade；type 必须结合包装文字判断正装/中样/小样；' +
+      'brand 与 name 必须各自给出 0-1 的置信度，看不清就给低分并留空；' +
+      '品名优先使用包装上可见的中文名称，只有英文可见时才用英文名，不要翻译或自造；' +
       '一张图最多返回 8 件；count 仅根据画面中可辨识的重复瓶数估计，不确定时填 1。' +
-      '品类参考：护肤=洁面/卸妆/化妆水/爽肤水/乳液/面霜/精华/眼霜/面膜/防晒/身体护理/其他；' +
+      '品类参考：护肤=洁面/卸妆/化妆水/爽肤水/乳液/面霜/精华/眼霜/面膜/防晒/香水/身体护理/其他；' +
       '彩妆=底妆/唇妆/眼妆/腮红修容/美妆工具/其他。';
     var body = {
-      model: ai.model || 'gpt-4o-mini',
+      model: ai.model || 'gpt-4o',
       temperature: 0,
       max_tokens: 1200,
       messages: [
@@ -4013,8 +4422,8 @@ textarea{resize:vertical;min-height:56px}
 
   function draftToRecord(d){
     var board = d.board === 'makeup' ? 'makeup' : 'skin';
-    var cat = d.category;
-    if (!state.categories[board].some(function(c){ return c.name === cat; })) cat = state.categories[board][0].name;
+    var cat = String(d.category || '').trim();
+    if (cat && !state.categories[board].some(function(c){ return c.name === cat; })) cat = '';
     return {
       id: uid(), board: board,
       brand: String(d.brand || '').trim(), name: String(d.name || '').trim(),
@@ -4025,7 +4434,7 @@ textarea{resize:vertical;min-height:56px}
       qty: clampInt(d.qty, 1, 999, 1),
       opened: false, openDate: '', openMonths: catMonths(board, cat),
       expiryDate: d.expiryDate || '', prodDate: '', shelfMonths: '',
-      location: '', note: '', shade: '', frequent: false,
+      location: '', note: String(d.note || ''), shade: board === 'makeup' ? String(d.shade || '').trim() : '', frequent: false,
       finished: false, snoozeUntil: '', sample: d.type === '小样',
       photos: d.imgId ? [d.imgId] : [], cover: d.imgId || '', imgId: d.imgId || ''
     };
@@ -4108,7 +4517,7 @@ textarea{resize:vertical;min-height:56px}
       brand: d.brand, name: d.name, category: d.category, size: d.size, unit: d.unit,
       type: d.type, qty: d.qty, expiryDate: d.expiryDate, confidence: d.confidence,
       source: d.source, aiCount: d.aiCount, selected: true, editing: false, invalid: false,
-      fieldMeta: d.fieldMeta, bbox: d.bbox
+      fieldMeta: d.fieldMeta, bbox: d.bbox, note: ''
     };
     batch.drafts.splice(idx + 1, 0, d2);
     renderBatch();
@@ -4124,21 +4533,58 @@ textarea{resize:vertical;min-height:56px}
       if (batch.drafts[i].itemKey === d.itemKey){ prev = batch.drafts[i]; break; }
     }
     if (!prev){ toast('这条已经是该图的第一条，无法与上一条合并'); return; }
-    prev.brand = prev.brand || d.brand;
-    prev.name = prev.name || d.name;
-    prev.size = prev.size || d.size;
-    prev.unit = prev.size ? prev.unit : d.unit;
-    prev.type = prev.type === '正装' && d.type !== '正装' ? d.type : prev.type;
-    prev.expiryDate = prev.expiryDate || d.expiryDate;
-    prev.qty = Math.max(Number(prev.qty) || 1, Number(d.qty) || 1);
-    prev.confidence = Math.max(prev.confidence || 0, d.confidence || 0);
-    prev.aiCount = prev.aiCount || d.aiCount;
-    prev.fieldMeta = prev.fieldMeta || d.fieldMeta;
-    prev.bbox = prev.bbox || d.bbox;
-    prev.invalid = false;
-    batch.drafts = batch.drafts.filter(function(x){ return x.key !== d.key; });
+    mergeDraftsIntoOne([prev, d]);
     renderBatch();
-    toast('已与上一条合并，数量与内容请再核对');
+    toast('已与上一条合并：品牌/品类取最高分、规格取最完整、数量相加（上限 9）、日期取最近有效值');
+  }
+
+  function deleteDraftsWithUndo(list, label){
+    if (!batch) return;
+    var snap = [];
+    (list || []).forEach(function(d){
+      var idx = batch.drafts.indexOf(d);
+      if (idx >= 0) snap.push({ d: d, idx: idx });
+    });
+    if (!snap.length) return;
+    var drop = {};
+    snap.forEach(function(s){ drop[s.d.key] = 1; });
+    batch.drafts = batch.drafts.filter(function(d){ return !drop[d.key]; });
+    renderBatch();
+    toast('已' + (label || '删除') + ' ' + snap.length + ' 条草稿', {
+      label: '撤销', ms: 5000,
+      action: function(){
+        if (!batch) return;
+        snap.slice().sort(function(a, b){ return a.idx - b.idx; }).forEach(function(s){
+          batch.drafts.splice(Math.min(s.idx, batch.drafts.length), 0, s.d);
+        });
+        renderBatch();
+        toast('已恢复 ' + snap.length + ' 条草稿');
+      }
+    });
+  }
+
+  function mergeAllDrafts(){
+    if (!batch || !batch.drafts.length){ toast('还没有草稿'); return; }
+    var groups = {};
+    batch.drafts.forEach(function(d){
+      (groups[d.itemKey] = groups[d.itemKey] || []).push(d);
+    });
+    var mergedGroups = 0, reduced = 0;
+    Object.keys(groups).forEach(function(k){
+      var g = groups[k];
+      if (g.length > 1){
+        var before = g.length;
+        mergeDraftsIntoOne(g);
+        mergedGroups++;
+        reduced += before - 1;
+      }
+    });
+    renderBatch();
+    if (!mergedGroups){
+      toast('没有可合并的草稿：每张图都只有 1 条');
+      return;
+    }
+    toast('已把 ' + mergedGroups + ' 张图的草稿各合并为一条，共减少 ' + reduced + ' 条');
   }
 
   function draftHTML(d){
@@ -4150,12 +4596,13 @@ textarea{resize:vertical;min-height:56px}
       d.category,
       d.size ? d.size + d.unit : '',
       d.type,
+      (d.board === 'makeup' && d.shade) ? '色号 ' + d.shade : '',
       '数量 ' + d.qty,
       d.expiryDate ? '到期 ' + d.expiryDate : '到期未识别'
     ].filter(Boolean).join(' · ');
     var badges = '<span class="tag">来自同一张图 · 第 ' + n + ' 件</span>' +
       '<span class="tag">' + esc(d.source) + '</span>' +
-      (d.aiCount ? '<span class="tag ai">AI 估算，请核对</span>' : '') +
+      (d.aiCount ? '<span class="tag ai">AI 判断，请核对</span>' : '') +
       '<span class="tag' + (d.confidence ? '' : ' hot') + '">' + (d.confidence ? '置信度 ' + d.confidence + '%' : (d.source.indexOf('手动') >= 0 ? '手动填写' : '置信度低')) + '</span>' +
       ((!d.brand || !d.name) ? '<span class="tag hot">需补全品牌 / 品名</span>' : '');
     var ops = '';
@@ -4171,7 +4618,8 @@ textarea{resize:vertical;min-height:56px}
     }
     var edit = '';
     if (d.editing){
-      var cats = state.categories[d.board].map(function(c){
+      var catsValid = state.categories[d.board].some(function(c){ return c.name === d.category; });
+      var cats = (catsValid ? '' : '<option value="">请选择品类</option>') + state.categories[d.board].map(function(c){
         return '<option value="' + esc(c.name) + '"' + (c.name === d.category ? ' selected' : '') + '>' + esc(c.name) + '</option>';
       }).join('');
       var units = UNITS.map(function(u){ return '<option value="' + u + '"' + (u === d.unit ? ' selected' : '') + '>' + u + '</option>'; }).join('');
@@ -4184,6 +4632,7 @@ textarea{resize:vertical;min-height:56px}
         '<div class="field"><label>规格</label><div style="display:flex;gap:4px">' +
           '<input data-df="size" type="number" min="0" step="0.1" placeholder="50" value="' + esc(d.size) + '" style="min-width:0">' +
           '<select data-df="unit" style="width:64px;flex:none">' + units + '</select></div></div>' +
+        (d.board === 'makeup' ? '<div class="field"><label>色号</label><input data-df="shade" maxlength="20" value="' + esc(d.shade || '') + '"></div>' : '') +
         '<div class="field"><label>数量 *</label><input data-df="qty" type="number" min="1" max="999" step="1" value="' + esc(d.qty) + '"></div>' +
         '<div class="field full"><label>到期日</label><input data-df="expiryDate" type="date" value="' + esc(d.expiryDate) + '"></div>' +
         '<div class="draft-edit-actions"><button type="button" class="btn mini primary" data-bact="dsave" data-key="' + esc(d.key) + '">保存</button>' +
@@ -4192,7 +4641,7 @@ textarea{resize:vertical;min-height:56px}
     }
     var confChips = '';
     if (d.fieldMeta){
-      var keys = ['brand', 'category', 'size', 'type', 'expiryDate'].filter(function(k){ return d.fieldMeta[k]; });
+      var keys = ['brand', 'category', 'size', 'type', 'shade', 'expiryDate'].filter(function(k){ return d.fieldMeta[k]; });
       var chips = keys.map(function(k){
         var m = d.fieldMeta[k];
         var v = m.confidence ? (m.confidence + '%') : '未识别';
@@ -4217,6 +4666,7 @@ textarea{resize:vertical;min-height:56px}
       thumb +
       '<div class="draft-main"><div class="draft-title">' + esc(title) + '</div>' +
         '<div class="draft-meta">' + esc(meta) + '</div>' +
+        (d.note ? '<div class="draft-meta draft-note">' + esc(d.note) + '</div>' : '') +
         '<div class="draft-badges">' + badges + '</div>' +
         confChips +
         (d.invalid ? '<div class="draft-meta" style="color:var(--danger)">请补全必需字段后再入库</div>' : '') +
@@ -4242,8 +4692,16 @@ textarea{resize:vertical;min-height:56px}
       var thumb = it.thumb
         ? '<button type="button" class="bq-thumb" data-bact="bview" data-key="' + esc(it.key) + '" aria-label="查看原图" style="padding:0;border:0;overflow:hidden"><img src="' + it.thumb + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px"></button>'
         : '<div class="bq-ph">图</div>';
+      var shownN = it.splitUser ? clampInt(it.splitN, 1, 5, 1) : (it.splitActual || 1);
+      var nOpts = [1, 2, 3, 4, 5].map(function(v){
+        return '<option value="' + v + '"' + (v === shownN ? ' selected' : '') + '>' + v + ' 件</option>';
+      }).join('');
+      var splitRow = '<div class="bq-split"><span>这张图有几件</span>' +
+        '<select data-bact="bsplitn" data-key="' + esc(it.key) + '" aria-label="这张图有几件">' + nOpts + '</select>' +
+        ((!it.splitUser && state.settings.ocrAutoSplit) ? '<span class="tag">自动拆分</span>' : '') +
+        (it.res ? '' : '<span class="hint">识别后生效</span>') + '</div>';
       return '<div class="bq-row">' + thumb +
-        '<div class="bq-main"><b>' + esc(it.name) + '</b><small>' + esc(it.message || '') + '</small></div>' +
+        '<div class="bq-main"><b>' + esc(it.name) + '</b><small>' + esc(it.message || '') + '</small>' + splitRow + '</div>' +
         '<span class="bq-status ' + cls + '">' + statusText + (it.status === 'running' && !it.cancelled ? ' ' + Math.round(it.progress) + '%' : '') + '</span>' +
         op + '</div>';
     }).join('');
@@ -4279,8 +4737,13 @@ textarea{resize:vertical;min-height:56px}
         (batch.items.length ? '<div class="bqueue">' + rows + '</div>' : '<div class="draft-empty">还没有加入图片。</div>') +
         '<div class="draft-head"><b>待确认草稿（' + batch.drafts.length + '）</b>' +
           '<label class="check" style="font-size:12px"><input type="checkbox" data-bact="dselall"' + (allSelected ? ' checked' : '') + '> 全选</label>' +
+          '<div class="dhead-ops">' +
+            '<button type="button" class="btn mini ghost" data-bact="dmergeall">合并全部为一条</button>' +
+            '<button type="button" class="btn mini ghost" data-bact="dbulkdel">删除已勾选</button>' +
+            '<button type="button" class="btn mini ghost danger" data-bact="dclear">' + (batch.clearArm ? '再点一次确认清空' : '清空全部草稿') + '</button>' +
+          '</div>' +
           '<button type="button" class="btn primary mini" data-bact="dconfirmall"' + (batch.saving ? ' disabled' : '') + '>全部确认入库</button></div>' +
-        '<p class="hint">本地 OCR 无法判断画面中实际有几瓶，数量默认 1，必须逐条核对后手动调整；不得仅凭识别结果编造件数。同一张图的多条草稿共用同一张主图，入库后仍可继续增删改照片。</p>' +
+        '<p class="hint">默认每张图只生成 1 条草稿；如一张图里确实有多件，请在图片旁选择「这张图有几件」（最多 5），再按文字块空间位置切分。单条删除可撤销 5 秒；合并会按品牌/品类最高分、规格最完整、数量相加（上限 9）、日期取最近有效值处理，并共用同一张主图。本地 OCR 无法判断真实件数，件数必须由你指定。</p>' +
         '<div class="drafts">' + draftsHtml + '</div>' +
         '<input type="file" id="batchCamera" accept="image/*" capture="environment" multiple hidden>' +
         '<input type="file" id="batchAlbum" accept="image/*" multiple hidden>' +
@@ -4370,11 +4833,30 @@ textarea{resize:vertical;min-height:56px}
       }
       if (act === 'dsplit'){ splitDraft(key); return; }
       if (act === 'dmerge'){ mergeDraft(key); return; }
-      if (act === 'ddel'){
+      if (act === 'dmergeall'){ mergeAllDrafts(); return; }
+      if (act === 'dbulkdel'){
         if (!batch) return;
-        batch.drafts = batch.drafts.filter(function(d){ return d.key !== key; });
-        renderBatch();
-        toast('草稿已删除');
+        var selDel = batch.drafts.filter(function(d){ return d.selected; });
+        if (!selDel.length){ toast('请先勾选要删除的草稿'); return; }
+        deleteDraftsWithUndo(selDel, '删除');
+        return;
+      }
+      if (act === 'dclear'){
+        if (!batch || !batch.drafts.length){ toast('没有草稿'); return; }
+        if (!batch.clearArm){
+          batch.clearArm = true;
+          renderBatch();
+          toast('再点一次「确认清空」将删除全部草稿（5 秒内可撤销）');
+          setTimeout(function(){ if (batch){ batch.clearArm = false; renderBatch(); } }, 3000);
+          return;
+        }
+        batch.clearArm = false;
+        deleteDraftsWithUndo(batch.drafts.slice(), '清空');
+        return;
+      }
+      if (act === 'ddel'){
+        var dd = batchDraftByKey(key);
+        if (dd) deleteDraftsWithUndo([dd], '删除');
         return;
       }
       if (act === 'dview'){
@@ -4387,6 +4869,21 @@ textarea{resize:vertical;min-height:56px}
       }
     });
     var sync = function(ev){
+      var splitSel = ev.target.closest('[data-bact="bsplitn"]');
+      if (splitSel && batch){
+        var splitIt = batchItemByKey(splitSel.getAttribute('data-key'));
+        if (!splitIt) return;
+        splitIt.splitN = clampInt(splitSel.value, 1, 5, 1);
+        splitIt.splitUser = true;
+        if (splitIt.res){
+          var made = rebuildDraftsForItem(splitIt);
+          toast('已按 ' + (made.length || 0) + ' 件重新生成该图草稿，请核对');
+        } else {
+          renderBatch();
+          toast('件数已记录，识别完成后按此切分');
+        }
+        return;
+      }
       var box = ev.target.closest('[data-editkey]');
       if (!box || !batch) return;
       var d = batchDraftByKey(box.getAttribute('data-editkey'));
@@ -4678,17 +5175,29 @@ textarea{resize:vertical;min-height:56px}
     pendingDelKey = '';
     modalHost.innerHTML = '';
   }
-  function toast(msg){
+  function toast(msg, opt){
     var el = document.getElementById('toast');
     if (!el){
       el = document.createElement('div');
       el.id = 'toast';
       document.body.appendChild(el);
     }
-    el.textContent = msg;
-    el.classList.add('show');
+    opt = opt || {};
     clearTimeout(el._timer);
-    el._timer = setTimeout(function(){ el.classList.remove('show'); }, 2400);
+    el.classList.toggle('with-action', !!opt.action);
+    el.innerHTML = esc(msg) + (opt.action
+      ? '<button type="button" class="toast-act">' + esc(opt.label || '撤销') + '</button>'
+      : '');
+    if (opt.action){
+      var btn = el.querySelector('.toast-act');
+      if (btn) btn.onclick = function(){
+        el.classList.remove('show');
+        clearTimeout(el._timer);
+        opt.action();
+      };
+    }
+    el.classList.add('show');
+    el._timer = setTimeout(function(){ el.classList.remove('show'); }, Number(opt.ms) || 2400);
   }
   function confirmDialog(text, onOk, okLabel){
     modalHost.innerHTML =
@@ -4777,16 +5286,18 @@ textarea{resize:vertical;min-height:56px}
       var endpoint = (document.getElementById('aiEndpoint').value || '').trim();
       var key = (document.getElementById('aiKey').value || '').trim();
       var model = (document.getElementById('aiModel').value || '').trim();
+      var provider = (document.getElementById('aiProvider') || {}).value || 'custom';
       if (!endpoint || !key){ toast('请填写接口地址和 API Key'); return; }
       if (!/^https?:\/\//i.test(endpoint)){ toast('接口地址需以 http:// 或 https:// 开头'); return; }
-      state.settings.ai = { endpoint: endpoint, key: key, model: model || 'gpt-4o-mini', batchAi: !!(document.getElementById('aiBatch') && document.getElementById('aiBatch').checked) };
+      state.settings.ai = { provider: provider, endpoint: endpoint, key: key, model: model || 'gpt-4o', batchAi: !!(document.getElementById('aiBatch') && document.getElementById('aiBatch').checked) };
       persist();
       toast('AI 设置已保存（仅存本机）');
       renderApp(true);
       return;
     }
+    if (act === 'testai'){ aiTestConnection(); return; }
     if (act === 'clearai'){
-      state.settings.ai = { endpoint: '', key: '', model: '', batchAi: false };
+      state.settings.ai = { provider: 'custom', endpoint: '', key: '', model: '', batchAi: false };
       persist();
       toast('已清除 AI 设置');
       renderApp(true);
@@ -4836,6 +5347,19 @@ textarea{resize:vertical;min-height:56px}
       return;
     }
     if (act === 'ics'){ exportICS(); return; }
+    if (act === 'due91list'){ openDue91List(); return; }
+    if (act === 'due91filter'){
+      var d91 = state.records.filter(dueWithin91);
+      var d91s = d91.filter(function(r){ return r.board === 'skin'; }).length;
+      var d91m = d91.filter(function(r){ return r.board === 'makeup'; }).length;
+      ui.tab = 'skin';
+      ui.filters.skin.status = 'due91';
+      ui.filters.makeup.status = 'due91';
+      renderApp(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast('已筛选近 3 个月到期：护肤 ' + d91s + ' 条，彩妆 ' + d91m + ' 条（切换标签查看）', { ms: 3400 });
+      return;
+    }
     if (act === 'toggle'){ toggleGroup(board, el.getAttribute('data-key')); return; }
     if (act === 'view'){ ui.filters[board].view = el.getAttribute('data-view'); renderApp(true); return; }
     if (act === 'resetFilters'){
@@ -4916,9 +5440,20 @@ textarea{resize:vertical;min-height:56px}
     }
   });
   document.addEventListener('change', function(ev){
-    if (ev.target.id === 'ocrHighAccuracy' || ev.target.id === 'ocrPreprocess'){
+    if (ev.target.id === 'aiProvider'){
+      var preset = AI_PRESETS[ev.target.value] || AI_PRESETS.custom;
+      var ep = document.getElementById('aiEndpoint');
+      var md = document.getElementById('aiModel');
+      var nt = document.getElementById('aiProviderNote');
+      if (ep) ep.value = preset.endpoint;
+      if (md) md.value = preset.model;
+      if (nt) nt.textContent = preset.note;
+      return;
+    }
+    if (ev.target.id === 'ocrHighAccuracy' || ev.target.id === 'ocrPreprocess' || ev.target.id === 'ocrAutoSplit'){
       state.settings.ocrHighAccuracy = !!document.getElementById('ocrHighAccuracy').checked;
       state.settings.ocrPreprocess = !!document.getElementById('ocrPreprocess').checked;
+      state.settings.ocrAutoSplit = !!document.getElementById('ocrAutoSplit').checked;
       persist();
       toast('识别精度设置已保存');
       return;
@@ -5042,7 +5577,31 @@ textarea{resize:vertical;min-height:56px}
     parseShade: parseShade, parseType: parseType, brandCandidates: brandCandidates,
     categoryCandidates: categoryCandidates, splitOcrSegments: splitOcrSegments,
     stringSimilarity: stringSimilarity, prepareOcrInput: prepareOcrInput,
-    localRecognize: localRecognize
+    localRecognize: localRecognize,
+    _batchOpen: function(){ openBatch('skin'); return batch; },
+    _batchState: function(){ return batch; },
+    _batchAdd: addDraftsFromResult,
+    _batchMergeAll: mergeAllDrafts,
+    _aiPresets: AI_PRESETS,
+    _aiTest: aiTestConnection,
+    _aiBatchRecognize: aiBatchRecognize,
+    _aiCompress: aiCompressImage,
+    _buildAiTestImage: buildAiTestImage,
+    _recognizeBatchImage: recognizeBatchImage,
+    _setAi: function(cfg){
+      state.settings.ai = Object.assign({ provider: 'custom', endpoint: '', key: '', model: '', batchAi: false }, state.settings.ai || {}, cfg || {});
+      persist();
+      return state.settings.ai;
+    },
+    _batchDelete: deleteDraftsWithUndo,
+    _batchRender: renderBatch,
+    _batchEffective: effectiveSplitN,
+    _batchClose: closeBatchNow,
+    _state: function(){ return state; },
+    _render: function(){ renderApp(true); },
+    _due91: dueWithin91,
+    _dueInfo: dueInfo,
+    _recordStatus: recordStatus
   };
 })();
 </script>
