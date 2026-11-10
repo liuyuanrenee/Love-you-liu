@@ -1227,7 +1227,7 @@ textarea{resize:vertical;min-height:56px}
           '<button class="btn ghost" data-act="clearai">清除 AI 设置</button></div>' +
         '<p class="hint" id="aiTestState" style="margin-top:6px">' + esc(aiTestInfo.text || '「测试连接」会用一张内置小图发一次请求，验证 Key、地址、模型和 CORS 是否可用（会产生一次极小费用）。') + '</p>' +
         '<p class="hint" style="margin-top:6px">在线模式会把图片按长边 1568px、JPEG 压缩后 base64 发送，图片会离开本机到你填写的接口地址；模型返回的数量只是估算，入库前必须核对。</p>' +
-        '<p class="hint" style="margin-top:6px">当前状态：' + (state.settings.ai && state.settings.ai.key ? ('已配置' + (state.settings.ai.batchAi ? ' · 批量在线模式已开启' : ' · 批量仍使用本地 OCR')) : '未配置') + '</p>' +
+        '<p class="hint" style="margin-top:6px">当前状态：' + aiStatusText() + '</p>' +
       '</div>' +
       '<div class="block"><h3>数据起点</h3><p class="hint">当前共 ' + state.records.length + ' 条记录。示例记录可随时清除，不影响你后来新增的内容。</p>' +
         '<div class="btn-grid">' +
@@ -4278,6 +4278,22 @@ textarea{resize:vertical;min-height:56px}
     return cv.toDataURL('image/jpeg', 0.8);
   }
 
+  function aiStatusText(){
+    var ai = state.settings.ai || {};
+    var hasEp = !!(ai.endpoint && String(ai.endpoint).trim());
+    var hasKey = !!(ai.key && String(ai.key).trim());
+    var miss = [];
+    if (!hasEp) miss.push('接口地址');
+    if (!hasKey) miss.push('API Key');
+    if (miss.length){
+      return (hasEp || hasKey)
+        ? ('配置不完整（缺少「' + miss.join('」「') + '」），将使用本地 OCR')
+        : '未配置，将使用本地 OCR';
+    }
+    if (!ai.batchAi) return '已配置（' + (ai.model || '模型名为空') + '），但「批量入库时使用在线视觉识别」未勾选，仍使用本地 OCR';
+    return '已开启在线识别（' + (ai.model || '模型名为空') + '）';
+  }
+
   function aiTestConnection(){
     var endpoint = (document.getElementById('aiEndpoint') || {}).value || '';
     var key = (document.getElementById('aiKey') || {}).value || '';
@@ -4321,10 +4337,11 @@ textarea{resize:vertical;min-height:56px}
     }).catch(function(e){
       clearTimeout(timer);
       var m = String((e && e.message) || e);
-      if (/abort/i.test(m)) show('✗ 超时（30 秒未返回），请检查网络或接口地址', 'bad');
+      if (/abort/i.test(m)) show('✗ 超时（30 秒未返回）：请检查网络与接口地址是否可达，或换用响应更快的模型后重试', 'bad');
       else if (/Failed to fetch|NetworkError|Load failed/i.test(m)) show('✗ 请求未到达或响应被浏览器拦截：疑似 CORS / 网络不可达（浏览器不返回具体原因）', 'bad');
-      else if (/HTTP 401|HTTP 403/i.test(m)) show('✗ ' + m + '（Key 无效或无权限）', 'bad');
-      else if (/HTTP 404/i.test(m)) show('✗ ' + m + '（接口地址或路径错误）', 'bad');
+      else if (/模型不存在|模型未开通|无可用模型|invalid_model|model_not_exist|does not exist|"code"\s*:\s*"?1211|model[^\n]{0,40}not[^\n]{0,20}(found|exist)/i.test(m)) show('✗ ' + m + '（模型不存在或当前账号未开通该模型；请在上方「模型名称」输入框改成服务商文档里的模型名，如智谱 glm-4.6v / glm-4.5v，再点测试）', 'bad');
+      else if (/HTTP 401|HTTP 403/i.test(m)) show('✗ ' + m + '（API Key 无效、已过期或没有该模型的权限，请检查 Key 是否填对）', 'bad');
+      else if (/HTTP 404/i.test(m)) show('✗ ' + m + '（接口地址或路径不对，确认填的是完整 /chat/completions 地址）', 'bad');
       else show('✗ ' + m, 'bad');
     });
   }
